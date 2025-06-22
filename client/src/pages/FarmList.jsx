@@ -7,7 +7,7 @@ import Pagination from "../admin/components/Pagination";
 import sampleFarmData from "./sampleFarmData";
 
 function FarmPage() {
-  const [farms, setFarms] = useState(sampleFarmData);
+  const [farms, setFarms] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
@@ -23,7 +23,7 @@ function FarmPage() {
   const fetchFarms = async () => {
     try {
       const res = await axios.get(import.meta.env.VITE_URL_API + "all_farms");
-      // setFarms(res.data);
+      setFarms(res.data);
       // console.log(res.data);
     } catch (err) {
       console.error("Error fetching farms:", err);
@@ -116,9 +116,17 @@ function FarmPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Type Filter */}
               <div className="space-y-2">
-                <legend className="">จังหวัด</legend>
+                <legend className="">จังหวัด</legend>{" "}
                 <select
                   onChange={(e) => {
+                    if (!e.target.value) {
+                      setProvince("");
+                      setDistrict("");
+                      setTambon("");
+                      setDistricts([]);
+                      setTambons([]);
+                      return;
+                    }
                     const { id, name } = JSON.parse(e.target.value);
                     fetchDistricts(id);
                     setProvince(name);
@@ -138,9 +146,15 @@ function FarmPage() {
               </div>
 
               <div className="space-y-2">
-                <legend>อำเภอ</legend>
+                <legend>อำเภอ</legend>{" "}
                 <select
                   onChange={(e) => {
+                    if (!e.target.value) {
+                      setDistrict("");
+                      setTambon("");
+                      setTambons([]);
+                      return;
+                    }
                     const { id, name } = JSON.parse(e.target.value);
                     fetchTambons(id);
                     setDistrict(name);
@@ -159,10 +173,13 @@ function FarmPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <legend>ตำบล</legend>
+                <legend>ตำบล</legend>{" "}
                 <select
-                  // value={selectedType}
                   onChange={(e) => {
+                    if (!e.target.value) {
+                      setTambon("");
+                      return;
+                    }
                     const { name } = JSON.parse(e.target.value);
                     setTambon(name);
                   }}

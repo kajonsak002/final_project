@@ -9,6 +9,7 @@ function Summary() {
     try {
       const res = await axios.get(import.meta.env.VITE_URL_API + "get_summary");
       setSummaryData(res.data);
+      console.log(res.data);
     } catch (error) {
       console.error("Error fetching summary data:", error);
     }
@@ -39,7 +40,11 @@ function Summary() {
           </div>
           <div>
             <h2 className="card-title text-base mb-1">ฟาร์มทั้งหมด</h2>
-            <p className="text-xl">999 ฟาร์ม</p>
+            <p className="text-xl">
+              {summaryData.total_farm != ""
+                ? summaryData.total_farm + " ฟาร์ม"
+                : "0 ฟาร์ม"}
+            </p>
           </div>
         </div>
       </div>
@@ -63,7 +68,7 @@ function Summary() {
           </div>
           <div>
             <h2 className="card-title text-base mb-1">รอการอนุมัติลงทะเบียน</h2>
-            <p className="text-xl">10 ฟาร์ม</p>
+            <p className="text-xl">{summaryData.total_farm_waiting} ฟาร์ม</p>
           </div>
         </div>
       </div>

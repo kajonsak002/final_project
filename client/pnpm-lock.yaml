@@ -41,6 +41,9 @@ dependencies:
   react-toastify:
     specifier: ^11.0.5
     version: 11.0.5(react-dom@19.1.0)(react@19.1.0)
+  swiper:
+    specifier: ^11.2.8
+    version: 11.2.8
   tailwindcss:
     specifier: ^4.0.13
     version: 4.1.4
@@ -2014,6 +2017,11 @@ packages:
     dependencies:
       has-flag: 4.0.0
     dev: true
+
+  /swiper@11.2.8:
+    resolution: {integrity: sha512-S5FVf6zWynPWooi7pJ7lZhSUe2snTzqLuUzbd5h5PHUOhzgvW0bLKBd2wv0ixn6/5o9vwc/IkQT74CRcLJQzeg==}
+    engines: {node: '>= 4.7.0'}
+    dev: false
 
   /tailwindcss@4.1.4:
     resolution: {integrity: sha512-1ZIUqtPITFbv/DxRmDr5/agPqJwF69d24m9qmM1939TJehgY539CtzeZRjbLt5G6fSy/7YqqYsfvoTEw9xUI2A==}

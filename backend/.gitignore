@@ -1,7 +1,9 @@
-# ไม่เอาโฟลเดอร์ node_modules
+# ไม่เอา node_modules และ .env
 node_modules/
-
-# ไม่เอาไฟล์ .env
 .env
 
+# ไม่เอาทุกอย่างใน public
 
+/public/farm_profile/**/*
+/public/gallery/**/*
+/public/post_images/**/*

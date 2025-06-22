@@ -7,10 +7,12 @@ import "dayjs/locale/th";
 import { toast, ToastContainer } from "react-toastify";
 
 function TableUser() {
+  const [loading, setLoading] = useState(false);
   const [allData, setAllData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [dataPerPage] = useState(5);
   const [pageData, setPageData] = useState([]);
+  const [loadingStates, setLoadingStates] = useState({});
 
   const getUserApproved = async () => {
     try {
@@ -35,9 +37,15 @@ function TableUser() {
   useEffect(() => {
     getUserApproved();
   }, []);
-
   const handleSubmit = async (data, status) => {
     const { farmer_id, email, farm_name } = data;
+
+    // ป้องกันการกดซ้ำโดยเช็ค loading state ของปุ่มนั้นๆ
+    if (loadingStates[farmer_id]) return;
+
+    // เซ็ต loading state สำหรับปุ่มที่ถูกกด
+    setLoadingStates((prev) => ({ ...prev, [farmer_id]: status }));
+
     const now = new Date();
     const pad = (n) => String(n).padStart(2, "0");
     const approved_date = `${now.getFullYear()}-${pad(
@@ -63,7 +71,12 @@ function TableUser() {
       getUserApproved();
     } catch (err) {
       console.log("Error approved farmer : ", err);
-      toast.error(err.res.data.message);
+      toast.error(
+        err.response?.data?.message || "เกิดข้อผิดพลาดในการดำเนินการ"
+      );
+    } finally {
+      // ล้าง loading state สำหรับปุ่มที่เสร็จสิ้นการทำงาน
+      setLoadingStates((prev) => ({ ...prev, [farmer_id]: null }));
     }
     // console.log(dataObj);
   };
@@ -97,10 +110,6 @@ function TableUser() {
                         className="h-10 w-10 rounded-full object-cover"
                         src={user.farm_img}
                         alt={user.farm_name}
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                          e.target.nextSibling.style.display = "flex";
-                        }}
                       />
                       <div className="hidden absolute top-0 left-0 h-10 w-10 rounded-full bg-gray-200 items-center justify-center">
                         <User className="h-5 w-5 text-gray-400" />
@@ -127,14 +136,23 @@ function TableUser() {
                   <div className="flex items-center justify-center space-x-2">
                     <button
                       onClick={() => handleSubmit(user, "อนุมัติ")}
-                      className="inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md transition-colors duration-200">
-                      <Check className="w-3 h-3 mr-1" />
+                      disabled={loadingStates[user.farmer_id]}
+                      className="inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                      {loadingStates[user.farmer_id] === "อนุมัติ" ? (
+                        <span className="loading loading-spinner loading-xs mr-1"></span>
+                      ) : (
+                        <Check className="w-3 h-3 mr-1" />
+                      )}
                       อนุมัติ
                     </button>
                     <button
                       onClick={() => handleSubmit(user, "ปฏิเสธ")}
-                      className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md transition-colors duration-200">
-                      <X className="w-3 h-3 mr-1" />
+                      className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                      {loadingStates[user.farmer_id] === "ปฏิเสธ" ? (
+                        <span className="loading loading-spinner loading-xs mr-1"></span>
+                      ) : (
+                        <X className="w-3 h-3 mr-1" />
+                      )}
                       ปฏิเสธ
                     </button>
                   </div>
