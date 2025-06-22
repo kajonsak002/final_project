@@ -20,7 +20,12 @@ app.get("/", (req, res) => {
 });
 
 readdirSync("./routes").map((name) => {
-  app.use("/api", require("./routes/" + name));
+  try {
+    // console.log("Loading route file:", name);
+    app.use("/api", require("./routes/" + name));
+  } catch (err) {
+    console.error("Error loading route file:", name, err.message);
+  }
 });
 
 app.listen(port, () => {

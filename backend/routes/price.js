@@ -1,5 +1,5 @@
 const express = require("express");
-const scrapePrices = require("./priceScraper");
+const scrapePrices = require("../priceScraper");
 const router = express.Router();
 
 router.get("/price", async (req, res) => {
