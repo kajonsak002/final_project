@@ -1,2 +1,9 @@
 node_modules/
+
 .env
+
+/public/farm_profile/**/*
+/public/gallery/**/*
+/public/post_images/**/*
+
+//
