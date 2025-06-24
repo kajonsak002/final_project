@@ -1,4 +1,6 @@
 const db = require("../config/db");
+const dayjs = require("dayjs");
+const formatted = dayjs().format("YYYY-MM-DD HH:mm:ss");
 
 exports.getAll = async (req, res) => {
   try {
@@ -78,7 +80,7 @@ exports.request = async (req, res) => {
 
 exports.manageRequest = async (req, res) => {
   try {
-    const { request_id, status, approved_date } = req.body;
+    const { request_id, status } = req.body;
 
     if (!request_id) {
       return res.status(400).json({ message: "กรุณาเลือกคำร้องก่อนทำรายการ" });
@@ -90,7 +92,7 @@ exports.manageRequest = async (req, res) => {
         : "UPDATE animal_requests SET status = ? WHERE request_id = ?";
     const updateParams =
       status === "อนุมัติ"
-        ? [status, approved_date, request_id]
+        ? [status, formatted, request_id]
         : [status, request_id];
 
     const [updateResult] = await db.promise().execute(updateSql, updateParams);
