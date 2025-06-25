@@ -9,6 +9,7 @@ import {
   ChartColumnBig,
   Newspaper,
   Settings,
+  CirclePlus,
 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 
@@ -38,6 +39,16 @@ const Sidebar = ({ isOpen }) => {
       name: "จัดการสัตว์เลี้ยง",
       icon: <Users size={20} />,
       path: "animal",
+    },
+    {
+      name: "ส่งคำร้องเพิ่มรายการสัตว์",
+      icon: <CirclePlus size={20} />,
+      path: "animal/request",
+    },
+    {
+      name: "ส่งคำร้องเพิ่มรายการประเภทสัตว์",
+      icon: <CirclePlus size={20} />,
+      path: "animal-type/request",
     },
     {
       name: "ระบบชุมชน",
