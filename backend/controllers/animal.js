@@ -42,9 +42,11 @@ exports.getWaitApproval = async (req, res) => {
 
 exports.request = async (req, res) => {
   try {
-    const { farmer_id, name } = req.body;
+    // return res.json({ body: req.body });
+    const { animal_name } = req.body;
+    const { id } = req.user;
 
-    if (!name) {
+    if (!animal_name) {
       return res
         .status(500)
         .json({ message: "กรุณาระบุชื่อสัตว์ที่ต้องการส่งคำร้อง" });
@@ -58,7 +60,7 @@ exports.request = async (req, res) => {
       .promise()
       .query(
         "INSERT INTO animal_requests (request_id , farmer_id , name ) VALUES (?,?,?)",
-        [next_id + 1, farmer_id, name]
+        [next_id + 1, id, animal_name]
       );
 
     if (row.affectedRows === 0) {
@@ -111,7 +113,6 @@ exports.manageRequest = async (req, res) => {
         .query("SELECT name FROM animal_requests WHERE request_id = ?", [
           request_id,
         ]);
-
       const animal_name = requestData?.name;
       if (!animal_name) {
         return res.status(404).json({ message: "ไม่พบชื่อสัตว์ในคำร้องนี้" });
@@ -227,5 +228,32 @@ exports.remove = async (req, res) => {
   } catch (err) {
     console.log("Error Delete Animal :", err);
     return res.status(500).json({ message: "Error deleting animal" });
+  }
+};
+
+//
+exports.getHistory = async (req, res) => {
+  const { id } = req.user;
+  // console.log(req.user);
+  try {
+    const sql = `SELECT t1.request_id, t2.farm_name, t1.name, t1.status, t1.create_at, t1.approved_date 
+                 FROM animal_requests AS t1 
+                 JOIN farmer AS t2 ON t1.farmer_id = t2.farmer_id
+                 WHERE t1.farmer_id = ?
+                 ORDER BY t1.create_at DESC`;
+    const [rows] = await db.promise().query(sql, [id]);
+
+    if (rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "ไม่พบประวัติคำร้องขอเพิ่มรายการสัตว์" });
+    }
+
+    return res.status(200).json(rows);
+  } catch (err) {
+    console.log("Error fetch Animal History : ", err);
+    res.status(500).json({
+      message: "เกิดข้อผิดพลาดในการดึงข้อมูลประวัติคำร้องเพิ่มรายการสัตว์",
+    });
   }
 };
