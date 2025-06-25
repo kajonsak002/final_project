@@ -34,6 +34,8 @@ import AnimalRequest from "./admin/pages/AnimalRequest";
 import AnimalTypeRequest from "./admin/pages/AnimalTypeRequest";
 import AnimalAll from "./admin/pages/AnimalAll";
 import AnimalTypeAll from "./admin/pages/AnimalTypeAll";
+import AnimalReq from "./Farm/pages/AnimalReq";
+import AnimalTypeReq from "./Farm/pages/AnimalTypeReq";
 
 function App() {
   const router = createBrowserRouter([
@@ -95,6 +97,8 @@ function App() {
         { path: "/profile", element: <Profile /> },
         { path: "/profile/product", element: <Product /> },
         { path: "/profile/animal", element: <Animal /> },
+        { path: "/profile/animal/request", element: <AnimalReq /> },
+        { path: "/profile/animal-type/request", element: <AnimalTypeReq /> },
         { path: "/profile/social", element: <Comunity /> },
         { path: "/profile/news", element: <News /> },
         { path: "/profile/logs", element: <Logs /> },
