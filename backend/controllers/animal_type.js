@@ -39,7 +39,8 @@ exports.getWaitApproval = async (req, res) => {
 
 exports.request = async (req, res) => {
   try {
-    const { farmer_id, animal_id, name } = req.body;
+    const { animal_id, name } = req.body;
+    const { id } = req.user;
 
     if (!name) {
       return res
@@ -55,7 +56,7 @@ exports.request = async (req, res) => {
       .promise()
       .query(
         "INSERT INTO animal_type_requests (request_id , farmer_id , animal_id , name ) VALUES (?,?,?,?)",
-        [next_id + 1, farmer_id, animal_id, name]
+        [next_id + 1, id, animal_id, name]
       );
 
     if (row.affectedRows === 0) {
@@ -218,5 +219,30 @@ exports.remove = async (req, res) => {
   } catch (err) {
     console.log("Error DELETE AnimalType : ", err);
     return res.status(500).json({ message: "เกิดข้อผิดพลาดในการลบข้อมูล" });
+  }
+};
+
+exports.getHistory = async (req, res) => {
+  try {
+    // return res.json(req.user);
+    const { id } = req.user;
+
+    const sql = `SELECT t1.request_id, t2.farm_name, t1.name, t1.status, t1.create_at 
+                 FROM animal_type_requests AS t1 
+                 JOIN farmer AS t2 ON t1.farmer_id = t2.farmer_id 
+                 WHERE t1.farmer_id = ?`;
+
+    const [rows] = await db.promise().query(sql, [id]);
+
+    if (rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "ไม่พบประวัติคำร้องขอเพิ่มประเภทสัตว์" });
+    }
+
+    return res.status(200).json(rows);
+  } catch (err) {
+    console.log("Error Get History AnimalType : ", err);
+    return res.status(500).json({ message: "เกิดข้อผิดพลาดในการดึงประวัติ" });
   }
 };
