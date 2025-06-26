@@ -3,7 +3,7 @@ const db = require("../config/db");
 exports.getFarmProfile = async (req, res) => {
   const host = req.headers.host;
   const protocol = req.protocol;
-  const { id } = req.params;
+  const { id } = req.user || req.params;
 
   try {
     const [rows] = await db

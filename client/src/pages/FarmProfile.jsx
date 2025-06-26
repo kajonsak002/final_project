@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   MapPin,
   Phone,
@@ -15,89 +15,36 @@ import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
+import axios from "axios";
 
 function FarmProfile() {
   const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  var farm = location.state?.farm;
+  var farmer_id = location.state?.farm.farmer_id;
+  // console.log(farmer_id);
 
-  // Mock products data
-  const products = [
-    {
-      id: 1,
-      name: "ข้าวออร์แกนิค",
-      price: 45,
-      unit: "กก.",
-      image:
-        "https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=300&h=200&fit=crop",
-      stock: 100,
-    },
-    {
-      id: 2,
-      name: "ผักสลัดรวม",
-      price: 25,
-      unit: "ถุง",
-      image:
-        "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=300&h=200&fit=crop",
-      stock: 50,
-    },
-    {
-      id: 3,
-      name: "มะเขือเทศเชอรี่",
-      price: 35,
-      unit: "กก.",
-      image:
-        "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=300&h=200&fit=crop",
-      stock: 30,
-    },
-    {
-      id: 4,
-      name: "ไข่ไก่ฟรีเรนจ์",
-      price: 8,
-      unit: "ฟอง",
-      image:
-        "https://images.unsplash.com/photo-1569288052389-dac9b01ac2b4?w=300&h=200&fit=crop",
-      stock: 200,
-    },
-    {
-      id: 4,
-      name: "ไข่ไก่ฟรีเรนจ์",
-      price: 8,
-      unit: "ฟอง",
-      image:
-        "https://images.unsplash.com/photo-1569288052389-dac9b01ac2b4?w=300&h=200&fit=crop",
-      stock: 200,
-    },
-    {
-      id: 4,
-      name: "ไข่ไก่ฟรีเรนจ์",
-      price: 8,
-      unit: "ฟอง",
-      image:
-        "https://images.unsplash.com/photo-1569288052389-dac9b01ac2b4?w=300&h=200&fit=crop",
-      stock: 200,
-    },
-    {
-      id: 4,
-      name: "ไข่ไก่ฟรีเรนจ์",
-      price: 8,
-      unit: "ฟอง",
-      image:
-        "https://images.unsplash.com/photo-1569288052389-dac9b01ac2b4?w=300&h=200&fit=crop",
-      stock: 200,
-    },
-    {
-      id: 4,
-      name: "ไข่ไก่ฟรีเรนจ์",
-      price: 8,
-      unit: "ฟอง",
-      image:
-        "https://images.unsplash.com/photo-1569288052389-dac9b01ac2b4?w=300&h=200&fit=crop",
-      stock: 200,
-    },
-  ];
-
+  const [farm, setFarm] = useState([]);
   const [activeTab, setActiveTab] = useState("products");
+
+  const getFarmData = async () => {
+    try {
+      const res = await axios.get(
+        import.meta.env.VITE_URL_API + `profile/${farmer_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+          },
+        }
+      );
+      console.log(res.data);
+      setFarm(res.data);
+    } catch (error) {
+      console.error("Error fetching farm data:", error);
+    }
+  };
+
+  useEffect(() => {
+    getFarmData();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -175,7 +122,7 @@ function FarmProfile() {
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}>
               <Package className="w-4 h-4 inline mr-1" />
-              สินค้า ({products.length})
+              สินค้า (0)
             </button>
             <button
               onClick={() => setActiveTab("animals")}
@@ -194,98 +141,100 @@ function FarmProfile() {
       {/* Content Section */}
       <div className="w-full mx-auto px-20 py-8">
         {activeTab === "products" && (
-          <div>
-            <h2 className="text-2xl font-bold mb-6">สินค้าจากฟาร์ม</h2>
-            <Swiper
-              modules={[Autoplay, Pagination, Navigation]}
-              spaceBetween={24}
-              slidesPerView={1}
-              breakpoints={{
-                640: { slidesPerView: 1 },
-                768: { slidesPerView: 2 },
-                1024: { slidesPerView: 3 },
-                1280: { slidesPerView: 4 },
-              }}
-              autoplay={{ delay: 1000, disableOnInteraction: false }}
-              pagination={{ clickable: true }}
-              navigation
-              className="mySwiper">
-              {products.map((product) => (
-                <SwiperSlide key={product.id}>
-                  <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="p-4">
-                      <h3 className="font-semibold text-lg mb-2">
-                        {product.name}
-                      </h3>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-2xl font-bold text-green-600">
-                          ฿{product.price}
-                        </span>
-                        <span className="text-gray-500">/{product.unit}</span>
-                      </div>
-                    </div>
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          </div>
+          // <div>
+          //   <h2 className="text-2xl font-bold mb-6">สินค้าจากฟาร์ม</h2>
+          //   <Swiper
+          //     modules={[Autoplay, Pagination, Navigation]}
+          //     spaceBetween={24}
+          //     slidesPerView={1}
+          //     breakpoints={{
+          //       640: { slidesPerView: 1 },
+          //       768: { slidesPerView: 2 },
+          //       1024: { slidesPerView: 3 },
+          //       1280: { slidesPerView: 4 },
+          //     }}
+          //     autoplay={{ delay: 1000, disableOnInteraction: false }}
+          //     pagination={{ clickable: true }}
+          //     navigation
+          //     className="mySwiper">
+          //     {products.map((product) => (
+          //       <SwiperSlide key={product.id}>
+          //         <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+          //           <img
+          //             src={product.image}
+          //             alt={product.name}
+          //             className="w-full h-48 object-cover"
+          //           />
+          //           <div className="p-4">
+          //             <h3 className="font-semibold text-lg mb-2">
+          //               {product.name}
+          //             </h3>
+          //             <div className="flex justify-between items-center mb-2">
+          //               <span className="text-2xl font-bold text-green-600">
+          //                 ฿{product.price}
+          //               </span>
+          //               <span className="text-gray-500">/{product.unit}</span>
+          //             </div>
+          //           </div>
+          //         </div>
+          //       </SwiperSlide>
+          //     ))}
+          //   </Swiper>
+          // </div>
+          <p>อยู่ระหว่างการพัฒนา</p>
         )}
 
         {/* Animals Farm */}
         {activeTab === "animals" && (
-          <div>
-            <h2 className="text-2xl font-bold mb-6">สัตว์เลี้ยงในฟาร์ม</h2>
-            <Swiper
-              modules={[Autoplay, Pagination, Navigation]}
-              spaceBetween={24}
-              slidesPerView={1}
-              breakpoints={{
-                640: { slidesPerView: 1 },
-                768: { slidesPerView: 2 },
-                1024: { slidesPerView: 3 },
-              }}
-              autoplay={{ delay: 2500, disableOnInteraction: false }}
-              pagination={{ clickable: true }}
-              navigation
-              className="mySwiper">
-              {[
-                {
-                  id: 1,
-                  type: "ไก่",
-                  count: 150,
-                  image:
-                    "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=300&h=200&fit=crop",
-                  description: "ไก่พื้นเมืองเลี้ยงแบบธรรมชาติ",
-                },
-              ].map((animal) => (
-                <SwiperSlide key={animal.id}>
-                  <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                    <img
-                      src={animal.image}
-                      alt={animal.type}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="p-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <h3 className="font-semibold text-xl">{animal.type}</h3>
-                        <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                          {animal.count} ตัว
-                        </span>
-                      </div>
-                      <p className="text-gray-600 text-sm">
-                        {animal.description}
-                      </p>
-                    </div>
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          </div>
+          // <div>
+          //   <h2 className="text-2xl font-bold mb-6">สัตว์เลี้ยงในฟาร์ม</h2>
+          //   <Swiper
+          //     modules={[Autoplay, Pagination, Navigation]}
+          //     spaceBetween={24}
+          //     slidesPerView={1}
+          //     breakpoints={{
+          //       640: { slidesPerView: 1 },
+          //       768: { slidesPerView: 2 },
+          //       1024: { slidesPerView: 3 },
+          //     }}
+          //     autoplay={{ delay: 2500, disableOnInteraction: false }}
+          //     pagination={{ clickable: true }}
+          //     navigation
+          //     className="mySwiper">
+          //     {[
+          //       {
+          //         id: 1,
+          //         type: "ไก่",
+          //         count: 150,
+          //         image:
+          //           "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=300&h=200&fit=crop",
+          //         description: "ไก่พื้นเมืองเลี้ยงแบบธรรมชาติ",
+          //       },
+          //     ].map((animal) => (
+          //       <SwiperSlide key={animal.id}>
+          //         <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+          //           <img
+          //             src={animal.image}
+          //             alt={animal.type}
+          //             className="w-full h-48 object-cover"
+          //           />
+          //           <div className="p-4">
+          //             <div className="flex justify-between items-center mb-2">
+          //               <h3 className="font-semibold text-xl">{animal.type}</h3>
+          //               <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+          //                 {animal.count} ตัว
+          //               </span>
+          //             </div>
+          //             <p className="text-gray-600 text-sm">
+          //               {animal.description}
+          //             </p>
+          //           </div>
+          //         </div>
+          //       </SwiperSlide>
+          //     ))}
+          //   </Swiper>
+          // </div>
+          <p>อยู่ระหว่างการพัฒนา</p>
         )}
       </div>
     </div>

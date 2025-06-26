@@ -243,7 +243,9 @@ function FarmPage() {
                     </div>
 
                     {/* Action Button */}
-                    <Link to={`/farm`} state={{ farm }}>
+                    <Link
+                      to={`/farm`}
+                      state={{ farm: { farmer_id: farm.farmer_id } }}>
                       <button className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center group/btn">
                         <span>ดูรายละเอียด</span>
                         <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform duration-200" />
