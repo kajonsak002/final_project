@@ -40,11 +40,21 @@ function AdminLayout() {
   }, []);
 
   return (
-    <div className="w-screen h-screen flex bg-gray-100">
-      <Sidebar isOpen={sidebarOpen} />
-      <div className="flex-1 flex flex-col">
-        <Header toggleSidebar={toggleSidebar} />
-        <main className="flex-1 bg-gray-200 overflow-auto p-4">
+    <div className="w-screen h-screen bg-gray-100 overflow-hidden">
+      {/* Sidebar Fixed */}
+      <div className="fixed top-0 left-0 h-full w-64 bg-white z-20">
+        <Sidebar isOpen={sidebarOpen} />
+      </div>
+
+      {/* Main Content Area */}
+      <div className="ml-64 h-full flex flex-col">
+        {/* Header Fixed */}
+        <div className="fixed top-0 left-64 right-0 h-16 bg-white z-10">
+          <Header toggleSidebar={toggleSidebar} />
+        </div>
+
+        {/* Scrollable content below header */}
+        <main className="flex-1 mt-16 overflow-y-auto p-4 bg-gray-200">
           <Outlet />
         </main>
       </div>

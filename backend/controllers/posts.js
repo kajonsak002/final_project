@@ -16,7 +16,7 @@ const deleteImage = (imagePath) => {
 // CRUD API for Posts
 exports.insertPostImg = async (req, res) => {
   const { content } = req.body;
-  const { farmer_id } = req.user.id;
+  const farmer_id = req.user.id;
   const image = req.file;
   //   console.log(image);
   if (!content) {
@@ -39,7 +39,9 @@ exports.insertPostImg = async (req, res) => {
       return res.status(500).json({ message: "เกิดข้อผิดพลาดในการเพิ่มโพสต" });
     }
 
-    return res.status(201).json({ message: "เพิ่มโพสต์สำเร็จ" });
+    return res
+      .status(201)
+      .json({ message: "เพิ่มโพสต์สำเร็จรอการอนุมัติโพสต์จากผู้ดูแลระบบ" });
   } catch (err) {
     deleteImage(image.path);
     console.log(err);
@@ -48,6 +50,11 @@ exports.insertPostImg = async (req, res) => {
 };
 
 exports.insert = async (req, res) => {
+  // return res.status(200).json({
+  //   message: "Insert post API",
+  //   data: req.body,
+  //   user: req.user,
+  // });
   const { content } = req.body;
   const farmer_id = req.user.id;
 
@@ -67,7 +74,9 @@ exports.insert = async (req, res) => {
     if (rows.affectedRows === 0) {
       return res.status(500).json({ message: "เกิดข้อผิดพลาดในการเพิ่มโพสต" });
     }
-    return res.status(201).json({ message: "เพิ่มโพสต์สำเร็จ" });
+    return res
+      .status(201)
+      .json({ message: "เพิ่มโพสต์สำเร็จรอการอนุมัติโพสต์จากผู้ดูแลระบบ" });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: "เกิดข้อผิดพลาดในการเพิ่มโพสต" });
@@ -110,14 +119,26 @@ exports.remove = async (req, res) => {
 
 exports.getAll = async (req, res) => {
   try {
-    const [rows] = await db
-      .promise()
-      .query(
-        "SELECT * FROM posts WHERE status = 'อนุมัติ' AND is_visible != 'ซ่อน' ORDER BY create_at DESC"
-      );
+    const [rows] = await db.promise().query(
+      `SELECT t1.* , t2.farm_name , t2.farm_img FROM posts as t1 
+      JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id 
+      WHERE t1.status = 'อนุมัติ' AND t1.is_visible != 'ซ่อน' 
+      ORDER BY t1.create_at DESC`
+    );
+    const host = req.headers.host;
+    const protocol = req.protocol;
+    const posts = rows.map((post) => ({
+      ...post,
+      image_post: post.image_post
+        ? `${protocol}://${host}/${post.image_post.replace(/^\\+/, "")}`
+        : null,
+      farm_img: post.farm_img
+        ? `${protocol}://${host}/${post.farm_img.replace(/^\\+/, "")}`
+        : null,
+    }));
     res
       .status(200)
-      .json({ message: "Posts fetched successfully", posts: rows });
+      .json({ message: "Posts fetched successfully", posts, host, protocol });
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Internal Server Error" });
@@ -126,12 +147,23 @@ exports.getAll = async (req, res) => {
 
 exports.getPostsWaitApproval = async (req, res) => {
   try {
-    const [rows] = await db
-      .promise()
-      .query("SELECT * FROM posts WHERE status = 'รออนุมัติ'");
-    res
-      .status(200)
-      .json({ message: "Posts fetched successfully", posts: rows });
+    const [rows] = await db.promise()
+      .query(`SELECT t1.* , t2.farm_name , t2.farm_img FROM posts as t1 
+              JOIN farmer t2 ON t1.farmer_id = t2.farmer_id
+              WHERE t1.status = "รออนุมัติ" AND t1.status != "ปฏิเสธ"
+            `);
+    const host = req.headers.host;
+    const protocol = req.protocol;
+    const posts = rows.map((post) => ({
+      ...post,
+      image_post: post.image_post
+        ? `${protocol}://${host}/${post.image_post.replace(/^\\+/, "")}`
+        : null,
+      farm_img: post.farm_img
+        ? `${protocol}://${host}/${post.farm_img.replace(/^\\+/, "")}`
+        : null,
+    }));
+    res.status(200).json({ message: "Posts fetched successfully", posts });
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Internal Server Error" });
@@ -141,6 +173,11 @@ exports.getPostsWaitApproval = async (req, res) => {
 exports.approvalPost = async (req, res) => {
   const postId = req.params.id;
   const { status } = req.body;
+  // return res.json({
+  //   status,
+  //   postId,
+  //   date: formatted,
+  // });
 
   if (!status) {
     return res.status(400).json({ message: "กรุณาระบุสถานะ" });
