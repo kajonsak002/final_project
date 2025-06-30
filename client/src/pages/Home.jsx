@@ -1,78 +1,33 @@
 import { CircleDollarSign, Earth, Heart, Info, Users } from "lucide-react";
-import React, { useRef, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
+
+// import Swiper core and required modules
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Navigation } from "swiper/modules";
+
+// import Swiper styles
+import "swiper/css";
+import "swiper/css/pagination";
+import "swiper/css/navigation";
 
 function Home() {
-  const [data, setData] = useState([
-    {
-      id: 1,
-      name: "ฟาร์มรักษ์บ้านสวน",
-      description: "รายละเอียดเกี่ยวกับฟาร์มที่ 1",
-      location: "ตำบลสันทราย อำเภอเมืองเชียงใหม่ จังหวัดเชียงใหม่ 50000",
-      image:
-        "https://image.makewebeasy.net/makeweb/0/si08IWcIs/attachfile/pig02.jpg?v=202405291424",
-      view: 90,
-    },
-    {
-      id: 2,
-      name: "นายหนวดฟาร์มหมู",
-      description: "รายละเอียดเกี่ยวกับฟาร์มที่ 2",
-      location: "ตำบลบ้านโพธิ์ อำเภอเมืองนครราชสีมา จังหวัดนครราชสีมา 30000",
-      image:
-        "https://image.makewebeasy.net/makeweb/0/si08IWcIs/attachfile/pig02.jpg?v=202405291424",
-      view: 50,
-    },
-    {
-      id: 3,
-      name: "ตะวันฟาร์มไก่หนวด",
-      description: "รายละเอียดเกี่ยวกับฟาร์มที่ 3",
-      location: "ตำบลสบป้าด อำเภอแม่เมาะ จังหวัดลำปาง 52000",
-      image:
-        "https://image.makewebeasy.net/makeweb/0/si08IWcIs/attachfile/pig02.jpg?v=202405291424",
-      view: 40,
-    },
-    {
-      id: 4,
-      name: "ฟาร์มหมูของตะวัน",
-      description: "รายละเอียดเกี่ยวกับฟาร์มที่ 4",
-      location: "ตำบลในเมือง อำเภอเมืองขอนแก่น จังหวัดขอนแก่น 40000",
-      image:
-        "https://image.makewebeasy.net/makeweb/0/si08IWcIs/attachfile/pig02.jpg?v=202405291424",
-      view: 35,
-    },
-    {
-      id: 5,
-      name: "ฟาร์มควายเขาค้อ",
-      description: "รายละเอียดเกี่ยวกับฟาร์มที่ 5",
-      location: "ตำบลเขาค้อ อำเภอเขาค้อ จังหวัดเพชรบูรณ์ 67270",
-      image:
-        "https://image.makewebeasy.net/makeweb/0/si08IWcIs/attachfile/pig02.jpg?v=202405291424",
-      view: 33,
-    },
-    {
-      id: 6,
-      name: "ฟาร์มตะวันป่ายาง",
-      description: "รายละเอียดเกี่ยวกับฟาร์มที่ 6",
-      location: "ตำบลวังยาง อำเภอเมืองสุพรรณบุรี จังหวัดสุพรรณบุรี 72000",
-      image:
-        "https://image.makewebeasy.net/makeweb/0/si08IWcIs/attachfile/pig02.jpg?v=202405291424",
-      view: 30,
-    },
-  ]);
+  const [data, setData] = useState([]);
 
-  const carouselRef = useRef(null);
-
-  const scrollLeft = () => {
-    if (carouselRef.current) {
-      carouselRef.current.scrollBy({ left: -300, behavior: "smooth" });
-    }
-  };
-
-  const scrollRight = () => {
-    if (carouselRef.current) {
-      carouselRef.current.scrollBy({ left: 300, behavior: "smooth" });
-    }
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          import.meta.env.VITE_URL_API + "all_farms"
+        );
+        setData(response.data);
+      } catch (error) {
+        console.error("Error fetching farm data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const [news, setNews] = useState([
     {
@@ -169,41 +124,55 @@ function Home() {
           </h1>
         </div>
 
-        {/* ปุ่มเลื่อน */}
-        <button
-          onClick={scrollLeft}
-          className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white rounded-full shadow p-2 hover:bg-green-100 z-10">
-          ◀
-        </button>
-        <button
-          onClick={scrollRight}
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white rounded-full shadow p-2 hover:bg-green-100 z-10">
-          ▶
-        </button>
-
-        {/* Carousel */}
-        <div
-          ref={carouselRef}
-          className="flex overflow-x-auto space-x-4 scroll-smooth pb-4 pt-2">
+        <style>
+          {`
+          .swiper-button-next,
+          .swiper-button-prev {
+            color: #16a34a;
+          }
+        `}
+        </style>
+        <Swiper
+          slidesPerView={1}
+          spaceBetween={10}
+          autoplay={{
+            delay: 2000,
+            disableOnInteraction: false,
+          }}
+          navigation={true}
+          breakpoints={{
+            640: {
+              slidesPerView: 2,
+              spaceBetween: 20,
+            },
+            768: {
+              slidesPerView: 3,
+              spaceBetween: 40,
+            },
+            1024: {
+              slidesPerView: 4,
+              spaceBetween: 50,
+            },
+          }}
+          modules={[Autoplay, Navigation]}
+          className="mySwiper">
           {data.map((farm, index) => (
-            <div
-              key={index}
-              className="min-w-[75%] sm:min-w-[50%] md:min-w-[33%] lg:min-w-[25%]">
+            <SwiperSlide key={index}>
               <div className="bg-white shadow-md rounded-md overflow-hidden h-full flex flex-col">
                 <img
-                  src={farm.image}
-                  alt={farm.name}
+                  src={farm.farm_img}
+                  alt={farm.farm_name}
                   className="h-48 w-full object-cover"
                 />
                 <div className="p-4 flex flex-col justify-between flex-grow">
                   <div>
                     <h2 className="text-green-800 text-lg font-semibold mb-1">
-                      {farm.name}
+                      {farm.farm_name}
                     </h2>
-                    <p className="text-green-600 text-sm">{farm.location}</p>
+                    <p className="text-green-600 text-sm">{`${farm.tambon} ${farm.amphure} ${farm.province}`}</p>
                   </div>
                   <div className="mt-3">
-                    <Link to={`farm?id=${farm.id}`} state={{ farm }}>
+                    <Link to={`farm?id=${farm.farmer_id}`}>
                       <button className="bg-green-600 cursor-pointer hover:bg-green-700 text-white w-full py-2 rounded-md">
                         อ่านเพิ่มเติม
                       </button>
@@ -211,9 +180,9 @@ function Home() {
                   </div>
                 </div>
               </div>
-            </div>
+            </SwiperSlide>
           ))}
-        </div>
+        </Swiper>
       </div>
 
       {/* ประโยชน์ */}
@@ -239,7 +208,6 @@ function Home() {
           <div className="card bg-white shadow-xl ">
             <div className="card-body items-center text-center p-8">
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
-                {/* <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4 hover:shadow-2xl transition-all duration-300 border border-green-100 transform hover:-translate-y-2"> */}
                 <Earth className="w-8 h-8 text-green-600" />
               </div>
               <h3 className="card-title text-xl font-semibold mt-2 text-green-800">
