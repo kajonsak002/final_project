@@ -14,9 +14,8 @@ function AdminLayout() {
   const check_token = async () => {
     const token = localStorage.getItem("userToken");
 
-    // ✅ ไม่พบ token → แจ้งเตือน + redirect
     if (!token) {
-      toast.error("ไม่พบ token", { autoClose: 1000 });
+      toast.error("Token is null", { autoClose: 1000 });
       setIsLogin(false);
       setTimeout(() => navigate("/login"), 1000);
       return;
@@ -51,23 +50,25 @@ function AdminLayout() {
   if (isLogin) {
     return (
       <div className="h-screen flex overflow-hidden">
-        {/* Sidebar Fixed */}
-        <div className="fixed top-0 left-0 h-full w-64 bg-white z-10">
+        <div
+          className={`fixed top-0 left-0 h-full bg-white z-10 transition-all duration-300 ${
+            sidebarOpen ? "w-64" : "w-20"
+          }`}>
           <SideBar isOpen={sidebarOpen} />
         </div>
-
-        {/* Content Area */}
-        <div className="flex-1 flex flex-col ml-64">
-          {/* Header Fixed */}
-          <div className="fixed top-0 left-64 right-0 h-16 bg-white z-10">
+        <div
+          className={`flex-1 flex flex-col transition-all duration-300 ${
+            sidebarOpen ? "ml-64" : "ml-20"
+          }`}>
+          <div
+            className="fixed top-0 right-0 h-16 bg-white z-10 transition-all duration-300"
+            style={{ left: sidebarOpen ? "16rem" : "4rem" }}>
             <Header
               toggleSidebar={toggleSidebar}
               dropdownOpen={dropdownOpen}
               setDropdownOpen={setDropdownOpen}
             />
           </div>
-
-          {/* Scrollable Main Content */}
           <main className="flex-1 overflow-y-auto mt-16 p-4 bg-gray-100">
             <Outlet />
           </main>

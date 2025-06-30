@@ -2,12 +2,8 @@ import { CircleDollarSign, Earth, Heart, Info, Users } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-
-// import Swiper core and required modules
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
-
-// import Swiper styles
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
@@ -172,7 +168,9 @@ function Home() {
                     <p className="text-green-600 text-sm">{`${farm.tambon} ${farm.amphure} ${farm.province}`}</p>
                   </div>
                   <div className="mt-3">
-                    <Link to={`farm?id=${farm.farmer_id}`}>
+                    <Link
+                      to={`/farm`}
+                      state={{ farm: { farmer_id: farm.farmer_id } }}>
                       <button className="bg-green-600 cursor-pointer hover:bg-green-700 text-white w-full py-2 rounded-md">
                         อ่านเพิ่มเติม
                       </button>

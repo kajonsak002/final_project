@@ -1,9 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { Calendar, Eye, Image } from "lucide-react";
+import {
+  Calendar,
+  Eye,
+  Image,
+  MessageSquare,
+  Sparkles,
+  X,
+  Clock,
+  UserCircle,
+  Send,
+} from "lucide-react";
 import dayjs from "dayjs";
 import "dayjs/locale/th";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
+import DetailPost from "../components/DetailPost";
 
 function Community() {
   const [posts, setPosts] = useState([]);
@@ -11,6 +22,9 @@ function Community() {
   const [selectedFile, setSelectedFile] = useState();
   const [preview, setPreview] = useState();
   const [addPostModal, setAddPostModal] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [showPostDetail, setShowPostDetail] = useState(false);
+  const [comment, setComment] = useState([]);
 
   const getAllPost = async () => {
     try {
@@ -27,7 +41,9 @@ function Community() {
   }, []);
 
   const handleViewDetails = (post) => {
-    console.log(post);
+    setSelectedPost(post);
+    setShowPostDetail(true);
+    console.log("Selected Post : ", post);
   };
 
   const formatDate = (dateString) => {
@@ -106,9 +122,9 @@ function Community() {
       </div>
 
       {/* Add Post */}
-      <div className="flex justify-center items-center mt-4 ">
+      <div className="flex justify-center items-center mt-4">
         <div
-          className="card bg-white shadow-lg hover:shadow-xl transition-shadow duration-200 w-full max-w-2xl border border-gray-200 cursor-pointer"
+          className="card bg-white shadow-lg hover:shadow-xl h-[140px] transition-shadow duration-200 w-full max-w-2xl border border-gray-200 cursor-pointer"
           onClick={() => setAddPostModal(true)}>
           <div className="card-body flex flex-row items-center w-full p-4">
             <div className="avatar">
@@ -153,7 +169,6 @@ function Community() {
             </div>
 
             <form className="space-y-4" encType="multipart/form-data">
-              {/* Content Input */}
               <div>
                 <label className="label">
                   <span className="label-text text-gray-700 font-medium">
@@ -167,7 +182,6 @@ function Community() {
                   placeholder="แบ่งปันความคิดของคุณ..."></textarea>
               </div>
 
-              {/* Image Upload Section */}
               <div>
                 <label className="label">
                   <span className="label-text text-gray-700 font-medium">
@@ -217,10 +231,10 @@ function Community() {
             </form>
 
             {/* Action Buttons */}
-            <div className="modal-action mt-8 flex gap-3">
+            <div className="modal-action  mt-4 flex gap-3">
               <button
                 onClick={handleAddPost}
-                className="btn btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                className="btn bg-green-700 text-white w-1/2 disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 mr-2"
@@ -237,7 +251,7 @@ function Community() {
                 โพสต์
               </button>
               <button
-                className="btn btn-ghost"
+                className="btn bg-red-600 w-1/2 text-white"
                 onClick={() => {
                   setAddPostModal(false);
                   setSelectedFile(null);
@@ -271,8 +285,10 @@ function Community() {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-green-500 rounded-full flex items-center justify-center text-white font-bold">
-                      {post.farm_name?.charAt(0)}
+                    <div className="avatar">
+                      <div className="w-12 rounded-full">
+                        <img src={post?.farm_img} />
+                      </div>
                     </div>
                     <div>
                       <h3 className="font-bold text-gray-800">
@@ -309,7 +325,7 @@ function Community() {
                 <div className="flex items-center justify-end pt-4 border-t border-gray-100">
                   <button
                     onClick={() => handleViewDetails(post)}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-medium">
+                    className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-medium">
                     <Eye className="w-4 h-4" />
                     ดูรายละเอียด
                   </button>
@@ -317,6 +333,18 @@ function Community() {
               </div>
             </div>
           ))
+        )}
+
+        {showPostDetail && (
+          <DetailPost
+            open={showPostDetail}
+            post={selectedPost}
+            onClose={() => {
+              setShowPostDetail(false);
+              setSelectedPost(null);
+            }}
+            comment={comment}
+          />
         )}
       </div>
     </>
