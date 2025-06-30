@@ -1,17 +1,13 @@
 import React from "react";
 import { X, MessageSquare, Clock, UserCircle, Send } from "lucide-react";
+import dayjs from "dayjs";
+import "dayjs/locale/th";
 
 function DetailPost({ open, post, onClose, comment }) {
   if (!open || !post) return null;
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString("th-TH", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return dayjs(dateString).locale("th").format("D MMMM YYYY เวลา HH:mm");
   };
 
   return (
