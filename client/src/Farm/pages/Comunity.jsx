@@ -15,7 +15,6 @@ import "dayjs/locale/th";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import DetailPost from "../components/DetailPost";
-
 function Community() {
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState("");

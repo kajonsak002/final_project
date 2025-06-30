@@ -1,7 +1,10 @@
 const db = require("../config/db");
 const fs = require("fs");
 const dayjs = require("dayjs");
-const formatted = dayjs().format("YYYY-MM-DD HH:mm:ss");
+require("dayjs/locale/th");
+dayjs.locale("th");
+
+const getFormattedNow = () => dayjs().format("YYYY-MM-DD HH:mm:ss");
 
 const deleteImage = (imagePath) => {
   fs.unlink(imagePath, (err) => {
@@ -32,7 +35,7 @@ exports.insertPostImg = async (req, res) => {
       .promise()
       .query(
         "INSERT INTO posts (post_id ,farmer_id, content, image_post , create_at) VALUES ( ? ,?, ?, ? , ?)",
-        [next_id + 1, farmer_id, content, image.path, formatted]
+        [next_id + 1, farmer_id, content, image.path, getFormattedNow()]
       );
     if (rows.affectedRows === 0) {
       deleteImage(image.path);
@@ -69,7 +72,7 @@ exports.insert = async (req, res) => {
       .promise()
       .query(
         "INSERT INTO posts (post_id ,farmer_id, content , create_at) VALUES ( ? ,?, ? , ?)",
-        [next_id + 1, farmer_id, content, formatted]
+        [next_id + 1, farmer_id, content, getFormattedNow()]
       );
     if (rows.affectedRows === 0) {
       return res.status(500).json({ message: "เกิดข้อผิดพลาดในการเพิ่มโพสต" });
@@ -188,7 +191,7 @@ exports.approvalPost = async (req, res) => {
       .promise()
       .query(
         "UPDATE posts SET status = ? , approval_date = ? WHERE post_id = ?",
-        [status, formatted, postId]
+        [status, getFormattedNow(), postId]
       );
 
     if (result.affectedRows === 0) {
