@@ -165,7 +165,7 @@ function Home() {
                     <h2 className="text-green-800 text-lg font-semibold mb-1">
                       {farm.farm_name}
                     </h2>
-                    <p className="text-green-600 text-sm">{`${farm.tambon} ${farm.amphure} ${farm.province}`}</p>
+                    <p className="text-green-600 text-sm">{`จ.${farm.province}  อ.${farm.amphure} ต.${farm.tambon} `}</p>
                   </div>
                   <div className="mt-3">
                     <Link
