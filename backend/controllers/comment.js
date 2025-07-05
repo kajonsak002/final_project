@@ -7,10 +7,11 @@ const getFormattedNow = () => dayjs().format("YYYY-MM-DD HH:mm:ss");
 
 exports.getComment = async (req, res) => {
   const { id } = req.params;
+  const sql = `SELECT t1.comment_id , t2.farm_name , t1.content , t1.create_at FROM comments as t1 
+               JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id 
+               WHERE t1.post_id = ? AND t1.status = "แสดง"`;
   try {
-    const [comments] = await db
-      .promise()
-      .query("SELECT * FROM comments WHERE post_id = ?", [id]);
+    const [comments] = await db.promise().query(sql, [id]);
 
     if (comments.length < 0) {
       res.status(400).json({ msg: "ไม่พบความคิดเห็น" });
@@ -48,6 +49,23 @@ exports.addComment = async (req, res) => {
   }
 };
 
+exports.hideComment = async (req, res) => {
+  const { comment_id } = req.body;
+  try {
+    await db
+      .promise()
+      .query("UPDATE comments SET status = ? WHERE comment_id = ?", [
+        "ซ่อน",
+        comment_id,
+      ]);
+
+    res.status(201).json({ msg: "ซ่อนความคิดเห็นเเล้ว" });
+  } catch (err) {
+    console.log("Internal Server Error : ", err);
+    res.status(500).json({ msg: "เกิดข้อผิดพลาดในการซ่อนความคิดเห็น" });
+  }
+};
+
 exports.reportComment = async (req, res) => {
   const { post_id, farmer_id, reason, comment_id } = req.body;
   try {
@@ -78,9 +96,37 @@ exports.reportComment = async (req, res) => {
     console.log("Internal Server Error : ", err);
     res.status(500).json({ msg: "เกิดข้อผิดพลาดในการรายงานความคิดเห็น" });
   }
-  res.status(200).json({ msg: "Api Report Comment", payload: req.body });
 };
 
-exports.manageComment = (req, res) => {
-  res.status(200).json({ msg: "Api manage Comment" });
+exports.manageComment = async (req, res) => {
+  const { comment_id, report_id } = req.body;
+
+  try {
+    if (!comment_id || !report_id) {
+      return res.status(500).json({ msg: "ข้อมูลไม่ครบถ้วน" });
+    }
+    const [rs] = await db
+      .promise()
+      .query("UPDATE comments set status ='ลบแล้ว' WHERE comment_id = ?", [
+        comment_id,
+      ]);
+
+    if (rs.affectedRows === 0) {
+      return res.status(500).json({ msg: "เกิดข้อผิดพลาดในการลบความคิดเห็น" });
+    }
+
+    await db
+      .promise()
+      .query(
+        "UPDATE comment_report SET status = 'ดำเนินการแล้ว' WHERE report_id = ?",
+        [report_id]
+      );
+
+    return res
+      .status(200)
+      .json({ msg: "ดำเนินการลบความคิดเห็นเรียบร้อยเเล้ว" });
+  } catch (err) {
+    console.log("Error delete comment", err);
+    res.status(500).json({ msg: "เกิดข้อผิดพลาดในการลบความคิดเห็น" });
+  }
 };
