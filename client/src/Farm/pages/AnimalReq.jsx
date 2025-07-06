@@ -5,6 +5,11 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import Pagination from "../../admin/components/Pagination";
 
+import dayjs from "dayjs";
+import "dayjs/locale/th";
+
+dayjs.locale("th");
+
 const AnimalReq = () => {
   const [allData, setAllData] = useState([]);
   const [status, setStatus] = useState("");
@@ -125,6 +130,8 @@ const AnimalReq = () => {
             <tr>
               <th>#</th>
               <th>ชื่อสัตว์</th>
+              <th>วันที่ส่งคำร้อง</th>
+              <th>วันที่ดำเนินการคำร้อง</th>
               <th className="text-center">สถานะ</th>
             </tr>
           </thead>
@@ -134,6 +141,20 @@ const AnimalReq = () => {
                 <tr key={item.request_id}>
                   <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
                   <td>{item.name}</td>
+                  <td>
+                    {dayjs(item.create_at)
+                      .locale("th")
+                      .add(543, "year")
+                      .format("D MMMM YYYY HH:mm:ss")}
+                  </td>
+                  <td>
+                    {item.approved_date !== null
+                      ? dayjs(item.approved_date)
+                          .locale("th")
+                          .add(543, "year")
+                          .format("D MMMM YYYY HH:mm:ss")
+                      : ""}
+                  </td>
                   <td className="text-center">{item.status}</td>
                 </tr>
               ))

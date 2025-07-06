@@ -2,11 +2,12 @@ import axios from "axios";
 import { Search, Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import dayjs from "dayjs";
-import "dayjs/locale/th";
 import { toast, ToastContainer } from "react-toastify";
 import Pagination from "../components/Pagination";
 import SearchBar from "../components/SearchBar";
+
+import dayjs from "dayjs";
+import "dayjs/locale/th";
 
 dayjs.locale("th");
 
@@ -30,21 +31,10 @@ function AnimalRequest() {
 
   const handleCheck = async (req_data, status) => {
     const { request_id } = req_data;
-
-    const now = new Date();
-    const pad = (n) => String(n).padStart(2, "0");
-    const approved_date = `${now.getFullYear()}-${pad(
-      now.getMonth() + 1
-    )}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(
-      now.getMinutes()
-    )}:${pad(now.getSeconds())}`;
-
     const dataObj = {
       request_id,
       status,
-      approved_date,
     };
-
     try {
       const res = await axios.post(
         import.meta.env.VITE_URL_API + "animal/manage-req",
@@ -118,7 +108,12 @@ function AnimalRequest() {
                   {/* <td>{item.request_id}</td> */}
                   <td>{item.farm_name}</td>
                   <td>{item.name}</td>
-                  <td>{new Date(item.create_at).toLocaleDateString()}</td>
+                  <td>
+                    {dayjs(item.create_at)
+                      .locale("th")
+                      .add(543, "year")
+                      .format("D MMMM YYYY")}
+                  </td>
                   <td>{item.status}</td>
                   <td className="text-center">
                     <div className="flex items-center justify-center gap-2">

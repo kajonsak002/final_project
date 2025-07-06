@@ -1,6 +1,5 @@
 const db = require("../config/db");
 const dayjs = require("dayjs");
-const formatted = dayjs().format("YYYY-MM-DD HH:mm:ss");
 
 exports.getAll = async (req, res) => {
   try {
@@ -87,6 +86,8 @@ exports.manageRequest = async (req, res) => {
     if (!request_id) {
       return res.status(400).json({ message: "กรุณาเลือกคำร้องก่อนทำรายการ" });
     }
+
+    const formatted = dayjs().format("YYYY-MM-DD HH:mm:ss");
 
     const updateSql =
       status === "อนุมัติ"

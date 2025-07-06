@@ -36,14 +36,16 @@ exports.getWaitingApproval = async (req, res) => {
 };
 
 exports.processApproval = async (req, res) => {
-  const { farmer_id, approved_date, status, email, farm_name } = req.body;
+  const { farmer_id, status, email, farm_name } = req.body;
+
+  const formatted = require("dayjs")().format("YYYY-MM-DD HH:mm:ss");
 
   try {
     const [rows] = await db
       .promise()
       .execute(
         "UPDATE farmer SET status = ?, approved_date = ? WHERE farmer_id = ?",
-        [status, approved_date, farmer_id]
+        [status, formatted, farmer_id]
       );
 
     if (rows.affectedRows === 0) {

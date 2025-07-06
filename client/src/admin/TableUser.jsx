@@ -46,19 +46,10 @@ function TableUser() {
     // เซ็ต loading state สำหรับปุ่มที่ถูกกด
     setLoadingStates((prev) => ({ ...prev, [farmer_id]: status }));
 
-    const now = new Date();
-    const pad = (n) => String(n).padStart(2, "0");
-    const approved_date = `${now.getFullYear()}-${pad(
-      now.getMonth() + 1
-    )}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(
-      now.getMinutes()
-    )}:${pad(now.getSeconds())}`;
-
     const dataObj = {
       farmer_id,
       email,
       farm_name,
-      approved_date,
       status,
     };
 
@@ -88,7 +79,7 @@ function TableUser() {
           <thead>
             <tr>
               <th className="px-6">#</th>
-              <th className="px-7">ผู้ใช้งาน</th>
+              <th className="px-7">ชื่อฟาร์ม</th>
               <th className="px-6">วันที่สมัครสมาชิก</th>
               <th className="px-8">สถานะ</th>
               <th className="text-center">การดำเนินการ</th>
