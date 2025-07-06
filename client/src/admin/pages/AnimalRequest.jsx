@@ -102,7 +102,7 @@ function AnimalRequest() {
           <thead>
             <tr>
               <th>#</th>
-              <th>รหัสคำร้อง</th>
+              {/* <th>รหัสคำร้อง</th> */}
               <th>ชื่อผู้ส่งคำร้อง</th>
               <th>ชื่อสัตว์</th>
               <th>วันที่</th>
@@ -115,7 +115,7 @@ function AnimalRequest() {
               pageData.map((item, index) => (
                 <tr key={item.request_id}>
                   <td>{index + 1}</td>
-                  <td>{item.request_id}</td>
+                  {/* <td>{item.request_id}</td> */}
                   <td>{item.farm_name}</td>
                   <td>{item.name}</td>
                   <td>{new Date(item.create_at).toLocaleDateString()}</td>
