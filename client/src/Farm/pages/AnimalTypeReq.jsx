@@ -11,8 +11,6 @@ function AnimalTypeReq() {
   const [status, setStatus] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [animals, setAnimals] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
   const [formData, setFormData] = useState({
     animal_id: "",
     name: "",
@@ -62,19 +60,9 @@ function AnimalTypeReq() {
     }
   };
 
-  const getCategories = async () => {
-    try {
-      const res = await axios.get(import.meta.env.VITE_URL_API + "category");
-      setCategories(res.data);
-    } catch (err) {
-      console.error("Error fetching categories:", err);
-    }
-  };
-
   useEffect(() => {
     getHistory();
     getAnimals();
-    getCategories();
   }, []);
 
   useEffect(() => {
@@ -110,7 +98,7 @@ function AnimalTypeReq() {
       <div className="breadcrumbs text-md">
         <ul>
           <li>หน้าเเรก</li>
-          <li>ส่งคำร้องเพิ่มรายการสัตว์</li>
+          <li>ส่งคำร้องเพิ่มประเภทสัตว์</li>
         </ul>
       </div>
 
@@ -137,7 +125,6 @@ function AnimalTypeReq() {
               onClick={() => {
                 setIsModalOpen(true);
                 setFormData({ name: "", animal_id: "" });
-                setSelectedCategory("");
               }}>
               <CirclePlus className="mr-2" /> เพิ่มคำร้อง
             </button>
@@ -183,7 +170,7 @@ function AnimalTypeReq() {
               ))
             ) : (
               <tr>
-                <td colSpan={3} className="text-center py-4">
+                <td colSpan={6} className="text-center py-4">
                   ไม่พบข้อมูล
                 </td>
               </tr>
@@ -206,28 +193,11 @@ function AnimalTypeReq() {
                 onClick={() => {
                   setIsModalOpen(false);
                   setFormData({ name: "", animal_id: "" });
-                  setSelectedCategory("");
                 }}>
                 ✕
               </button>
               <h3 className="font-bold text-lg mb-4">เพิ่มข้อมูล</h3>
               <form onSubmit={handleSubmit}>
-                <div className="form-control w-full mb-4">
-                  <label className="label">
-                    <span className="label-text text-black">เลือกหมวดหมู่</span>
-                  </label>
-                  <select
-                    className="select select-bordered w-full"
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}>
-                    <option value="">เลือกหมวดหมู่</option>
-                    {categories.map((cat) => (
-                      <option key={cat.category_id} value={cat.category_id}>
-                        {cat.category_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
                 <div className="form-control w-full mb-4">
                   <label className="label">
                     <span className="label-text text-black">เลือกสัตว์ *</span>
@@ -240,17 +210,11 @@ function AnimalTypeReq() {
                     }
                     required>
                     <option value="">เลือกสัตว์</option>
-                    {animals
-                      .filter((animal) =>
-                        selectedCategory
-                          ? animal.category_id == selectedCategory
-                          : true
-                      )
-                      .map((animal) => (
-                        <option key={animal.animal_id} value={animal.animal_id}>
-                          {animal.name}
-                        </option>
-                      ))}
+                    {animals.map((animal) => (
+                      <option key={animal.animal_id} value={animal.animal_id}>
+                        {animal.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="form-control w-full">

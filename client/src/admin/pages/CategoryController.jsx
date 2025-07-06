@@ -217,12 +217,12 @@ const CategoryController = () => {
                     <td>{cat.category_name}</td>
                     <td className="text-center">
                       <button
-                        className="btn btn-warning btn-sm mr-2"
+                        className="btn bg-green-600 btn-sm mr-2 text-white"
                         onClick={() => openEditModal(cat)}>
                         แก้ไข
                       </button>
                       <button
-                        className="btn btn-error btn-sm"
+                        className="btn bg-red-600 btn-sm text-white"
                         onClick={() => openDeleteModal(cat.category_id)}>
                         ลบ
                       </button>

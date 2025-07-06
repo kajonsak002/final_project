@@ -173,7 +173,7 @@ const AnimalReq = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={3} className="text-center py-4">
+                <td colSpan={6} className="text-center py-4">
                   ไม่พบข้อมูล
                 </td>
               </tr>
