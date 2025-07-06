@@ -26,6 +26,7 @@ function MapEvents({ onLocationSelected }) {
 
 function Register() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -144,12 +145,11 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!files.farm_img || !files.farm_banner) {
       toast.error("กรุณาเลือกรูปภาพให้ครบ");
       return;
     }
-
+    setLoading(true); // Start loading
     const formDataToSend = new FormData();
     Object.keys(formData).forEach((key) => {
       formDataToSend.append(key, formData[key]);
@@ -169,6 +169,7 @@ function Register() {
       );
       toast.success(res.data.message);
       setTimeout(() => {
+        setLoading(false); // Stop loading
         navigate("/login");
       }, 2000);
     } catch (err) {
@@ -176,6 +177,7 @@ function Register() {
       toast.error(
         err.response?.data?.message || "เกิดข้อผิดพลาดในการสมัครสมาชิก"
       );
+      setLoading(false); // Stop loading
     }
   };
 
@@ -414,8 +416,32 @@ function Register() {
                 <div className="mt-6">
                   <button
                     type="submit"
-                    className="btn bg-[#16A34A] text-white w-full rounded-xl hover:bg-[#15803D]">
-                    ลงทะเบียน
+                    className="btn bg-[#16A34A] text-white w-full rounded-xl hover:bg-[#15803D] flex items-center justify-center"
+                    disabled={loading}>
+                    {loading ? (
+                      <>
+                        <svg
+                          className="animate-spin h-5 w-5 mr-2 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24">
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                        </svg>
+                        กำลังสมัคร...
+                      </>
+                    ) : (
+                      "ลงทะเบียน"
+                    )}
                   </button>
                 </div>
               </form>
