@@ -16,6 +16,9 @@ function AnimalRequest() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  const [rejectReason, setRejectReason] = useState("");
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [pendingReject, setPendingReject] = useState(null);
 
   const getAnimalRequest = async () => {
     try {
@@ -29,12 +32,15 @@ function AnimalRequest() {
     }
   };
 
-  const handleCheck = async (req_data, status) => {
+  const handleCheck = async (req_data, status, reason = "") => {
     const { request_id } = req_data;
     const dataObj = {
       request_id,
       status,
     };
+    if (status === "ปฏิเสธ") {
+      dataObj.reason = reason;
+    }
     try {
       const res = await axios.post(
         import.meta.env.VITE_URL_API + "animal/manage-req",
@@ -49,12 +55,29 @@ function AnimalRequest() {
     }
   };
 
+  const handleRejectClick = (item) => {
+    setPendingReject(item);
+    setShowRejectModal(true);
+    setRejectReason("");
+  };
+
+  const handleRejectConfirm = () => {
+    if (!rejectReason.trim()) {
+      toast.error("กรุณากรอกเหตุผลในการปฏิเสธ");
+      return;
+    }
+    handleCheck(pendingReject, "ปฏิเสธ", rejectReason);
+    setShowRejectModal(false);
+    setPendingReject(null);
+    setRejectReason("");
+  };
+
   useEffect(() => {
     getAnimalRequest();
   }, []);
 
   const filteredData = allData.filter((item) =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    item.animal_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -107,7 +130,7 @@ function AnimalRequest() {
                   <td>{index + 1}</td>
                   {/* <td>{item.request_id}</td> */}
                   <td>{item.farm_name}</td>
-                  <td>{item.name}</td>
+                  <td>{item.animal_name}</td>
                   <td>
                     {dayjs(item.create_at)
                       .locale("th")
@@ -124,7 +147,7 @@ function AnimalRequest() {
                         อนุมัติ
                       </button>
                       <button
-                        onClick={() => handleCheck(item, "ปฏิเสธ")}
+                        onClick={() => handleRejectClick(item)}
                         className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md transition-colors duration-200">
                         <X className="w-3 h-3 mr-1" />
                         ปฏิเสธ
@@ -149,6 +172,37 @@ function AnimalRequest() {
         totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
+
+      {showRejectModal && (
+        <dialog open className="modal">
+          <div className="modal-box">
+            <button
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+              onClick={() => setShowRejectModal(false)}>
+              ✕
+            </button>
+            <h3 className="font-bold text-lg mb-2 text-red-600">
+              กรุณากรอกเหตุผลในการปฏิเสธ
+            </h3>
+            <textarea
+              className="textarea textarea-bordered w-full mb-4"
+              rows={3}
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+            />
+            <div className="modal-action">
+              <button className="btn" onClick={() => setShowRejectModal(false)}>
+                ยกเลิก
+              </button>
+              <button
+                className="btn bg-red-600 text-white hover:bg-red-700"
+                onClick={handleRejectConfirm}>
+                ยืนยัน
+              </button>
+            </div>
+          </div>
+        </dialog>
+      )}
     </div>
   );
 }

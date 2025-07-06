@@ -15,6 +15,8 @@ const AnimalReq = () => {
   const [status, setStatus] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [animal_name, setAnimal_name] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [category_id, setCategory_id] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -51,8 +53,18 @@ const AnimalReq = () => {
     }
   };
 
+  const getCategories = async () => {
+    try {
+      const res = await axios.get(import.meta.env.VITE_URL_API + "category");
+      setCategories(res.data);
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    }
+  };
+
   useEffect(() => {
     getHistory();
+    getCategories();
   }, []);
 
   useEffect(() => {
@@ -61,13 +73,13 @@ const AnimalReq = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", animal_name);
     setIsModalOpen(false);
     try {
       const res = await axios.post(
         import.meta.env.VITE_URL_API + "animal/req",
         {
           animal_name,
+          category_id,
         },
         {
           headers: {
@@ -75,7 +87,6 @@ const AnimalReq = () => {
           },
         }
       );
-      //   console.log("Response:", res.data);
       toast.success(res.data.message);
       getHistory();
     } catch (err) {
@@ -116,7 +127,7 @@ const AnimalReq = () => {
               className="btn bg-green-600 hover:bg-green-700 text-white w-full lg:w-[160px]"
               onClick={() => {
                 setIsModalOpen(true);
-                setFormData({ animal_name: "" });
+                setFormData({ animal_name: "", category_id: "" });
               }}>
               <CirclePlus className="mr-2" /> เพิ่มคำร้อง
             </button>
@@ -132,6 +143,7 @@ const AnimalReq = () => {
               <th>ชื่อสัตว์</th>
               <th>วันที่ส่งคำร้อง</th>
               <th>วันที่ดำเนินการคำร้อง</th>
+              <th>เหตุผล</th>
               <th className="text-center">สถานะ</th>
             </tr>
           </thead>
@@ -140,7 +152,7 @@ const AnimalReq = () => {
               pageData.map((item, index) => (
                 <tr key={item.request_id}>
                   <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
-                  <td>{item.name}</td>
+                  <td>{item.animal_name}</td>
                   <td>
                     {dayjs(item.create_at)
                       .locale("th")
@@ -155,6 +167,7 @@ const AnimalReq = () => {
                           .format("D MMMM YYYY HH:mm:ss")
                       : ""}
                   </td>
+                  <td>{item.reason}</td>
                   <td className="text-center">{item.status}</td>
                 </tr>
               ))
@@ -182,11 +195,31 @@ const AnimalReq = () => {
                 onClick={() => {
                   setIsModalOpen(false);
                   setAnimal_name("");
+                  setCategory_id("");
                 }}>
                 ✕
               </button>
               <h3 className="font-bold text-lg mb-4">เพิ่มข้อมูล</h3>
               <form onSubmit={handleSubmit}>
+                <div className="form-control w-full mb-4">
+                  <label className="label">
+                    <span className="label-text text-black">
+                      เลือกหมวดหมู่ *
+                    </span>
+                  </label>
+                  <select
+                    className="select select-bordered w-full"
+                    value={category_id}
+                    onChange={(e) => setCategory_id(e.target.value)}
+                    required>
+                    <option value="">เลือกหมวดหมู่</option>
+                    {categories.map((cat) => (
+                      <option key={cat.category_id} value={cat.category_id}>
+                        {cat.category_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div className="form-control w-full">
                   <label className="label">
                     <span className="label-text text-black">ชื่อสัตว์ *</span>

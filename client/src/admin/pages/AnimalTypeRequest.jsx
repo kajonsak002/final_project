@@ -13,6 +13,10 @@ function AnimalTypeRequest() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  const [rejectReason, setRejectReason] = useState("");
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [pendingReject, setPendingReject] = useState(null);
+
   const getAnimalTypeReq = async () => {
     try {
       const res = await axios.get(
@@ -31,7 +35,7 @@ function AnimalTypeRequest() {
   }, []);
 
   const filteredData = allData.filter((item) =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    item.type_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -45,12 +49,15 @@ function AnimalTypeRequest() {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  const handleCheck = async (req_data, status) => {
+  const handleCheck = async (req_data, status, reason = "") => {
     const { request_id } = req_data;
     const dataObj = {
       request_id,
       status,
     };
+    if (status === "ปฏิเสธ") {
+      dataObj.reason = reason;
+    }
     try {
       const res = await axios.post(
         import.meta.env.VITE_URL_API + "animal_type/manage-req",
@@ -62,6 +69,23 @@ function AnimalTypeRequest() {
       console.log("Error approved req: ", err);
       toast.error(err?.response?.data?.message || "เกิดข้อผิดพลาด");
     }
+  };
+
+  const handleRejectClick = (item) => {
+    setPendingReject(item);
+    setShowRejectModal(true);
+    setRejectReason("");
+  };
+
+  const handleRejectConfirm = () => {
+    if (!rejectReason.trim()) {
+      toast.error("กรุณากรอกเหตุผลในการปฏิเสธ");
+      return;
+    }
+    handleCheck(pendingReject, "ปฏิเสธ", rejectReason);
+    setShowRejectModal(false);
+    setPendingReject(null);
+    setRejectReason("");
   };
 
   return (
@@ -105,7 +129,7 @@ function AnimalTypeRequest() {
                   <td>{index + 1}</td>
                   {/* <td>{item.request_id}</td> */}
                   <td>{item.farm_name}</td>
-                  <td>{item.name}</td>
+                  <td>{item.type_name}</td>
                   <td>
                     {dayjs(item.create_at)
                       .locale("th")
@@ -122,7 +146,7 @@ function AnimalTypeRequest() {
                         อนุมัติ
                       </button>
                       <button
-                        onClick={() => handleCheck(item, "ปฏิเสธ")}
+                        onClick={() => handleRejectClick(item)}
                         className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md">
                         <X className="w-3 h-3 mr-1" />
                         ปฏิเสธ
@@ -147,6 +171,38 @@ function AnimalTypeRequest() {
         totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
+
+      {/* DaisyUI Modal สำหรับกรอกเหตุผล */}
+      <input
+        type="checkbox"
+        id="reject-modal"
+        className="modal-toggle"
+        checked={showRejectModal}
+        readOnly
+      />
+      <div
+        className="modal"
+        style={{ visibility: showRejectModal ? "visible" : "hidden" }}>
+        <div className="modal-box">
+          <h3 className="font-bold text-lg mb-2">กรุณากรอกเหตุผลในการปฏิเสธ</h3>
+          <textarea
+            className="textarea textarea-bordered w-full mb-4"
+            rows={3}
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+          />
+          <div className="modal-action">
+            <label className="btn" onClick={() => setShowRejectModal(false)}>
+              ยกเลิก
+            </label>
+            <button
+              className="btn btn-error text-white"
+              onClick={handleRejectConfirm}>
+              ยืนยัน
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

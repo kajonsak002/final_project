@@ -1,6 +1,8 @@
 import React from "react";
 import Summary from "../components/Summary";
 import TableUser from "../TableUser";
+import CategoryController from "./CategoryController";
+import { Route } from "react-router-dom";
 
 function DashBoard() {
   return (

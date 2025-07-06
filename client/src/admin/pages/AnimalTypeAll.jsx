@@ -36,6 +36,7 @@ function AnimalTypeAll() {
     try {
       const res = await axios.get(import.meta.env.VITE_URL_API + "animal");
       setAnimals(res.data);
+      console.log(res.data);
     } catch (err) {
       console.log("Error Get Animals:", err);
     }
@@ -47,7 +48,7 @@ function AnimalTypeAll() {
   }, []);
 
   const filteredData = allData.filter((item) =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (item.name || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -98,7 +99,7 @@ function AnimalTypeAll() {
     setIsEditing(true);
     setFormData({
       animal_id: data.animal_id,
-      animal_name: data.name,
+      animal_name: data.type_name,
     });
     setEditId(data.type_id);
     setIsModalOpen(true);
@@ -123,6 +124,21 @@ function AnimalTypeAll() {
       toast.error(err.response.data.message);
     }
   };
+
+  const sortedPageData = [...pageData].sort((a, b) => {
+    const animalA =
+      animals.find((an) => an.animal_id === a.animal_id)?.name || "";
+    const animalB =
+      animals.find((an) => an.animal_id === b.animal_id)?.name || "";
+    if (animalA.toLowerCase() < animalB.toLowerCase()) return -1;
+    if (animalA.toLowerCase() > animalB.toLowerCase()) return 1;
+    // ถ้าชื่อสัตว์เท่ากัน ให้เรียงตามชื่อประเภท
+    if ((a.type_name || "").toLowerCase() < (b.type_name || "").toLowerCase())
+      return -1;
+    if ((a.type_name || "").toLowerCase() > (b.type_name || "").toLowerCase())
+      return 1;
+    return 0;
+  });
 
   return (
     <>
@@ -159,34 +175,41 @@ function AnimalTypeAll() {
             <tr className="text-center">
               <th>#</th>
               <th>ชื่อประเภท</th>
+              <th>ชื่อสัตว์</th>
               <th>จัดการ</th>
             </tr>
           </thead>
           <tbody>
-            {pageData.length > 0 ? (
-              pageData.map((item, index) => (
-                <tr key={item.type_id} className="text-center">
-                  <td>{index + 1}</td>
-                  <td>{item.name}</td>
-                  <td>
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => handleEdit(item)}
-                        className="inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md transition-colors duration-200">
-                        แก้ไข
-                      </button>
-                      <button
-                        onClick={() => confirmDelete(item.type_id)}
-                        className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md transition-colors duration-200">
-                        ลบ
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+            {sortedPageData.length > 0 ? (
+              sortedPageData.map((item, index) => {
+                const animal = animals.find(
+                  (a) => a.animal_id === item.animal_id
+                );
+                return (
+                  <tr key={item.type_id} className="text-center">
+                    <td>{index + 1}</td>
+                    <td>{item.type_name}</td>
+                    <td>{animal ? animal.name : "-"}</td>
+                    <td>
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => handleEdit(item)}
+                          className="inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md transition-colors duration-200">
+                          แก้ไข
+                        </button>
+                        <button
+                          onClick={() => confirmDelete(item.type_id)}
+                          className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md transition-colors duration-200">
+                          ลบ
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
-                <td colSpan={3} className="text-center py-4">
+                <td colSpan={4} className="text-center py-4">
                   ไม่พบข้อมูล
                 </td>
               </tr>

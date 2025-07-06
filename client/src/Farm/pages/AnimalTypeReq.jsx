@@ -3,12 +3,16 @@ import { CirclePlus } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import Pagination from "../../admin/components/Pagination";
+import dayjs from "dayjs";
+import "dayjs/locale/th";
 
 function AnimalTypeReq() {
   const [allData, setAllData] = useState([]);
   const [status, setStatus] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [animals, setAnimals] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [formData, setFormData] = useState({
     animal_id: "",
     name: "",
@@ -58,9 +62,19 @@ function AnimalTypeReq() {
     }
   };
 
+  const getCategories = async () => {
+    try {
+      const res = await axios.get(import.meta.env.VITE_URL_API + "category");
+      setCategories(res.data);
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    }
+  };
+
   useEffect(() => {
     getHistory();
     getAnimals();
+    getCategories();
   }, []);
 
   useEffect(() => {
@@ -122,7 +136,8 @@ function AnimalTypeReq() {
               className="btn bg-green-600 hover:bg-green-700 text-white w-full lg:w-[160px]"
               onClick={() => {
                 setIsModalOpen(true);
-                setFormData({ name: "" });
+                setFormData({ name: "", animal_id: "" });
+                setSelectedCategory("");
               }}>
               <CirclePlus className="mr-2" /> เพิ่มคำร้อง
             </button>
@@ -136,6 +151,9 @@ function AnimalTypeReq() {
             <tr>
               <th>#</th>
               <th>ชื่อสัตว์</th>
+              <th>วันที่ส่งคำร้อง</th>
+              <th>วันที่ดำเนินการคำร้อง</th>
+              <th>เหตุผล</th>
               <th className="text-center">สถานะ</th>
             </tr>
           </thead>
@@ -145,6 +163,21 @@ function AnimalTypeReq() {
                 <tr key={item.request_id}>
                   <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
                   <td>{item.name}</td>
+                  <td>
+                    {dayjs(item.create_at)
+                      .locale("th")
+                      .add(543, "year")
+                      .format("D MMMM YYYY")}
+                  </td>
+                  <td>
+                    {item.approved_date
+                      ? dayjs(item.approved_date)
+                          .locale("th")
+                          .add(543, "year")
+                          .format("D MMMM YYYY")
+                      : ""}
+                  </td>
+                  <td>{item.reason}</td>
                   <td className="text-center">{item.status}</td>
                 </tr>
               ))
@@ -172,12 +205,29 @@ function AnimalTypeReq() {
                 className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
                 onClick={() => {
                   setIsModalOpen(false);
-                  setname("");
+                  setFormData({ name: "", animal_id: "" });
+                  setSelectedCategory("");
                 }}>
                 ✕
               </button>
               <h3 className="font-bold text-lg mb-4">เพิ่มข้อมูล</h3>
               <form onSubmit={handleSubmit}>
+                <div className="form-control w-full mb-4">
+                  <label className="label">
+                    <span className="label-text text-black">เลือกหมวดหมู่</span>
+                  </label>
+                  <select
+                    className="select select-bordered w-full"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}>
+                    <option value="">เลือกหมวดหมู่</option>
+                    {categories.map((cat) => (
+                      <option key={cat.category_id} value={cat.category_id}>
+                        {cat.category_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div className="form-control w-full mb-4">
                   <label className="label">
                     <span className="label-text text-black">เลือกสัตว์ *</span>
@@ -190,11 +240,17 @@ function AnimalTypeReq() {
                     }
                     required>
                     <option value="">เลือกสัตว์</option>
-                    {animals.map((animal) => (
-                      <option key={animal.animal_id} value={animal.animal_id}>
-                        {animal.name}
-                      </option>
-                    ))}
+                    {animals
+                      .filter((animal) =>
+                        selectedCategory
+                          ? animal.category_id == selectedCategory
+                          : true
+                      )
+                      .map((animal) => (
+                        <option key={animal.animal_id} value={animal.animal_id}>
+                          {animal.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
                 <div className="form-control w-full">

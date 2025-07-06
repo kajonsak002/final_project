@@ -12,10 +12,14 @@ function AnimalAll() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [formData, setFormData] = useState({ animal_name: "" });
+  const [formData, setFormData] = useState({
+    animal_name: "",
+    category_id: "",
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [categories, setCategories] = useState([]);
 
   const itemsPerPage = 5;
 
@@ -28,12 +32,22 @@ function AnimalAll() {
     }
   };
 
+  const getCategories = async () => {
+    try {
+      const res = await axios.get(import.meta.env.VITE_URL_API + "category");
+      setCategories(res.data);
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    }
+  };
+
   useEffect(() => {
     getAnimalAll();
+    getCategories();
   }, []);
 
   const filteredData = allData.filter((item) =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (item.name || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -54,11 +68,15 @@ function AnimalAll() {
       if (isEditing) {
         res = await axios.put(
           `${import.meta.env.VITE_URL_API}animal/update/${editId}`,
-          { animal_name: formData.animal_name }
+          {
+            animal_name: formData.animal_name,
+            category_id: formData.category_id,
+          }
         );
       } else {
         res = await axios.post(`${import.meta.env.VITE_URL_API}animal/insert`, {
           animal_name: formData.animal_name,
+          category_id: formData.category_id,
         });
       }
 
@@ -76,7 +94,10 @@ function AnimalAll() {
 
   const handleEdit = (data) => {
     setIsEditing(true);
-    setFormData({ animal_name: data.name });
+    setFormData({
+      animal_name: data.name,
+      category_id: data.category_id || "",
+    });
     setEditId(data.animal_id);
     setIsModalOpen(true);
   };
@@ -138,6 +159,7 @@ function AnimalAll() {
             <tr>
               <th>#</th>
               <th>ชื่อ</th>
+              <th>หมวดหมู่</th>
               <th className="text-center">จัดการ</th>
             </tr>
           </thead>
@@ -147,6 +169,7 @@ function AnimalAll() {
                 <tr key={item.animal_id}>
                   <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
                   <td>{item.name}</td>
+                  <td>{item.category_name || "-"}</td>
                   <td>
                     <div className="flex items-center justify-center gap-2">
                       <button
@@ -165,7 +188,7 @@ function AnimalAll() {
               ))
             ) : (
               <tr>
-                <td colSpan={3} className="text-center py-4">
+                <td colSpan={4} className="text-center py-4">
                   ไม่พบข้อมูล
                 </td>
               </tr>
@@ -192,6 +215,27 @@ function AnimalAll() {
                 {isEditing ? "แก้ไขข้อมูล" : "เพิ่มข้อมูล"}
               </h3>
               <form onSubmit={handleSubmit}>
+                <div className="form-control w-full mb-4">
+                  <label className="label">
+                    <span className="label-text text-black">
+                      เลือกหมวดหมู่ *
+                    </span>
+                  </label>
+                  <select
+                    className="select select-bordered w-full"
+                    value={formData.category_id}
+                    onChange={(e) =>
+                      setFormData({ ...formData, category_id: e.target.value })
+                    }
+                    required>
+                    <option value="">เลือกหมวดหมู่</option>
+                    {categories.map((cat) => (
+                      <option key={cat.category_id} value={cat.category_id}>
+                        {cat.category_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div className="form-control w-full">
                   <label className="label">
                     <span className="label-text text-black">ชื่อสัตว์ *</span>

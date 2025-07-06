@@ -68,6 +68,11 @@ const menuItems = [
     icon: <ChartColumnBig size={20} />,
     path: "animal_type_all",
   },
+  {
+    label: "จัดการหมวดหมู่",
+    icon: <ChartColumnBig size={20} />,
+    path: "category",
+  },
 ];
 
 const Sidebar = ({ isOpen }) => {

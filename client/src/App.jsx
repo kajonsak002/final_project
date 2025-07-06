@@ -36,6 +36,7 @@ import AnimalAll from "./admin/pages/AnimalAll";
 import AnimalTypeAll from "./admin/pages/AnimalTypeAll";
 import AnimalReq from "./Farm/pages/AnimalReq";
 import AnimalTypeReq from "./Farm/pages/AnimalTypeReq";
+import CategoryController from "./admin/pages/CategoryController";
 
 function App() {
   const router = createBrowserRouter([
@@ -88,6 +89,7 @@ function App() {
         { path: "/admin/animal_type_request", element: <AnimalTypeRequest /> },
         { path: "/admin/animal_all", element: <AnimalAll /> },
         { path: "/admin/animal_type_all", element: <AnimalTypeAll /> },
+        { path: "/admin/category", element: <CategoryController /> },
       ],
     },
     {
