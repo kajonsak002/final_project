@@ -204,3 +204,7 @@ exports.approvalPost = async (req, res) => {
     res.status(500).json({ error: "เกิดข้อผิดพลาดในการอนุมัติโพสต์" });
   }
 };
+
+exports.reportPost = (req, res) => {
+  res.send("Api for report Post");
+};

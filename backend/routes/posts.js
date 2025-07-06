@@ -7,6 +7,7 @@ const {
   insertPostImg,
   getPostsWaitApproval,
   approvalPost,
+  reportPost,
 } = require("../controllers/posts");
 const router = express.Router();
 const uploadTo = require("../middleware/upload");
@@ -30,5 +31,8 @@ router.post("/post/delete/:id", auth_Token, remove);
 
 // Route to approval posts
 router.post("/post/approval-post/:id", approvalPost);
+
+//Route to report and manage posts
+router.post("/post/report-post", reportPost);
 
 module.exports = router;
