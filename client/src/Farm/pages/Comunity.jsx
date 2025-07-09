@@ -24,10 +24,13 @@ function Community() {
   const [selectedPost, setSelectedPost] = useState(null);
   const [showPostDetail, setShowPostDetail] = useState(false);
   const [comment, setComment] = useState([]);
+  const farmer_id = localStorage.getItem("farmer_id");
 
   const getAllPost = async () => {
     try {
-      const res = await axios.get(import.meta.env.VITE_URL_API + "post");
+      const res = await axios.post(import.meta.env.VITE_URL_API + "post", {
+        farmer_id,
+      });
       setPosts(res.data.posts);
       // console.log(res.data.posts);
     } catch (err) {
@@ -129,7 +132,7 @@ function Community() {
             <div className="avatar">
               <div className="w-12 h-12 rounded-full ring-2 ring-gray-200">
                 <img
-                  src="https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
+                  src={localStorage.getItem("image_profile")}
                   alt="Profile"
                   className="rounded-full"
                 />

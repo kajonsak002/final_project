@@ -93,7 +93,7 @@ function PostController() {
           <li>
             <a>หน้าเเรก</a>
           </li>
-          <li>จัดการโพสต์</li>
+          <li>จัดการอนุมัติโพสต์</li>
         </ul>
       </div>
 

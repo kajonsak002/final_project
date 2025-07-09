@@ -138,9 +138,9 @@ function AnimalTypeReq() {
             <tr>
               <th>#</th>
               <th>ชื่อสัตว์</th>
-              <th>วันที่ส่งคำร้อง</th>
-              <th>วันที่ดำเนินการคำร้อง</th>
-              <th>เหตุผล</th>
+              <th className="text-center">วันที่ส่งคำร้อง</th>
+              <th className="text-center">วันที่ดำเนินการคำร้อง</th>
+              <th className="text-center">เหตุผล</th>
               <th className="text-center">สถานะ</th>
             </tr>
           </thead>
@@ -150,21 +150,23 @@ function AnimalTypeReq() {
                 <tr key={item.request_id}>
                   <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
                   <td>{item.name}</td>
-                  <td>
+                  <td className="text-center">
                     {dayjs(item.create_at)
                       .locale("th")
                       .add(543, "year")
-                      .format("D MMMM YYYY")}
+                      .format("D MMMM YYYY HH:mm:ss")}
                   </td>
-                  <td>
+                  <td className="text-center">
                     {item.approved_date
                       ? dayjs(item.approved_date)
                           .locale("th")
                           .add(543, "year")
-                          .format("D MMMM YYYY")
-                      : ""}
+                          .format("D MMMM YYYY HH:mm:ss")
+                      : "-"}
                   </td>
-                  <td>{item.reason}</td>
+                  <td className="text-center">
+                    {item.reason ? item.reason : "-"}
+                  </td>
                   <td className="text-center">{item.status}</td>
                 </tr>
               ))

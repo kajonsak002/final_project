@@ -2,12 +2,13 @@ const express = require("express");
 const {
   getAll,
   insert,
-  update,
   remove,
   insertPostImg,
   getPostsWaitApproval,
   approvalPost,
   reportPost,
+  update_post_image,
+  editPost,
 } = require("../controllers/posts");
 const router = express.Router();
 const uploadTo = require("../middleware/upload");
@@ -15,7 +16,7 @@ const uploadImgPost = uploadTo("post_images");
 
 const auth_Token = require("../middleware/auth_token");
 
-router.get("/post", getAll);
+router.post("/post", getAll);
 router.get("/post-wait-approval", getPostsWaitApproval);
 
 // Route to CRUD posts
@@ -26,7 +27,13 @@ router.post(
   insertPostImg
 );
 router.post("/post/insert", auth_Token, insert);
-router.post("/post/update/:id", auth_Token, update);
+router.post(
+  "/post/edit/:id",
+  uploadImgPost.single("image"),
+  auth_Token,
+  editPost
+);
+
 router.post("/post/delete/:id", auth_Token, remove);
 
 // Route to approval posts

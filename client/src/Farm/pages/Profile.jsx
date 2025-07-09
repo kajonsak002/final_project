@@ -29,6 +29,8 @@ function Profile() {
         },
       });
       // console.log(res.data);
+      localStorage.setItem("image_profile", res.data.farm_img);
+      localStorage.setItem("farmer_id", res.data.farmer_id);
       setFarm(res.data);
     } catch (error) {
       console.error("Error fetching farm data:", error);
@@ -40,7 +42,6 @@ function Profile() {
   }, []);
   return (
     <div>
-      {" "}
       <div className="min-h-screen bg-gray-50">
         {/* Banner Section */}
         <div className="relative h-80 overflow-hidden">
@@ -79,7 +80,8 @@ function Profile() {
                     <div className="flex items-center text-gray-700">
                       <MapPin className="w-5 h-5 mr-3 text-green-600" />
                       <span>
-                        {farm.tambon}, {farm.amphure}, {farm.province}
+                        จังหวัด{farm.province} อำเภอ{farm.amphure} ตำบล
+                        {farm.tambon}
                       </span>
                     </div>
                     <div className="flex items-center text-gray-700">

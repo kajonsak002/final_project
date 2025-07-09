@@ -86,12 +86,54 @@ exports.insert = async (req, res) => {
   }
 };
 
-exports.update = async (req, res) => {
-  res.status(200).json({
-    message: "Update post API",
-    post_id: req.params.id,
-    data: req.body,
-  });
+exports.editPost = async (req, res) => {
+  const postId = req.params.id;
+  const { content } = req.body;
+  const farmer_id = req.user.id;
+  const image = req.file;
+
+  try {
+    const [[post]] = await db
+      .promise()
+      .query("SELECT * FROM posts WHERE post_id = ?", [postId]);
+
+    if (!post) {
+      if (image) deleteImage(image.path);
+      return res.status(404).json({ message: "โพสต์ไม่พบ" });
+    }
+
+    if (post.farmer_id !== farmer_id) {
+      if (image) deleteImage(image.path);
+      return res.status(403).json({ message: "คุณไม่มีสิทธิ์แก้ไขโพสต์นี้" });
+    }
+
+    let newImagePath = post.image_post;
+    if (image) {
+      if (post.image_post) {
+        deleteImage(post.image_post);
+      }
+      newImagePath = image.path;
+    }
+
+    const [result] = await db
+      .promise()
+      .query("UPDATE posts SET content = ?, image_post = ? WHERE post_id = ?", [
+        content || post.content,
+        newImagePath,
+        postId,
+      ]);
+
+    if (result.affectedRows === 0) {
+      if (image) deleteImage(image.path);
+      return res.status(500).json({ message: "เกิดข้อผิดพลาดในการแก้ไขโพสต์" });
+    }
+
+    res.status(200).json({ message: "แก้ไขโพสต์สำเร็จ" });
+  } catch (err) {
+    if (req.file) deleteImage(req.file.path);
+    console.log(err);
+    res.status(500).json({ error: "เกิดข้อผิดพลาดในการแก้ไขโพสต์" });
+  }
 };
 
 exports.remove = async (req, res) => {
@@ -122,11 +164,15 @@ exports.remove = async (req, res) => {
 
 exports.getAll = async (req, res) => {
   try {
+    const { farmer_id } = req.body;
+    // console.log(req.body);
     const [rows] = await db.promise().query(
       `SELECT t1.* , t2.farm_name , t2.farm_img FROM posts as t1 
       JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id 
       WHERE t1.status = 'อนุมัติ' AND t1.is_visible != 'ซ่อน' 
-      ORDER BY t1.create_at DESC`
+      AND t1.farmer_id != ?
+      ORDER BY t1.create_at DESC`,
+      [farmer_id]
     );
     const host = req.headers.host;
     const protocol = req.protocol;

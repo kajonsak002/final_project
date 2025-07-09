@@ -165,9 +165,9 @@ const AnimalReq = () => {
                           .locale("th")
                           .add(543, "year")
                           .format("D MMMM YYYY HH:mm:ss")
-                      : ""}
+                      : "-"}
                   </td>
-                  <td>{item.reason}</td>
+                  <td>{item.reason ? item.reason : "-"}</td>
                   <td className="text-center">{item.status}</td>
                 </tr>
               ))

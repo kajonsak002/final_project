@@ -1,6 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-
 import {
   LayoutDashboard,
   Users,
@@ -10,6 +9,7 @@ import {
   ChartColumnBig,
   Newspaper,
   Settings,
+  ChevronRight,
 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 
@@ -26,11 +26,15 @@ const menuItems = [
     icon: <BookText size={20} />,
     path: "book",
   },
-  { label: "จัดการโพสต์", icon: <Settings size={20} />, path: "post" },
   {
-    label: "จัดการรายงานโพสต์",
-    icon: <MailWarning size={20} />,
-    path: "report_post",
+    label: "จัดการโพสต์",
+    icon: <Settings size={20} />,
+    path: "post",
+    hasDropdown: true,
+    subItems: [
+      { label: "อนุมัติโพสต์", path: "post" },
+      { label: "รายงานโพสต์", path: "report_post" },
+    ],
   },
   {
     label: "รายงานความคิดเห็น",
@@ -78,13 +82,21 @@ const menuItems = [
 const Sidebar = ({ isOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [expandedMenus, setExpandedMenus] = useState({});
 
   const handleLogout = () => {
     toast.info("กำลังออกจากระบบ");
     localStorage.removeItem("token");
     setTimeout(() => {
-      navigate("login");
+      navigate("/login");
     }, 1500);
+  };
+
+  const toggleDropdown = (index) => {
+    setExpandedMenus((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
   };
 
   return (
@@ -100,47 +112,131 @@ const Sidebar = ({ isOpen }) => {
         theme="light"
       />
 
-      <div className="p-4">
+      {/* Header */}
+      <div className="p-4 border-b border-base-200">
         <h2
-          className={`text-2xl font-bold text-center text-gray-800 ${
+          className={`text-xl font-bold text-center text-green-600 transition-all duration-300 ${
             !isOpen && "hidden"
           }`}>
-          Admin Panel
+          <span className="bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent">
+            Admin Panel
+          </span>
         </h2>
+        {!isOpen && (
+          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mx-auto">
+            <span className="text-green-600 font-bold text-xl">F</span>
+          </div>
+        )}
       </div>
 
-      <nav className="p-4 space-y-2 overflow-y-auto max-h-[calc(100vh-150px)]">
+      {/* Menu */}
+      <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-150px)]">
         {menuItems.map((item, index) => {
           const isActive = location.pathname === `/admin/${item.path}`;
-          // console.log(location.pathname === `/admin/${item.path}`);
+          const isExpanded = expandedMenus[index];
+          const hasActiveSub = item.subItems?.some(
+            (subItem) => location.pathname === `/admin/${subItem.path}`
+          );
+
           return (
-            <Link to={item.path} key={index}>
-              <span
-                className={`flex items-center p-2 rounded-lg ml-3 mb-2 transition-colors ${
-                  !isOpen && "justify-center"
-                } ${
-                  isActive
-                    ? "bg-base-300 text-primary font-semibold"
-                    : "hover:bg-base-200"
-                }`}>
-                {item.icon}
-                <span className={`ml-2 ${!isOpen && "hidden"}`}>
-                  {item.label}
-                </span>
-              </span>
-            </Link>
+            <div key={index} className="mb-1">
+              {/* Main Item */}
+              {item.hasDropdown ? (
+                <div
+                  onClick={() => isOpen && toggleDropdown(index)}
+                  className={`flex items-center p-3 rounded-lg cursor-pointer transition-all duration-200 group ${
+                    isOpen ? "justify-between" : "justify-center"
+                  } ${
+                    isActive || hasActiveSub
+                      ? "bg-green-50 text-green-600 font-medium border-l-4 border-green-500"
+                      : "hover:bg-base-200 hover:text-green-600"
+                  }`}>
+                  <div className="flex items-center">
+                    <span className={`${!isOpen && "scale-110"}`}>
+                      {item.icon}
+                    </span>
+                    <span
+                      className={`ml-3 text-sm font-medium ${
+                        !isOpen && "hidden"
+                      }`}>
+                      {item.label}
+                    </span>
+                  </div>
+                  {isOpen && (
+                    <span
+                      className={`transition-transform duration-200 ${
+                        isExpanded ? "rotate-90" : ""
+                      }`}>
+                      <ChevronRight size={16} />
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <Link to={item.path}>
+                  <div
+                    className={`flex items-center p-3 rounded-lg transition-all duration-200 group ${
+                      isOpen ? "justify-start" : "justify-center"
+                    } ${
+                      isActive
+                        ? "bg-green-50 text-green-600 font-medium border-l-4 border-green-500"
+                        : "hover:bg-base-200 hover:text-green-600"
+                    }`}>
+                    <span className={`${!isOpen && "scale-110"}`}>
+                      {item.icon}
+                    </span>
+                    <span
+                      className={`ml-3 text-sm font-medium ${
+                        !isOpen && "hidden"
+                      }`}>
+                      {item.label}
+                    </span>
+                  </div>
+                </Link>
+              )}
+
+              {/* Sub-items */}
+              {item.hasDropdown && isExpanded && isOpen && (
+                <div className="mt-2 ml-6 space-y-1 border-l-2 border-base-300 pl-4">
+                  {item.subItems.map((sub, subIndex) => {
+                    const isSubActive =
+                      location.pathname === `/admin/${sub.path}`;
+                    return (
+                      <Link to={sub.path} key={subIndex}>
+                        <div
+                          className={`flex items-center p-2 rounded-md transition-all duration-200 text-sm group ${
+                            isSubActive
+                              ? "bg-green-50 text-green-600 font-medium"
+                              : "hover:bg-base-200 hover:text-green-600 text-base-content/70"
+                          }`}>
+                          <span
+                            className={`w-2 h-2 rounded-full mr-3 ${
+                              isSubActive ? "bg-green-500" : "bg-base-300"
+                            }`}></span>
+                          {sub.label}
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           );
         })}
       </nav>
 
-      <div className="p-4 border-t border-base-200">
+      {/* Logout */}
+      <div className="p-4 border-t border-base-200 mt-auto">
         <button
           onClick={handleLogout}
-          className={`flex items-center p-2 w-full hover:bg-base-200 rounded-lg cursor-pointer ${
+          className={`flex items-center p-3 w-full hover:bg-red-50 hover:text-red-500 rounded-lg cursor-pointer transition-all duration-200 group ${
             !isOpen && "justify-center"
           }`}>
-          <LogOut size={20} />
-          <span className={`ml-2 ${!isOpen && "hidden"}`}>ออกจากระบบ</span>
+          <span className={`${!isOpen && "scale-110"}`}>
+            <LogOut size={20} />
+          </span>
+          <span className={`ml-3 text-sm font-medium ${!isOpen && "hidden"}`}>
+            ออกจากระบบ
+          </span>
         </button>
       </div>
     </aside>
