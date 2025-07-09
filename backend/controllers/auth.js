@@ -55,7 +55,7 @@ exports.login = async (req, res) => {
           farm_banner: `${protocol}://${host}/${farmer.farm_banner}`,
         },
         process.env.JWT_SECRET,
-        { expiresIn: "2h" }
+        { expiresIn: "7d" }
       );
 
       res.status(200).json({
