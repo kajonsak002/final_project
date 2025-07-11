@@ -1,13 +1,45 @@
 import React from "react";
 import { X, MessageSquare, Clock, UserCircle, Send } from "lucide-react";
 import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/th";
 
-function DetailPost({ open, post, onClose, comment }) {
+dayjs.extend(relativeTime);
+dayjs.locale("th");
+
+function DetailPost({
+  open,
+  post,
+  onClose,
+  comment,
+  commentForPost,
+  handleAddComment,
+  setComment,
+}) {
   if (!open || !post) return null;
 
   const formatDate = (dateString) => {
     return dayjs(dateString).locale("th").format("D MMMM YYYY เวลา HH:mm");
+  };
+
+  const formatFacebookTime = (date) => {
+    const now = dayjs();
+    const inputDate = dayjs(date);
+
+    const diffInMinutes = now.diff(inputDate, "minute");
+    const diffInHours = now.diff(inputDate, "hour");
+    const diffInDays = now.diff(inputDate, "day");
+
+    if (diffInMinutes < 1) return "เมื่อครู่นี้";
+    if (diffInMinutes < 60) return `${diffInMinutes} นาทีที่แล้ว`;
+    if (diffInHours < 24) return `${diffInHours} ชั่วโมงที่แล้ว`;
+
+    if (diffInDays === 1) return `เมื่อวาน เวลา ${inputDate.format("HH:mm")}`;
+    if (now.year() === inputDate.year()) {
+      return inputDate.format("D MMMM เวลา HH:mm");
+    }
+
+    return inputDate.format("D MMM YYYY เวลา HH:mm");
   };
 
   return (
@@ -75,32 +107,31 @@ function DetailPost({ open, post, onClose, comment }) {
                 </h4>
 
                 <div className="space-y-4">
-                  {comment.length > 0 ? (
-                    <div className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200">
-                      <div className="flex items-start space-x-3">
-                        <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-white text-sm font-medium">
-                            A
-                          </span>
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-800 mb-1">
-                            ผู้ใช้งาน A
-                          </p>
-                          <p className="text-gray-700 text-sm leading-relaxed">
-                            โพสต์นี้ดีมากครับ ข้อมูลเป็นประโยชน์มาก
-                          </p>
-                          <div className="flex items-center space-x-4 mt-2">
-                            <button className="text-xs text-gray-500 hover:text-blue-500 transition-colors">
-                              ตอบกลับ
-                            </button>
-                            <span className="text-xs text-gray-400">
-                              2 ชั่วโมงที่แล้ว
-                            </span>
+                  {commentForPost.length > 0 ? (
+                    <>
+                      {commentForPost.map((item) => (
+                        <div className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200">
+                          <div className="flex items-start space-x-3">
+                            <div className="avatar">
+                              <div className="w-12 h-12 rounded-full">
+                                <img src={item.farm_img} alt={item.farm_name} />
+                              </div>
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-medium text-md text-gray-800">
+                                {item.farm_name}
+                              </p>
+                              <p className="text-gray-700 text-md leading-relaxed">
+                                {item.content}
+                              </p>
+                              <p className="text-gray-500 text-[14px] italic">
+                                {formatFacebookTime(item.create_at)}
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
+                      ))}
+                    </>
                   ) : (
                     <div className="flex flex-col justify-center items-center h-[300px]  p-8">
                       <div className="relative">
@@ -130,7 +161,7 @@ function DetailPost({ open, post, onClose, comment }) {
                   <div className="avatar">
                     <div className="w-12 h-12 rounded-full">
                       <img
-                        src="https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
+                        src={localStorage.getItem("image_profile")}
                         alt="User"
                       />
                     </div>
@@ -141,9 +172,13 @@ function DetailPost({ open, post, onClose, comment }) {
                     <input
                       type="text"
                       placeholder="แสดงความคิดเห็น..."
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
                       className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
                     />
-                    <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition-colors duration-200">
+                    <button
+                      onClick={() => handleAddComment(post.post_id)}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg transition-colors duration-200">
                       <Send className="w-4 h-4" />
                     </button>
                   </div>

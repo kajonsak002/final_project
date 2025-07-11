@@ -7,16 +7,23 @@ const getFormattedNow = () => dayjs().format("YYYY-MM-DD HH:mm:ss");
 
 exports.getComment = async (req, res) => {
   const { id } = req.params;
-  const sql = `SELECT t1.comment_id , t2.farm_name , t1.content , t1.create_at FROM comments as t1 
+  const sql = `SELECT t1.comment_id , t2.farm_name , t1.content , t1.create_at , t2.farm_img FROM comments as t1 
                JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id 
                WHERE t1.post_id = ? AND t1.status = "แสดง"`;
   try {
-    const [comments] = await db.promise().query(sql, [id]);
+    const [comment] = await db.promise().query(sql, [id]);
 
-    if (comments.length < 0) {
+    if (comment.length < 0) {
       res.status(400).json({ msg: "ไม่พบความคิดเห็น" });
     }
-
+    const host = req.headers.host;
+    const protocol = req.protocol;
+    const comments = comment.map((cm) => ({
+      ...cm,
+      farm_img: cm.farm_img
+        ? `${protocol}://${host}/${cm.farm_img.replace(/^\\+/, "")}`
+        : null,
+    }));
     res.status(200).json({ msg: "ดึงความคิดเห็นสำเร็จ", comments });
   } catch (err) {
     console.log("Internal Server Error ", err);

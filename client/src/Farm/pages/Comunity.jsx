@@ -25,6 +25,7 @@ function Community() {
   const [showPostDetail, setShowPostDetail] = useState(false);
   const [comment, setComment] = useState([]);
   const farmer_id = localStorage.getItem("farmer_id");
+  const [commentForPost, setCommentForPost] = useState([]);
 
   const getAllPost = async () => {
     try {
@@ -43,6 +44,7 @@ function Community() {
   }, []);
 
   const handleViewDetails = (post) => {
+    getComment(post.post_id);
     setSelectedPost(post);
     setShowPostDetail(true);
     console.log("Selected Post : ", post);
@@ -109,6 +111,43 @@ function Community() {
     } catch (err) {
       console.log("Error Add Post : ", err);
       toast.error(err.respone.message);
+    }
+  };
+
+  const getComment = async (post_id) => {
+    try {
+      const res = await axios.get(
+        import.meta.env.VITE_URL_API + `comment/get-comment/${post_id}`
+      );
+      setCommentForPost(res.data.comments);
+    } catch (err) {
+      console.log("Error get comment", err);
+      toast.error(err.respone.data.msg);
+    }
+  };
+
+  const handleAddComment = async (post_id) => {
+    console.log({
+      farmer_id,
+      post_id,
+      comment,
+    });
+
+    try {
+      const res = await axios.post(
+        import.meta.env.VITE_URL_API + "comment/add",
+        {
+          farmer_id,
+          post_id,
+          content: comment,
+        }
+      );
+      getComment(post_id);
+      toast.success(res.data.msg);
+      setComment("");
+    } catch (err) {
+      console.log("Error Add comment : ", err);
+      toast.error(err.respone.data.msg);
     }
   };
 
@@ -345,6 +384,9 @@ function Community() {
               setShowPostDetail(false);
               setSelectedPost(null);
             }}
+            commentForPost={commentForPost}
+            handleAddComment={handleAddComment}
+            setComment={setComment}
             comment={comment}
           />
         )}
