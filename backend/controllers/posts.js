@@ -88,7 +88,7 @@ exports.insert = async (req, res) => {
 
 exports.editPost = async (req, res) => {
   const postId = req.params.id;
-  const { content } = req.body;
+  const { content, remove_image } = req.body;
   const farmer_id = req.user.id;
   const image = req.file;
 
@@ -108,6 +108,16 @@ exports.editPost = async (req, res) => {
     }
 
     let newImagePath = post.image_post;
+
+    // ถ้าต้องการลบรูปภาพเดิม
+    if (remove_image === "true" || remove_image === true) {
+      if (post.image_post) {
+        deleteImage(post.image_post);
+      }
+      newImagePath = null;
+    }
+
+    // ถ้ามีการอัปโหลดรูปใหม่
     if (image) {
       if (post.image_post) {
         deleteImage(post.image_post);
@@ -165,12 +175,43 @@ exports.remove = async (req, res) => {
 exports.getAll = async (req, res) => {
   try {
     const { farmer_id } = req.body;
-    // console.log(req.body);
     const [rows] = await db.promise().query(
       `SELECT t1.* , t2.farm_name , t2.farm_img FROM posts as t1 
       JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id 
       WHERE t1.status = 'อนุมัติ' AND t1.is_visible != 'ซ่อน' 
       AND t1.farmer_id != ?
+      ORDER BY t1.create_at DESC`,
+      [farmer_id]
+    );
+    const host = req.headers.host;
+    const protocol = req.protocol;
+    const posts = rows.map((post) => ({
+      ...post,
+      image_post: post.image_post
+        ? `${protocol}://${host}/${post.image_post.replace(/^\\+/, "")}`
+        : null,
+      farm_img: post.farm_img
+        ? `${protocol}://${host}/${post.farm_img.replace(/^\\+/, "")}`
+        : null,
+    }));
+    res
+      .status(200)
+      .json({ message: "Posts fetched successfully", posts, host, protocol });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.getPostByFarmerid = async (req, res) => {
+  try {
+    const { farmer_id } = req.body;
+    // console.log(req.body);
+    const [rows] = await db.promise().query(
+      `SELECT t1.* , t2.farm_name , t2.farm_img FROM posts as t1 
+      JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id 
+      WHERE t1.status = 'อนุมัติ' AND t1.is_visible != 'ซ่อน' 
+      AND t1.farmer_id = ?
       ORDER BY t1.create_at DESC`,
       [farmer_id]
     );
@@ -251,6 +292,21 @@ exports.approvalPost = async (req, res) => {
   }
 };
 
-exports.reportPost = (req, res) => {
-  res.send("Api for report Post");
+exports.reportPost = async (req, res) => {
+  const { post_id, reason, farmer_id } = req.body;
+  if (!post_id || !reason || !farmer_id) {
+    return res.status(400).json({ message: "ข้อมูลไม่ครบถ้วน" });
+  }
+  try {
+    await db
+      .promise()
+      .query(
+        "INSERT INTO post_report (post_id, farmer_id, reason, report_date) VALUES (?, ?, ?, ?)",
+        [post_id, farmer_id, reason, getFormattedNow()]
+      );
+    res.status(201).json({ message: "รายงานโพสต์สำเร็จ" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "เกิดข้อผิดพลาดในการรายงานโพสต์" });
+  }
 };

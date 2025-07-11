@@ -76,13 +76,6 @@ exports.hideComment = async (req, res) => {
 exports.reportComment = async (req, res) => {
   const { post_id, farmer_id, reason, comment_id } = req.body;
   try {
-    await db
-      .promise()
-      .query("UPDATE comments SET status = ? WHERE comment_id = ?", [
-        "ซ่อน",
-        comment_id,
-      ]);
-
     const [[{ next_id }]] = await db
       .promise()
       .query("SELECT MAX(report_id) as next_id FROM comment_report");

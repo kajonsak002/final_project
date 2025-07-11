@@ -110,7 +110,9 @@ function DetailPost({
                   {commentForPost.length > 0 ? (
                     <>
                       {commentForPost.map((item) => (
-                        <div className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200">
+                        <div
+                          className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200"
+                          key={item.farm_name}>
                           <div className="flex items-start space-x-3">
                             <div className="avatar">
                               <div className="w-12 h-12 rounded-full">

@@ -9,6 +9,7 @@ const {
   reportPost,
   update_post_image,
   editPost,
+  getPostByFarmerid,
 } = require("../controllers/posts");
 const router = express.Router();
 const uploadTo = require("../middleware/upload");
@@ -17,6 +18,7 @@ const uploadImgPost = uploadTo("post_images");
 const auth_Token = require("../middleware/auth_token");
 
 router.post("/post", getAll);
+router.post("/post-history", getPostByFarmerid);
 router.get("/post-wait-approval", getPostsWaitApproval);
 
 // Route to CRUD posts
