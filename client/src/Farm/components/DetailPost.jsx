@@ -1,5 +1,12 @@
 import React from "react";
-import { X, MessageSquare, Clock, UserCircle, Send } from "lucide-react";
+import {
+  X,
+  MessageSquare,
+  Clock,
+  UserCircle,
+  Send,
+  EllipsisVertical,
+} from "lucide-react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/th";
@@ -15,6 +22,8 @@ function DetailPost({
   commentForPost,
   handleAddComment,
   setComment,
+  setReportComment,
+  setSelectedComment,
 }) {
   if (!open || !post) return null;
 
@@ -109,10 +118,10 @@ function DetailPost({
                 <div className="space-y-4">
                   {commentForPost.length > 0 ? (
                     <>
-                      {commentForPost.map((item) => (
+                      {commentForPost.map((item, index) => (
                         <div
                           className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200"
-                          key={item.farm_name}>
+                          key={index}>
                           <div className="flex items-start space-x-3">
                             <div className="avatar">
                               <div className="w-12 h-12 rounded-full">
@@ -129,6 +138,24 @@ function DetailPost({
                               <p className="text-gray-500 text-[14px] italic">
                                 {formatFacebookTime(item.create_at)}
                               </p>
+                            </div>
+                            <div className="dropdown dropdown-end">
+                              <label
+                                tabIndex={0}
+                                className="btn btn-ghost btn-sm btn-circle">
+                                <EllipsisVertical />
+                              </label>
+                              <ul
+                                tabIndex={0}
+                                className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+                                <li
+                                  onClick={() => {
+                                    setReportComment(true);
+                                    setSelectedComment(item);
+                                  }}>
+                                  <a>รายงานความคิดเห็น</a>
+                                </li>
+                              </ul>
                             </div>
                           </div>
                         </div>

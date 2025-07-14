@@ -7,7 +7,7 @@ const getFormattedNow = () => dayjs().format("YYYY-MM-DD HH:mm:ss");
 
 exports.getComment = async (req, res) => {
   const { id } = req.params;
-  const sql = `SELECT t1.comment_id , t2.farm_name , t1.content , t1.create_at , t2.farm_img FROM comments as t1 
+  const sql = `SELECT t1.comment_id , t2.farm_name , t1.content , t1.create_at , t2.farm_img , t1.post_id  FROM comments as t1 
                JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id 
                WHERE t1.post_id = ? AND t1.status = "แสดง"`;
   try {

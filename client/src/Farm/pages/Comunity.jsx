@@ -17,7 +17,6 @@ import { toast, ToastContainer } from "react-toastify";
 import DetailPost from "../components/DetailPost";
 function Community() {
   const [posts, setPosts] = useState([]);
-  const [postsMe, setPostMe] = useState([]);
   const [isShowPostMe, setIsShowPostMe] = useState(false);
   const [content, setContent] = useState("");
   const [selectedFile, setSelectedFile] = useState();
@@ -37,6 +36,9 @@ function Community() {
   const [reportModal, setReportModal] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportPostId, setReportPostId] = useState(null);
+  const [reportComment, setReportComment] = useState(false);
+  const [reportCommentReason, setReportCommentReason] = useState("");
+  const [selectedComment, setSelectedComment] = useState(null);
 
   const getAllPost = async () => {
     try {
@@ -59,7 +61,7 @@ function Community() {
     getComment(post.post_id);
     setSelectedPost(post);
     setShowPostDetail(true);
-    console.log("Selected Post : ", post);
+    // console.log("Selected Post : ", post);
   };
 
   const formatDate = (dateString) => {
@@ -259,6 +261,27 @@ function Community() {
       setReportPostId(null);
     } catch (err) {
       toast.error("เกิดข้อผิดพลาดในการรายงานโพสต์");
+    }
+  };
+
+  const handleReportCommentSubmit = async () => {
+    const payload = {
+      comment_id: selectedComment.comment_id,
+      post_id: selectedComment.post_id,
+      farmer_id,
+      reason: reportCommentReason,
+    };
+    try {
+      const res = await axios.post(
+        import.meta.env.VITE_URL_API + "comment/report-comment",
+        payload
+      );
+      console.log(res.data);
+      toast.success(res.data.msg);
+      setReportComment(false);
+    } catch (err) {
+      console.log("Error report comment : ", err);
+      toast.error(err.respone.data.msg);
     }
   };
 
@@ -588,7 +611,7 @@ function Community() {
             />
             <div className="modal-action mt-4 flex gap-3">
               <button
-                className="btn btn-error text-white"
+                className="btn bg-green-500  text-white"
                 onClick={handleReportPost}
                 disabled={!reportReason.trim()}>
                 ส่งรายงาน
@@ -712,9 +735,48 @@ function Community() {
             handleAddComment={handleAddComment}
             setComment={setComment}
             comment={comment}
+            setReportComment={setReportComment}
+            setSelectedComment={setSelectedComment}
           />
         )}
       </div>
+
+      {/* Modal Report Post */}
+      {reportComment && (
+        <dialog open className="modal">
+          <div className="modal-box w-full max-w-md bg-white shadow-2xl">
+            <h3 className="font-bold text-lg mb-4">รายงานความคิดเห็น</h3>
+            <textarea
+              className="textarea textarea-bordered w-full"
+              placeholder="โปรดระบุเหตุผลในการรายงาน"
+              value={reportCommentReason}
+              onChange={(e) => setReportCommentReason(e.target.value)}
+            />
+            <div className="modal-action mt-4 flex gap-3">
+              <button
+                className="btn bg-green-500 text-white"
+                onClick={handleReportCommentSubmit}
+                disabled={!reportCommentReason.trim()}>
+                ส่งรายงาน
+              </button>
+              <button
+                className="btn"
+                onClick={() => {
+                  setReportComment(false);
+                  setReportCommentReason("");
+                }}>
+                ยกเลิก
+              </button>
+            </div>
+          </div>
+          <div
+            className="modal-backdrop"
+            onClick={() => {
+              setReportComment(false);
+              setReportCommentReason("");
+            }}></div>
+        </dialog>
+      )}
     </>
   );
 }
