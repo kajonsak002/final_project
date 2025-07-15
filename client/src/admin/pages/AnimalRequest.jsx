@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import Pagination from "../components/Pagination";
 import SearchBar from "../components/SearchBar";
+import { useSummaryCount } from "../components/SummaryCountContext";
 
 import dayjs from "dayjs";
 import "dayjs/locale/th";
@@ -19,6 +20,8 @@ function AnimalRequest() {
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [pendingReject, setPendingReject] = useState(null);
+
+  const { fetchSummary } = useSummaryCount();
 
   const getAnimalRequest = async () => {
     try {
@@ -49,6 +52,7 @@ function AnimalRequest() {
       toast.success(res.data.message);
       getAnimalRequest();
       setCurrentPage(1);
+      await fetchSummary(); // เพิ่มบรรทัดนี้
     } catch (err) {
       console.log("Error approved req: ", err);
       toast.error(err?.response?.data?.message || "เกิดข้อผิดพลาด");

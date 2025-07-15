@@ -8,7 +8,9 @@ exports.getWaitingApproval = async (req, res) => {
   try {
     const [rows] = await db
       .promise()
-      .query("SELECT * FROM farmer WHERE status = 'รออนุมัติ' ");
+      .query(
+        "SELECT * FROM farmer WHERE status = 'รออนุมัติ' ORDER BY create_at ASC "
+      );
 
     if (rows.length === 0) {
       return res
@@ -36,7 +38,8 @@ exports.getWaitingApproval = async (req, res) => {
 };
 
 exports.processApproval = async (req, res) => {
-  const { farmer_id, status, email, farm_name } = req.body;
+  const { farmer_id, status, email, farm_name, reason } = req.body;
+  // console.log(req.body);
 
   const formatted = require("dayjs")().format("YYYY-MM-DD HH:mm:ss");
 
@@ -44,8 +47,8 @@ exports.processApproval = async (req, res) => {
     const [rows] = await db
       .promise()
       .execute(
-        "UPDATE farmer SET status = ?, approved_date = ? WHERE farmer_id = ?",
-        [status, formatted, farmer_id]
+        "UPDATE farmer SET status = ?, approved_date = ? , reason = ? WHERE farmer_id = ?",
+        [status, formatted, reason, farmer_id]
       );
 
     if (rows.affectedRows === 0) {
@@ -60,7 +63,8 @@ exports.processApproval = async (req, res) => {
     await send_email(
       farm_name,
       email,
-      status === "อนุมัติ" ? "approved" : "rejected"
+      status === "อนุมัติ" ? "approved" : "rejected",
+      reason
     );
 
     return res.status(200).json({

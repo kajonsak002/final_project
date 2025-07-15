@@ -68,7 +68,12 @@ function Summary() {
           </div>
           <div>
             <h2 className="card-title text-base mb-1">รอการอนุมัติลงทะเบียน</h2>
-            <p className="text-xl">{summaryData.total_farm_waiting} ฟาร์ม</p>
+            <p className="text-xl">
+              {" "}
+              {summaryData.total_farm_waiting != ""
+                ? summaryData.total_farm_waiting + " ฟาร์ม"
+                : "0 ฟาร์ม"}
+            </p>
           </div>
         </div>
       </div>
@@ -92,7 +97,11 @@ function Summary() {
           </div>
           <div>
             <h2 className="card-title text-base mb-1">รออนุมัติโพสต์</h2>
-            <p className="text-xl">10 โพสต์</p>
+            <p className="text-xl">
+              {summaryData.total_post_waiting != ""
+                ? summaryData.total_post_waiting + " โพสต์"
+                : "0 โพสต์"}
+            </p>
           </div>
         </div>
       </div>
@@ -116,7 +125,11 @@ function Summary() {
           </div>
           <div>
             <h2 className="card-title text-base mb-1">รายงานโพสต์</h2>
-            <p className="text-xl">10 คำร้อง</p>
+            <p className="text-xl">
+              {summaryData.total_report_post_waiting != ""
+                ? summaryData.total_report_post_waiting + " คำร้อง"
+                : "0 คำร้อง"}
+            </p>
           </div>
         </div>
       </div>

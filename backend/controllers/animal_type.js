@@ -34,6 +34,7 @@ exports.getWaitApproval = async (req, res) => {
       JOIN farmer AS t2 ON t1.farmer_id = t2.farmer_id
       JOIN animals AS a ON t1.animal_id = a.animal_id
       WHERE t1.status = 'รออนุมัติ'
+      ORDER BY create_at ASC
     `;
     const [rows] = await db.promise().query(sql);
 

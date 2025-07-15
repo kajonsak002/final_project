@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 
-const send_email = async (name, email, action) => {
+const send_email = async (name, email, action, reason) => {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -48,7 +48,7 @@ const send_email = async (name, email, action) => {
       <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px; background-color: #fff5f5;">
         <h2 style="color: #d9534f; text-align: center;">ขออภัยคุณ ${name} 😥</h2>
         <p style="font-size: 16px;">ระบบได้ทำการตรวจสอบข้อมูลของคุณแล้ว และขอแจ้งว่าการสมัครสมาชิกไม่ผ่านการอนุมัติ</p>
-        <p style="font-size: 16px;">หากคุณคิดว่าเป็นความผิดพลาดหรือต้องการสมัครใหม่ โปรดติดต่อทีมงาน</p>
+        <p style="font-size: 16px;">เนื่องจาก ${reason}</p>
         <hr style="border: none; border-top: 1px solid #ccc; margin: 20px 0;">
         <p style="font-size: 14px; color: #555;">ติดต่อสอบถาม: 
           <a href="mailto:kasetinsri.app@gmail.com" style="color: #d9534f; text-decoration: none;">kasetinsri.app@gmail.com</a>

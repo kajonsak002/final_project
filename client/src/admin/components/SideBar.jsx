@@ -12,6 +12,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
+import { useSummaryCount } from "./SummaryCountContext";
 
 // รายการเมนูทั้งหมด
 const menuItems = [
@@ -20,7 +21,12 @@ const menuItems = [
     icon: <LayoutDashboard size={20} />,
     path: "dashboard",
   },
-  { label: "ข้อมูลฟาร์ม", icon: <Users size={20} />, path: "user" },
+  {
+    label: "ข้อมูลฟาร์ม",
+    icon: <Users size={20} />,
+    path: "user",
+    countKey: "total_farm_waiting",
+  },
   {
     label: "ข้อมูลคู่มือการเลี้ยงสัตว์",
     icon: <BookText size={20} />,
@@ -32,8 +38,12 @@ const menuItems = [
     path: "post",
     hasDropdown: true,
     subItems: [
-      { label: "อนุมัติโพสต์", path: "post" },
-      { label: "รายงานโพสต์", path: "report_post" },
+      { label: "อนุมัติโพสต์", path: "post", countKey: "total_post_waiting" },
+      {
+        label: "รายงานโพสต์",
+        path: "report_post",
+        countKey: "total_report_post_waiting",
+      },
     ],
   },
   {
@@ -42,16 +52,7 @@ const menuItems = [
     path: "comment_report",
   },
   { label: "เเจ้งเตือนข่าวสาร", icon: <Newspaper size={20} />, path: "news" },
-  {
-    label: "รายงานสัตว์ที่เลี้ยง",
-    icon: <ChartColumnBig size={20} />,
-    path: "report_animal",
-  },
-  {
-    label: "รายงานผลิตภัณฑ์",
-    icon: <ChartColumnBig size={20} />,
-    path: "report_product",
-  },
+
   {
     label: "คำร้องขอเพิ่มรายการสัตว์",
     icon: <ChartColumnBig size={20} />,
@@ -77,18 +78,39 @@ const menuItems = [
     icon: <ChartColumnBig size={20} />,
     path: "category",
   },
+  {
+    label: "รายงาน",
+    icon: <ChartColumnBig size={20} />,
+    hasDropdown: true,
+    subItems: [
+      { label: "รายงานสัตว์ที่เลี้ยง", path: "report_animal" },
+      { label: "รายงานสินค้าของฟาร์ม", path: "report_product" },
+    ],
+  },
 ];
 
 const Sidebar = ({ isOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [expandedMenus, setExpandedMenus] = useState({});
+  const { summaryCount } = useSummaryCount();
+
+  // ฟังก์ชันรวม count ของ subItems
+  const getTotalSubCount = (item) => {
+    if (!item.subItems) return 0;
+    return item.subItems.reduce((sum, sub) => {
+      if (sub.countKey && summaryCount[sub.countKey] > 0) {
+        return sum + summaryCount[sub.countKey];
+      }
+      return sum;
+    }, 0);
+  };
 
   const handleLogout = () => {
     toast.info("กำลังออกจากระบบ");
     localStorage.removeItem("token");
     setTimeout(() => {
-      navigate("/login");
+      navigate("/admin/login");
     }, 1500);
   };
 
@@ -160,6 +182,18 @@ const Sidebar = ({ isOpen }) => {
                         !isOpen && "hidden"
                       }`}>
                       {item.label}
+                      {/* แสดง badge รวมถ้าเป็นเมนูหลักที่มี subItems */}
+                      {item.hasDropdown && getTotalSubCount(item) > 0 && (
+                        <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                          {getTotalSubCount(item)}
+                        </span>
+                      )}
+                      {/* แสดง badge ปกติถ้าเป็นเมนูหลักที่มี countKey */}
+                      {item.countKey && summaryCount[item.countKey] > 0 && (
+                        <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                          {summaryCount[item.countKey]}
+                        </span>
+                      )}
                     </span>
                   </div>
                   {isOpen && (
@@ -213,6 +247,11 @@ const Sidebar = ({ isOpen }) => {
                               isSubActive ? "bg-green-500" : "bg-base-300"
                             }`}></span>
                           {sub.label}
+                          {sub.countKey && summaryCount[sub.countKey] > 0 && (
+                            <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                              {summaryCount[sub.countKey]}
+                            </span>
+                          )}
                         </div>
                       </Link>
                     );

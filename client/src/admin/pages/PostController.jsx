@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/th";
 import { Calendar, Eye, X } from "lucide-react";
 import { toast } from "react-toastify";
+import { useSummaryCount } from "../components/SummaryCountContext";
 
 function PostController() {
   const [allPost, setAllPost] = useState([]);
@@ -13,6 +14,7 @@ function PostController() {
   const [selectedPost, setSelectedPost] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const itemsPerPage = 5;
+  const { fetchSummary } = useSummaryCount();
 
   const getPostWaitApproval = async () => {
     try {
@@ -80,6 +82,7 @@ function PostController() {
       setIsModalOpen(false);
       setSelectedPost(null);
       getPostWaitApproval();
+      await fetchSummary(); // เพิ่มบรรทัดนี้
     } catch (err) {
       console.log("Error Approval Post : ", err);
       toast.success(err);

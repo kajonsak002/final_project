@@ -14,15 +14,15 @@ function NavBar() {
       path: "/",
     },
     {
-      name: "คู่มือ",
+      name: "คู่มือการเลี้ยงสัตว์",
       path: "book",
     },
     {
-      name: "ราคากลาง",
+      name: "ข้อมูลราคากลาง",
       path: "price",
     },
     {
-      name: "ฟาร์มต่างๆ",
+      name: "ฟาร์มในระบบ",
       path: "farmList",
     },
   ];

@@ -1,16 +1,14 @@
 import axios from "axios";
-import { Search, TrendingUp, Loader2, AlertCircle } from "lucide-react";
+import { Search, TrendingUp, Loader2 } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import SearchBar from "../admin/components/SearchBar";
 import Pagination from "../admin/components/Pagination";
 
 function Price() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
   const [selectedType, setSelectedType] = useState("");
+  const [priceOrder, setPriceOrder] = useState(""); // asc | desc | ""
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
@@ -31,33 +29,32 @@ function Price() {
     }
   };
 
-  const handlePriceFilter = (item) => {
-    const avgPrice = parseFloat(item.avgPrice);
-    const min =
-      minPrice === "" ? Number.MIN_SAFE_INTEGER : parseFloat(minPrice);
-    const max =
-      maxPrice === "" ? Number.MAX_SAFE_INTEGER : parseFloat(maxPrice);
-    return avgPrice >= min && avgPrice <= max;
-  };
-
+  // กรองตามประเภท
   const filteredData = data.filter((item) => {
-    const matchesPrice = handlePriceFilter(item);
-    const matchesType =
+    return (
       selectedType === "" ||
-      item.name.toLowerCase().includes(selectedType.toLowerCase());
-    return matchesPrice && matchesType;
+      item.name.toLowerCase().includes(selectedType.toLowerCase())
+    );
   });
 
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  // เรียงลำดับตามราคาเฉลี่ย
+  const sortedData = filteredData.sort((a, b) => {
+    const priceA = parseFloat(a.avgPrice);
+    const priceB = parseFloat(b.avgPrice);
+    if (priceOrder === "asc") return priceA - priceB;
+    if (priceOrder === "desc") return priceB - priceA;
+    return 0;
+  });
 
-  const pageData = filteredData.slice(
+  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+  const pageData = sortedData.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [minPrice, maxPrice, selectedType]);
+  }, [selectedType, priceOrder]);
 
   const types = [
     { label: "สุกร", value: "สุกรชำแหละ" },
@@ -108,7 +105,7 @@ function Price() {
         {/* Search and Filter Section */}
         <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6 mb-6">
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Type Filter */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
@@ -127,30 +124,19 @@ function Price() {
                 </select>
               </div>
 
-              {/* Price Range Filter */}
+              {/* Price Order Filter */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
-                  ราคาต่ำสุด (บาท)
+                  เรียงลำดับราคา
                 </label>
-                <input
-                  type="number"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                  placeholder="ราคาต่ำสุด"
-                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  ราคาสูงสุด (บาท)
-                </label>
-                <input
-                  type="number"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  placeholder="ราคาสูงสุด"
-                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                />
+                <select
+                  value={priceOrder}
+                  onChange={(e) => setPriceOrder(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  <option value="">-</option>
+                  <option value="asc">ราคาน้อยไปมาก</option>
+                  <option value="desc">ราคามากไปน้อย</option>
+                </select>
               </div>
             </div>
           </div>
@@ -171,14 +157,14 @@ function Price() {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 text-sm">ช่วงราคา</span>
                     <span className="font-medium text-green-700">
-                      {item.price}
+                      {item.price} (บาท)
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600 text-sm">ราคาเฉลี่ย</span>
                     <span className="font-bold text-green-600 text-lg">
-                      ฿{item.avgPrice}
+                      {item.avgPrice} (บาท)
                     </span>
                   </div>
 
@@ -194,7 +180,7 @@ function Price() {
         </div>
 
         {/* No Results */}
-        {pageData.length === 0 && (minPrice || maxPrice || selectedType) && (
+        {pageData.length === 0 && (selectedType || priceOrder) && (
           <div className="text-center py-12 bg-white rounded-xl shadow-md border border-gray-100">
             <div className="text-green-400 mb-4">
               <Search className="w-12 h-12 mx-auto" />
@@ -202,10 +188,6 @@ function Price() {
             <h3 className="text-green-800 font-medium mb-2">ไม่พบข้อมูล</h3>
             <p className="text-gray-600">
               {selectedType && `ไม่พบข้อมูลสำหรับประเภท "${selectedType}"`}
-              {(minPrice || maxPrice) &&
-                ` ในช่วงราคา ${minPrice || "0"} - ${
-                  maxPrice || "ไม่จำกัด"
-                } บาท`}
             </p>
           </div>
         )}

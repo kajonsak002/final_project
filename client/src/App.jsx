@@ -37,9 +37,12 @@ import AnimalTypeAll from "./admin/pages/AnimalTypeAll";
 import AnimalReq from "./Farm/pages/AnimalReq";
 import AnimalTypeReq from "./Farm/pages/AnimalTypeReq";
 import CategoryController from "./admin/pages/CategoryController";
+import ForGotPassAdmin from "./admin/pages/forGotPassword";
+import { SummaryCountProvider } from "./admin/components/SummaryCountContext";
 
 function App() {
   const router = createBrowserRouter([
+    { path: "/admin/reset_password", element: <ForGotPassAdmin /> },
     {
       path: "/",
       element: <RootLayout />,
@@ -112,9 +115,9 @@ function App() {
     },
   ]);
   return (
-    <div>
+    <SummaryCountProvider>
       <RouterProvider router={router} />
-    </div>
+    </SummaryCountProvider>
   );
 }
 

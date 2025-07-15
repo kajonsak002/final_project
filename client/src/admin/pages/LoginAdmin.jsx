@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
 import { connect_server } from "../../check_connect_server";
@@ -90,6 +90,9 @@ function LoginAdmin() {
                 className="btn bg-[#3bb143] w-full text-white hover:bg-amber-600">
                 เข้าสู่ระบบ
               </button>
+            </div>
+            <div className="text-right my-2 text-blue-500 cursor-pointer underline">
+              <Link to="/admin/reset_password">ลืมรหัสผ่าน</Link>
             </div>
             <div className="text-center">
               <p className="text-gray-700">

@@ -13,6 +13,9 @@ function TableUser() {
   const [dataPerPage] = useState(5);
   const [pageData, setPageData] = useState([]);
   const [loadingStates, setLoadingStates] = useState({});
+  const [reason, setReason] = useState("");
+  const [rejectModal, setRejectModal] = useState(false);
+  const [selectUser, setSelectUser] = useState([]);
 
   const getUserApproved = async () => {
     try {
@@ -37,13 +40,11 @@ function TableUser() {
   useEffect(() => {
     getUserApproved();
   }, []);
-  const handleSubmit = async (data, status) => {
-    const { farmer_id, email, farm_name } = data;
+  const handleSubmit = async (status) => {
+    const { farmer_id, email, farm_name } = selectUser;
 
-    // ป้องกันการกดซ้ำโดยเช็ค loading state ของปุ่มนั้นๆ
     if (loadingStates[farmer_id]) return;
 
-    // เซ็ต loading state สำหรับปุ่มที่ถูกกด
     setLoadingStates((prev) => ({ ...prev, [farmer_id]: status }));
 
     const dataObj = {
@@ -51,6 +52,7 @@ function TableUser() {
       email,
       farm_name,
       status,
+      reason,
     };
 
     try {
@@ -68,9 +70,18 @@ function TableUser() {
     } finally {
       // ล้าง loading state สำหรับปุ่มที่เสร็จสิ้นการทำงาน
       setLoadingStates((prev) => ({ ...prev, [farmer_id]: null }));
+      setSelectUser(null);
+      setRejectModal(false);
+      setReason(null);
     }
     // console.log(dataObj);
   };
+
+  const handleReject = (data) => {
+    setSelectUser(data);
+    setRejectModal(true);
+  };
+
   return (
     <div className="w-full">
       <ToastContainer />
@@ -137,13 +148,9 @@ function TableUser() {
                       อนุมัติ
                     </button>
                     <button
-                      onClick={() => handleSubmit(user, "ปฏิเสธ")}
+                      onClick={() => handleReject(user)}
                       className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                      {loadingStates[user.farmer_id] === "ปฏิเสธ" ? (
-                        <span className="loading loading-spinner loading-xs mr-1"></span>
-                      ) : (
-                        <X className="w-3 h-3 mr-1" />
-                      )}
+                      <X className="w-3 h-3 mr-1" />
                       ปฏิเสธ
                     </button>
                   </div>
@@ -158,6 +165,45 @@ function TableUser() {
         totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
+      {rejectModal && (
+        <dialog open className="modal">
+          <div className="modal-box w-full max-w-md bg-white shadow-2xl">
+            <h3 className="font-bold text-lg mb-4">ปฏิเสธการสมัครสมาชิก</h3>
+            <textarea
+              className="textarea textarea-bordered w-full"
+              placeholder="โปรดระบุเหตุผลในการปฏิเสธการสมัครสมาชิก"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
+            <div className="modal-action mt-4 flex gap-3">
+              <button
+                className="btn bg-green-500  text-white"
+                onClick={() => handleSubmit("ปฏิเสธ")}
+                disabled={!reason?.trim()}>
+                {loadingStates[selectUser.farmer_id] === "ปฏิเสธ" ? (
+                  <span className="loading loading-spinner loading-xs mr-1"></span>
+                ) : (
+                  <p>ยืนยัน</p>
+                )}
+              </button>
+              <button
+                className="btn"
+                onClick={() => {
+                  setReason(null);
+                  setRejectModal(false);
+                }}>
+                ยกเลิก
+              </button>
+            </div>
+          </div>
+          <div
+            className="modal-backdrop"
+            onClick={() => {
+              setReason(null);
+              setRejectModal(false);
+            }}></div>
+        </dialog>
+      )}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import Pagination from "../components/Pagination";
 import SearchBar from "../components/SearchBar";
 import dayjs from "dayjs";
 import "dayjs/locale/th";
+import { useSummaryCount } from "../components/SummaryCountContext";
 
 function AnimalTypeRequest() {
   const [allData, setAlldata] = useState([]);
@@ -49,6 +50,8 @@ function AnimalTypeRequest() {
     setCurrentPage(1);
   }, [searchTerm]);
 
+  const { fetchSummary } = useSummaryCount();
+
   const handleCheck = async (req_data, status, reason = "") => {
     const { request_id } = req_data;
     const dataObj = {
@@ -65,6 +68,7 @@ function AnimalTypeRequest() {
       );
       toast.success(res.data.message);
       getAnimalTypeReq();
+      await fetchSummary(); // เพิ่มบรรทัดนี้
     } catch (err) {
       console.log("Error approved req: ", err);
       toast.error(err?.response?.data?.message || "เกิดข้อผิดพลาด");
