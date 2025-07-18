@@ -40,8 +40,9 @@ function TableUser() {
   useEffect(() => {
     getUserApproved();
   }, []);
-  const handleSubmit = async (status) => {
-    const { farmer_id, email, farm_name } = selectUser;
+
+  const handleSubmit = async (user, status) => {
+    const { farmer_id, email, farm_name } = user;
 
     if (loadingStates[farmer_id]) return;
 
@@ -68,17 +69,15 @@ function TableUser() {
         err.response?.data?.message || "เกิดข้อผิดพลาดในการดำเนินการ"
       );
     } finally {
-      // ล้าง loading state สำหรับปุ่มที่เสร็จสิ้นการทำงาน
       setLoadingStates((prev) => ({ ...prev, [farmer_id]: null }));
       setSelectUser(null);
       setRejectModal(false);
       setReason(null);
     }
-    // console.log(dataObj);
   };
 
-  const handleReject = (data) => {
-    setSelectUser(data);
+  const handleReject = (user) => {
+    setSelectUser(user);
     setRejectModal(true);
   };
 
@@ -178,7 +177,7 @@ function TableUser() {
             <div className="modal-action mt-4 flex gap-3">
               <button
                 className="btn bg-green-500  text-white"
-                onClick={() => handleSubmit("ปฏิเสธ")}
+                onClick={() => handleSubmit(selectUser, "ปฏิเสธ")}
                 disabled={!reason?.trim()}>
                 {loadingStates[selectUser.farmer_id] === "ปฏิเสธ" ? (
                   <span className="loading loading-spinner loading-xs mr-1"></span>
