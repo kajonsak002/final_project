@@ -78,11 +78,11 @@ function PostController() {
         { status }
       );
       console.log(res.data);
-      toast.success(res.data.message);
       setIsModalOpen(false);
       setSelectedPost(null);
       getPostWaitApproval();
-      await fetchSummary(); // เพิ่มบรรทัดนี้
+      await fetchSummary();
+      toast.success("ปฏิเสธโพสต์เรียบร้อยเเล้ว");
     } catch (err) {
       console.log("Error Approval Post : ", err);
       toast.success(err);
@@ -292,7 +292,7 @@ function PostController() {
                 </button>
                 <button
                   className="btn btn-danger px-6"
-                  onClick={() => ApprovalPost("ปฏิเสธ", selectedPost)}>
+                  onClick={() => ApprovalPost("ไม่อนุมัติ", selectedPost)}>
                   ปฏิเสธ
                 </button>
               </div>
