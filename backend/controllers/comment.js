@@ -98,6 +98,20 @@ exports.reportComment = async (req, res) => {
   }
 };
 
+exports.getCommentReport = async (req, res) => {
+  try {
+    const [rows] = await db.promise().query("SELECT * FROM comment_report");
+
+    if (rows.length == 0) {
+      res.status(404).json({ msg: "ไม่พบข้อมูลการรายงาน" });
+    }
+    res.status(200).json({ msg: "success", data: rows });
+  } catch (err) {
+    console.log("Error getCommentReport : ", err);
+  }
+  res.json({ msg: "API getComment Report" });
+};
+
 exports.manageComment = async (req, res) => {
   const { comment_id, report_id } = req.body;
 

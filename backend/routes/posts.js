@@ -10,6 +10,8 @@ const {
   update_post_image,
   editPost,
   getPostByFarmerid,
+  getPostReport,
+  manageReportPost,
 } = require("../controllers/posts");
 const router = express.Router();
 const uploadTo = require("../middleware/upload");
@@ -43,5 +45,8 @@ router.post("/post/approval-post/:id", approvalPost);
 
 //Route to report and manage posts
 router.post("/post/report-post", reportPost);
+
+router.post("/post/get-post-report", getPostReport);
+router.post("/post/manage-report-post", manageReportPost);
 
 module.exports = router;
