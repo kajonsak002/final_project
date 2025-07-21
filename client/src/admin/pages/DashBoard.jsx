@@ -11,6 +11,7 @@ function DashBoard() {
       <div className="flex flex-wrap justify-center gap-6">
         <Summary />
         <div className="w-full overflow-x-auto max-w-full">
+          <h2 className="text-xl font-bold mb-2">จัดการอนุมัติการลงทะเบียน</h2>
           <TableUser />
         </div>
       </div>

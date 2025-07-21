@@ -21,21 +21,28 @@ const menuItems = [
     icon: <LayoutDashboard size={20} />,
     path: "dashboard",
   },
-  {
-    label: "ข้อมูลฟาร์ม",
-    icon: <Users size={20} />,
-    path: "user",
-    countKey: "total_farm_waiting",
-  },
+
   {
     label: "ข้อมูลคู่มือการเลี้ยงสัตว์",
     icon: <BookText size={20} />,
     path: "book",
   },
   {
+    label: "จัดการข้อมูลสัตว์",
+    icon: <Settings size={20} />,
+    hasDropdown: true,
+    subItems: [
+      { label: "หมวดหมู่สัตว์", path: "category" },
+      { label: "รายการสัตว์", path: "animal_all" },
+      {
+        label: "รายการประเภทสัตว์",
+        path: "animal_type_all",
+      },
+    ],
+  },
+  {
     label: "จัดการโพสต์",
     icon: <Settings size={20} />,
-    path: "post",
     hasDropdown: true,
     subItems: [
       { label: "อนุมัติโพสต์", path: "post", countKey: "total_post_waiting" },
@@ -50,33 +57,25 @@ const menuItems = [
     label: "รายงานความคิดเห็น",
     icon: <MailWarning size={20} />,
     path: "comment_report",
+    countKey: "total_comment_report_waiting",
   },
   { label: "เเจ้งเตือนข่าวสาร", icon: <Newspaper size={20} />, path: "news" },
-
   {
-    label: "คำร้องขอเพิ่มรายการสัตว์",
+    label: "คำร้องเพิ่มรายการสัตว์",
     icon: <ChartColumnBig size={20} />,
     path: "animal_request",
+    countKey: "total_animal_request_waiting",
   },
   {
-    label: "คำร้องขอเพิ่มประเภทสัตว์",
+    label: "คำร้องเพิ่มประเภทสัตว์",
     icon: <ChartColumnBig size={20} />,
     path: "animal_type_request",
+    countKey: "total_animal_type_request_waiting",
   },
   {
-    label: "รายการสัตว์",
-    icon: <ChartColumnBig size={20} />,
-    path: "animal_all",
-  },
-  {
-    label: "รายการประเภทสัตว์",
-    icon: <ChartColumnBig size={20} />,
-    path: "animal_type_all",
-  },
-  {
-    label: "จัดการหมวดหมู่",
-    icon: <ChartColumnBig size={20} />,
-    path: "category",
+    label: "ข้อมูลฟาร์ม",
+    icon: <Users size={20} />,
+    path: "user",
   },
   {
     label: "รายงาน",
@@ -95,7 +94,6 @@ const Sidebar = ({ isOpen }) => {
   const [expandedMenus, setExpandedMenus] = useState({});
   const { summaryCount } = useSummaryCount();
 
-  // ฟังก์ชันรวม count ของ subItems
   const getTotalSubCount = (item) => {
     if (!item.subItems) return 0;
     return item.subItems.reduce((sum, sub) => {
@@ -151,6 +149,10 @@ const Sidebar = ({ isOpen }) => {
         )}
       </div>
 
+      <div className="p-4 text-sm text-gray-500">
+        <pre>{JSON.stringify(summaryCount, null, 2)}</pre>
+      </div>
+
       {/* Menu */}
       <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-150px)]">
         {menuItems.map((item, index) => {
@@ -183,7 +185,7 @@ const Sidebar = ({ isOpen }) => {
                       }`}>
                       {item.label}
                       {/* แสดง badge รวมถ้าเป็นเมนูหลักที่มี subItems */}
-                      {item.hasDropdown && getTotalSubCount(item) > 0 && (
+                      {getTotalSubCount(item) > 0 && (
                         <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
                           {getTotalSubCount(item)}
                         </span>
@@ -223,6 +225,11 @@ const Sidebar = ({ isOpen }) => {
                         !isOpen && "hidden"
                       }`}>
                       {item.label}
+                      {item.countKey && summaryCount[item.countKey] > 0 && (
+                        <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                          {summaryCount[item.countKey]}
+                        </span>
+                      )}
                     </span>
                   </div>
                 </Link>

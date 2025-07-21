@@ -100,7 +100,11 @@ exports.reportComment = async (req, res) => {
 
 exports.getCommentReport = async (req, res) => {
   try {
-    const [rows] = await db.promise().query("SELECT * FROM comment_report");
+    const [rows] = await db.promise()
+      .query(`SELECT t1.report_id , t1.post_id , t1.reason , t1.status , t1.report_date , t2.farm_name , t2.farmer_id , t3.content
+FROM comment_report as t1
+JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id
+JOIN comments as t3 ON t1.comment_id = t3.comment_id`);
 
     if (rows.length == 0) {
       res.status(404).json({ msg: "ไม่พบข้อมูลการรายงาน" });
