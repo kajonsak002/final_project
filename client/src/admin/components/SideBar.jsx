@@ -148,10 +148,10 @@ const Sidebar = ({ isOpen }) => {
           </div>
         )}
       </div>
-
+      {/* 
       <div className="p-4 text-sm text-gray-500">
         <pre>{JSON.stringify(summaryCount, null, 2)}</pre>
-      </div>
+      </div> */}
 
       {/* Menu */}
       <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-150px)]">
