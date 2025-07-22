@@ -1,3 +1,5 @@
+import { Trash2 } from "lucide-react";
+
 function ConfirmDeleteModal({ isOpen, onConfirm, onCancel }) {
   if (!isOpen) return null;
 
@@ -8,8 +10,9 @@ function ConfirmDeleteModal({ isOpen, onConfirm, onCancel }) {
         <p className="py-4">คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?</p>
         <div className="modal-action">
           <button
-            className="btn bg-red-600 text-white hover:bg-red-700"
+            className="btn bg-red-500 text-white hover:bg-red-600"
             onClick={onConfirm}>
+            <Trash2 size={20} className="mr-2" />
             ลบ
           </button>
           <button className="btn" onClick={onCancel}>

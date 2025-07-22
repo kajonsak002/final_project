@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import SearchBar from "../components/SearchBar";
 import axios from "axios";
 import Pagination from "../components/Pagination";
-import { CirclePlus } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -156,13 +156,13 @@ function AnimalTypeAll() {
           <div className="flex justify-between items-center flex-wrap gap-4">
             <h4 className="font-bold text-lg">ค้นหาข้อมูล</h4>
             <button
-              className="btn bg-green-600 text-white w-[140px]"
+              className="btn bg-green-600 text-white hover:bg-green-700 w-[140px]"
               onClick={() => {
                 setIsEditing(false);
                 setFormData({ animal_id: "", animal_name: "" });
                 setIsModalOpen(true);
               }}>
-              <CirclePlus /> เพิ่มข้อมูล
+              <Plus /> เพิ่มข้อมูล
             </button>
           </div>
           <SearchBar value={searchTerm} onChange={setSearchTerm} />
@@ -194,13 +194,13 @@ function AnimalTypeAll() {
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => handleEdit(item)}
-                          className="inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md transition-colors duration-200">
-                          แก้ไข
+                          className="btn btn-sm bg-green-600 hover:bg-green-700 text-white">
+                          <Pencil size={16} />
                         </button>
                         <button
                           onClick={() => confirmDelete(item.type_id)}
-                          className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md transition-colors duration-200">
-                          ลบ
+                          className="btn btn-sm bg-red-500 hover:bg-red-600 text-white">
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </td>
@@ -273,7 +273,14 @@ function AnimalTypeAll() {
                   />
                 </div>
                 <div className="modal-action mt-4">
-                  <button type="submit" className="btn btn-primary">
+                  <button
+                    type="submit"
+                    className="btn bg-green-600 text-white hover:bg-green-700">
+                    {isEditing ? (
+                      <Pencil size={20} className="mr-2" />
+                    ) : (
+                      <Plus size={20} className="mr-2" />
+                    )}
                     บันทึก
                   </button>
                 </div>

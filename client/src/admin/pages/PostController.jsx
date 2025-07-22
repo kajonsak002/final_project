@@ -3,8 +3,8 @@ import Pagination from "../components/Pagination";
 import axios from "axios";
 import dayjs from "dayjs";
 import "dayjs/locale/th";
-import { Calendar, Eye, X } from "lucide-react";
-import { toast } from "react-toastify";
+import { Calendar, Eye, X, Check } from "lucide-react";
+import { toast, ToastContainer } from "react-toastify";
 import { useSummaryCount } from "../components/SummaryCountContext";
 
 function PostController() {
@@ -24,7 +24,7 @@ function PostController() {
       console.log(res.data);
       setAllPost(res.data.posts);
     } catch (err) {
-      console.log("Error Get Post Wait Approval : ", err);
+      console.log("Error Get Post Wait Approval : ฆ", err);
     }
   };
 
@@ -91,6 +91,9 @@ function PostController() {
 
   return (
     <div>
+      <div>
+        <ToastContainer />
+      </div>
       <div className="breadcrumbs text-md">
         <ul>
           <li>
@@ -123,6 +126,7 @@ function PostController() {
       </div>
 
       <div className="mt-3 w-full">
+        <h2 className="text-xl font-bold mb-2">จัดการอนุมัติโพสต์</h2>
         <table className="table bg-base-100 w-full">
           <thead>
             <tr>
@@ -286,13 +290,15 @@ function PostController() {
               </div>
               <div className="mt-6 flex justify-end gap-3">
                 <button
-                  className="btn btn-primary px-6"
+                  className="btn bg-green-600 text-white hover:bg-green-700 px-6"
                   onClick={() => ApprovalPost("อนุมัติ", selectedPost)}>
+                  <Check size={20} className="mr-2" />
                   อนุมัติ
                 </button>
                 <button
-                  className="btn btn-danger px-6"
+                  className="btn bg-red-500 text-white hover:bg-red-600 px-6"
                   onClick={() => ApprovalPost("ไม่อนุมัติ", selectedPost)}>
+                  <X size={20} className="mr-2" />
                   ปฏิเสธ
                 </button>
               </div>

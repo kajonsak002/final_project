@@ -151,7 +151,7 @@ function AnimalTypeRequest() {
                       </button>
                       <button
                         onClick={() => handleRejectClick(item)}
-                        className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md">
+                        className="inline-flex items-center px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded-md">
                         <X className="w-3 h-3 mr-1" />
                         ปฏิเสธ
                       </button>
@@ -176,37 +176,37 @@ function AnimalTypeRequest() {
         onPageChange={setCurrentPage}
       />
 
-      {/* DaisyUI Modal สำหรับกรอกเหตุผล */}
-      <input
-        type="checkbox"
-        id="reject-modal"
-        className="modal-toggle"
-        checked={showRejectModal}
-        readOnly
-      />
-      <div
-        className="modal"
-        style={{ visibility: showRejectModal ? "visible" : "hidden" }}>
-        <div className="modal-box">
-          <h3 className="font-bold text-lg mb-2">กรุณากรอกเหตุผลในการปฏิเสธ</h3>
-          <textarea
-            className="textarea textarea-bordered w-full mb-4"
-            rows={3}
-            value={rejectReason}
-            onChange={(e) => setRejectReason(e.target.value)}
-          />
-          <div className="modal-action">
-            <label className="btn" onClick={() => setShowRejectModal(false)}>
-              ยกเลิก
-            </label>
+      {showRejectModal && (
+        <dialog open className="modal modal-open">
+          <div className="modal-box">
             <button
-              className="btn btn-error text-white"
-              onClick={handleRejectConfirm}>
-              ยืนยัน
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+              onClick={() => setShowRejectModal(false)}>
+              ✕
             </button>
+            <h3 className="font-bold text-lg mb-2 text-red-600">
+              กรุณากรอกเหตุผลในการปฏิเสธ
+            </h3>
+            <textarea
+              className="textarea textarea-bordered w-full mb-4"
+              rows={3}
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+            />
+            <div className="modal-action">
+              <button className="btn" onClick={() => setShowRejectModal(false)}>
+                ยกเลิก
+              </button>
+              <button
+                className="btn bg-red-500 text-white hover:bg-red-600"
+                onClick={handleRejectConfirm}>
+                <X size={20} className="mr-2" />
+                ยืนยัน
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
+        </dialog>
+      )}
     </div>
   );
 }

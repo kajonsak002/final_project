@@ -314,14 +314,27 @@ exports.reportPost = async (req, res) => {
 exports.getPostReport = async (req, res) => {
   try {
     const [rows] = await db.promise()
-      .query(`SELECT t1.report_id , t1.post_id , t1.reason , t1.status , t1.report_date , t2.farm_name , t2.farmer_id 
+      .query(`SELECT t1.report_id , t1.post_id , t1.reason , t1.status , t1.report_date , t2.farm_name , t2.farmer_id ,
+                        t3.content , t3.image_post
                           FROM post_report as t1
-                          JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id`);
+                          JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id
+                          JOIN posts as t3 ON t1.post_id = t3.post_id
+                          WHERE t1.status = 'รอดำเนินการ'
+                          `);
     if (rows.length === 0) {
       res.status(404).json({ msg: "ไม่พบการรายงานโพสต์" });
     }
 
-    res.status(200).json({ msg: "success", data: rows });
+    const host = req.headers.host;
+    const protocol = req.protocol;
+    const posts = rows.map((post) => ({
+      ...post,
+      image_post: post.image_post
+        ? `${protocol}://${host}/${post.image_post.replace(/^\\+/, "")}`
+        : null,
+    }));
+
+    res.status(200).json({ msg: "success", data: posts });
   } catch (err) {
     console.log("Error getPostReport : ", err);
     return res.status(500).json({ msg: "Error getPostReport", err });
@@ -329,32 +342,53 @@ exports.getPostReport = async (req, res) => {
 };
 
 exports.manageReportPost = async (req, res) => {
-  const { report_id, post_id } = req.body;
+  const { report_id, post_id, action, report_review } = req.body;
   try {
-    if (!report_id || !post_id) {
-      return res.status(400).json({ msg: "ข้อมูลไม่ครวถ้วน" });
+    if (!report_id || !post_id || !action) {
+      return res.status(400).json({ msg: "ข้อมูลไม่ครบถ้วน" });
     }
 
-    const [rows] = await db
-      .promise()
-      .execute("UPDATE posts SET is_visible = 'ซ่อน' WHERE post_id = ?", [
-        post_id,
-      ]);
-
-    if (rows.affectedRows === 0) {
-      return res.status(500).json({ msg: "เกิดข้อผิดพลาดในการลบโพสต์" });
+    let result = { affectedRows: 1 };
+    if (action === "approve") {
+      [result] = await db
+        .promise()
+        .execute("UPDATE posts SET is_visible = 'ซ่อน' WHERE post_id = ?", [
+          post_id,
+        ]);
+      await db
+        .promise()
+        .query(
+          "UPDATE post_report SET status = 'ดำเนินการแล้ว', report_review = ? WHERE report_id = ?",
+          [
+            report_review ||
+              "ทางเราได้ทำการตรวจสอบโพสต์นี้แล้ว เเละมีความไม่เหมาะสมจริงจึงได้ทำการลบโพสต์นี้ออกจากระบบชุมชนของเรา",
+            report_id,
+          ]
+        );
+    } else if (action === "reject") {
+      await db
+        .promise()
+        .query(
+          "UPDATE post_report SET status = 'ดำเนินการแล้ว', report_review = ? WHERE report_id = ?",
+          [
+            report_review ||
+              "ทางเราได้ตรวจสอบแล้ว โพสต์นี้ไม่มีความผิดตามข้อกล่าวหา รายงานนี้จึงถูกปฏิเสธ",
+            report_id,
+          ]
+        );
+    } else {
+      return res.status(400).json({ msg: "action ไม่ถูกต้อง" });
     }
 
-    await db
-      .promise()
-      .query(
-        "UPDATE post_report SET status = 'ดำเนินการแล้ว' WHERE report_id = ?",
-        [report_id]
-      );
+    if (result.affectedRows === 0) {
+      return res.status(500).json({ msg: "เกิดข้อผิดพลาดในการอัปเดตโพสต์" });
+    }
 
-    return res.status(200).json({ msg: "ดำเนินการลบโพสต์เเล้ว" });
+    return res.status(200).json({ msg: "ดำเนินการสำเร็จ" });
   } catch (err) {
     console.log(`Error manage report_id : ${report_id}`, err);
-    return res.status(500).json({ msg: "เกิดข้อผิดพลาดในการลบโพสต์" });
+    return res
+      .status(500)
+      .json({ msg: "เกิดข้อผิดพลาดในการจัดการรายงานโพสต์" });
   }
 };

@@ -11,6 +11,7 @@ import {
   ListOrdered,
   Image,
   Link as LinkIcon,
+  Plus,
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 
@@ -400,8 +401,11 @@ function AddTest() {
               />
 
               {/* Submit Button */}
-              <div className="form-control">
-                <button type="submit" className="btn btn-primary">
+              <div className="form-control mt-4">
+                <button
+                  type="submit"
+                  className="btn bg-green-600 text-white hover:bg-green-700">
+                  <Plus size={20} className="mr-2" />
                   บันทึกข้อมูล
                 </button>
               </div>

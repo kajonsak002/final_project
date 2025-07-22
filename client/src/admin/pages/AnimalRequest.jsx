@@ -152,7 +152,7 @@ function AnimalRequest() {
                       </button>
                       <button
                         onClick={() => handleRejectClick(item)}
-                        className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md transition-colors duration-200">
+                        className="inline-flex items-center px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded-md transition-colors duration-200">
                         <X className="w-3 h-3 mr-1" />
                         ปฏิเสธ
                       </button>
@@ -178,7 +178,7 @@ function AnimalRequest() {
       />
 
       {showRejectModal && (
-        <dialog open className="modal">
+        <dialog open className="modal modal-open">
           <div className="modal-box">
             <button
               className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
@@ -199,8 +199,9 @@ function AnimalRequest() {
                 ยกเลิก
               </button>
               <button
-                className="btn bg-red-600 text-white hover:bg-red-700"
+                className="btn bg-red-500 text-white hover:bg-red-600"
                 onClick={handleRejectConfirm}>
+                <X size={20} className="mr-2" />
                 ยืนยัน
               </button>
             </div>

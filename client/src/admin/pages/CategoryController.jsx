@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import Pagination from "../components/Pagination";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 
 const CategoryController = () => {
   const [categories, setCategories] = useState([]);
@@ -125,8 +126,9 @@ const CategoryController = () => {
         <div className="card-body">
           <h4 className="font-bold mb-2">เพิ่มหมวดหมู่สัตว์</h4>
           <button
-            className="btn bg-green-600 text-white"
+            className="btn bg-green-600 text-white hover:bg-green-700"
             onClick={openAddModal}>
+            <Plus size={20} className="mr-2" />
             เพิ่มหมวดหมู่สัตว์
           </button>
         </div>
@@ -157,7 +159,8 @@ const CategoryController = () => {
               <div className="modal-action">
                 <button
                   type="submit"
-                  className="btn btn-primary bg-green-600 text-white">
+                  className="btn bg-green-600 text-white hover:bg-green-700">
+                  <Plus size={20} className="mr-2" />
                   บันทึก
                 </button>
               </div>
@@ -190,7 +193,8 @@ const CategoryController = () => {
               <div className="modal-action">
                 <button
                   type="submit"
-                  className="btn btn-success bg-green-600 text-white">
+                  className="btn bg-green-600 text-white hover:bg-green-700">
+                  <Pencil size={20} className="mr-2" />
                   บันทึก
                 </button>
               </div>
@@ -215,16 +219,16 @@ const CategoryController = () => {
                   <tr key={cat.category_id}>
                     <td>{idx + 1 + (currentPage - 1) * itemsPerPage}</td>
                     <td>{cat.category_name}</td>
-                    <td className="text-center">
+                    <td className="text-center space-x-2">
                       <button
-                        className="btn bg-green-600 btn-sm mr-2 text-white"
+                        className="btn bg-green-600 btn-sm text-white hover:bg-green-700"
                         onClick={() => openEditModal(cat)}>
-                        แก้ไข
+                        <Pencil size={16} />
                       </button>
                       <button
-                        className="btn bg-red-600 btn-sm text-white"
+                        className="btn bg-red-500 btn-sm text-white hover:bg-red-600"
                         onClick={() => openDeleteModal(cat.category_id)}>
-                        ลบ
+                        <Trash2 size={16} />
                       </button>
                     </td>
                   </tr>

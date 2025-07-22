@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import SearchBar from "../components/SearchBar";
 import Pagination from "../components/Pagination";
-import { CirclePlus, Edit, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 
@@ -138,13 +138,13 @@ function AnimalAll() {
           <div className="flex justify-between items-center flex-wrap gap-4">
             <h4 className="font-bold text-lg">ค้นหาข้อมูล</h4>
             <button
-              className="btn bg-green-600 text-white w-[140px]"
+              className="btn bg-green-600 text-white hover:bg-green-700 w-[140px]"
               onClick={() => {
                 setIsEditing(false);
-                setFormData({ animal_name: "" });
+                setFormData({ animal_name: "", category_id: "" });
                 setIsModalOpen(true);
               }}>
-              <CirclePlus /> เพิ่มข้อมูล
+              <Plus /> เพิ่มข้อมูล
             </button>
           </div>
           <SearchBar value={searchTerm} onChange={setSearchTerm} />
@@ -175,12 +175,12 @@ function AnimalAll() {
                       <button
                         className="btn btn-sm bg-green-600 hover:bg-green-700 text-white"
                         onClick={() => handleEdit(item)}>
-                        <Edit size={16} /> แก้ไข
+                        <Pencil size={16} />
                       </button>
                       <button
-                        className="btn btn-sm bg-red-600 hover:bg-red-700 text-white"
+                        className="btn btn-sm bg-red-500 hover:bg-red-600 text-white"
                         onClick={() => confirmDelete(item.animal_id)}>
-                        <Trash2 size={16} /> ลบ
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </td>
@@ -252,7 +252,14 @@ function AnimalAll() {
                   />
                 </div>
                 <div className="modal-action mt-4">
-                  <button type="submit" className="btn btn-primary">
+                  <button
+                    type="submit"
+                    className="btn bg-green-600 text-white hover:bg-green-700">
+                    {isEditing ? (
+                      <Pencil size={20} className="mr-2" />
+                    ) : (
+                      <Plus size={20} className="mr-2" />
+                    )}
                     บันทึก
                   </button>
                 </div>
