@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import SideBar from "../Farm/components/SideBar";
 import Header from "../Farm/components/Header";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
 
 function AdminLayout() {
@@ -60,16 +60,12 @@ function AdminLayout() {
           className={`flex-1 flex flex-col transition-all duration-300 ${
             sidebarOpen ? "ml-64" : "ml-20"
           }`}>
-          <div
-            className="fixed top-0 right-0 h-16 bg-white z-10 transition-all duration-300"
-            style={{ left: sidebarOpen ? "16rem" : "4rem" }}>
-            <Header
-              toggleSidebar={toggleSidebar}
-              dropdownOpen={dropdownOpen}
-              setDropdownOpen={setDropdownOpen}
-            />
-          </div>
-          <main className="flex-1 overflow-y-auto mt-16 p-4 bg-gray-100">
+          <Header
+            toggleSidebar={toggleSidebar}
+            dropdownOpen={dropdownOpen}
+            setDropdownOpen={setDropdownOpen}
+          />
+          <main className="flex-1 overflow-y-auto  p-4 bg-gray-100">
             <Outlet />
           </main>
         </div>

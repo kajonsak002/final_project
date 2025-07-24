@@ -25,6 +25,10 @@ function NavBar() {
       name: "ฟาร์มในระบบ",
       path: "farmList",
     },
+    {
+      name: "ข่าวสารต่างๆ",
+      path: "news",
+    },
   ];
 
   return (

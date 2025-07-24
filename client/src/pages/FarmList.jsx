@@ -24,7 +24,6 @@ function FarmPage() {
     try {
       const res = await axios.get(import.meta.env.VITE_URL_API + "all_farms");
       setFarms(res.data);
-      // console.log(res.data);
     } catch (err) {
       console.error("Error fetching farms:", err);
     }

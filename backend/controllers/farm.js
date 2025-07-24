@@ -23,10 +23,6 @@ exports.getFarmProfile = async (req, res) => {
       [id]
     );
 
-    const [products] = await db
-      .promise()
-      .query(`SELECT * FROM products WHERE farmer_id = ?`, [id]);
-
     if (rows.length === 0) {
       return res.status(404).json({ message: "ไม่พบข้อมูลฟาร์ม" });
     }
@@ -42,9 +38,7 @@ exports.getFarmProfile = async (req, res) => {
         : null,
     };
 
-    return res
-      .status(200)
-      .json({ msg: "sucess", data: updatedFarmer, products });
+    return res.status(200).json({ msg: "sucess", data: updatedFarmer });
   } catch (err) {
     console.error("Error fetching farm profile:", err);
     res.status(500).json({ error: "Internal Server Error" });

@@ -7,6 +7,8 @@ import { Calendar, Eye, X, Check } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import { useSummaryCount } from "../components/SummaryCountContext";
 
+dayjs.locale("th");
+
 function PostController() {
   const [allPost, setAllPost] = useState([]);
   const [status, setStatus] = useState("");
@@ -21,7 +23,6 @@ function PostController() {
       const res = await axios.get(
         import.meta.env.VITE_URL_API + "post-wait-approval"
       );
-      console.log(res.data);
       setAllPost(res.data.posts);
     } catch (err) {
       console.log("Error Get Post Wait Approval : ฆ", err);
@@ -51,7 +52,6 @@ function PostController() {
   };
 
   const showDetail = (detail) => {
-    console.log(detail);
     setSelectedPost(detail);
     setIsModalOpen(true);
   };
@@ -70,21 +70,18 @@ function PostController() {
   };
 
   const ApprovalPost = async (status, post) => {
-    console.log("Status : ", status);
     const { post_id } = post;
     try {
       const res = await axios.post(
         import.meta.env.VITE_URL_API + `post/approval-post/${post_id}`,
         { status }
       );
-      console.log(res.data);
       setIsModalOpen(false);
       setSelectedPost(null);
       getPostWaitApproval();
       await fetchSummary();
-      toast.success("ปฏิเสธโพสต์เรียบร้อยเเล้ว");
+      toast.success(res.data.message);
     } catch (err) {
-      console.log("Error Approval Post : ", err);
       toast.success(err);
     }
   };
@@ -107,20 +104,7 @@ function PostController() {
         <div className="card-body">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             {/* ส่วนค้นหา */}
-            <div className="w-full lg:w-auto">
-              {/* <h4 className="font-bold text-xl mb-2 text-gray-700">
-                ค้นหาข้อมูล
-              </h4>
-              <select
-                className="select select-bordered w-full lg:w-64"
-                onChange={(e) => setStatus(e.target.value)}
-                value={status}>
-                <option value="">เลือกสถานะ</option>
-                <option value="อนุมัติ">อนุมัติ</option>
-                <option value="รออนุมัติ">รออนุมัติ</option>
-                <option value="ปฏิเสธ">ปฏิเสธ</option>
-              </select> */}
-            </div>
+            <div className="w-full lg:w-auto"></div>
           </div>
         </div>
       </div>

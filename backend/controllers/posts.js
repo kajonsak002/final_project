@@ -187,9 +187,9 @@ exports.getAll = async (req, res) => {
     const protocol = req.protocol;
     const posts = rows.map((post) => ({
       ...post,
-      image_post: post.image_post
-        ? `${protocol}://${host}/${post.image_post.replace(/^\\+/, "")}`
-        : null,
+      // image_post: post.image_post
+      //   ? `${protocol}://${host}/${post.image_post.replace(/^\\+/, "")}`
+      //   : null,
       farm_img: post.farm_img
         ? `${protocol}://${host}/${post.farm_img.replace(/^\\+/, "")}`
         : null,

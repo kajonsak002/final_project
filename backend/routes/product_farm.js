@@ -9,6 +9,7 @@ const router = express.Router();
 const uploadTo = require("../middleware/upload");
 const uploadImgProduct = uploadTo("product_images");
 
+router.get("/farm-products/:id", getProductFarm);
 router.post("/farm-products/:id", uploadImgProduct.single("image"), addProduct);
 router.put(
   "/farm-products/:id",

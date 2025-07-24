@@ -39,6 +39,7 @@ import AnimalTypeReq from "./Farm/pages/AnimalTypeReq";
 import CategoryController from "./admin/pages/CategoryController";
 import ForGotPassAdmin from "./admin/pages/forGotPassword";
 import { SummaryCountProvider } from "./admin/components/SummaryCountContext";
+import Newslist from "./pages/Newslist";
 
 function App() {
   const router = createBrowserRouter([
@@ -64,6 +65,10 @@ function App() {
         {
           path: "farm",
           element: <FarmProfile />,
+        },
+        {
+          path: "news",
+          element: <Newslist />,
         },
         {
           path: "forgot_password",

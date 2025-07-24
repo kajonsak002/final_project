@@ -1,7 +1,30 @@
-import React from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 
 function Product() {
-  return <div>Product</div>;
+  const [products, setProducts] = useState([]);
+  const getProductFarm = async () => {
+    const id = localStorage.getItem("farmer_id");
+    try {
+      const res = await axios.get(
+        import.meta.env.VITE_URL_API + `farm-products/${id}`
+      );
+      setProducts(res.data);
+    } catch (error) {
+      console.error("Error fetching product data:", error);
+    }
+  };
+
+  useEffect(() => {
+    getProductFarm();
+  }, []);
+
+  return (
+    <div>
+      Product
+      <pre>{JSON.stringify(products, null, 2)}</pre>
+    </div>
+  );
 }
 
 export default Product;

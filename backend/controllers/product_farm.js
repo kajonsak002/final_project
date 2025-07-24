@@ -15,6 +15,24 @@ const deleteImage = (imagePath) => {
     }
   });
 };
+exports.getProductFarm = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await db
+      .promise()
+      .query(`SELECT * FROM products WHERE farmer_id = ?`, [id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ msg: "ไม่พบข้อมูลสินค้า" });
+    }
+
+    return res.status(200).json({ msg: "sucess", data: rows });
+  } catch (err) {
+    console.error("Error fetching products:", err);
+    return res.status(500).json({ msg: "ไม่สามารถดึงข้อมูลสินค้าได้" });
+  }
+};
 
 exports.addProduct = async (req, res) => {
   const { id } = req.params;
