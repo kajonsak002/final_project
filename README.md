@@ -66,25 +66,25 @@
 
 ```
 Project/
-  backend/        
-    controllers/   
-    routes/       
-    public/       
-    config/        
-    middleware/    
-    server.js      
+  backend/
+    controllers/
+    routes/
+    public/
+    config/
+    middleware/
+    server.js
     package.json
-  client/         
+  client/
     src/
-      pages/      
-      admin/     
-      Farm/        
-      components/ 
-      Layout/      
-      assets/     
-    public/     
+      pages/
+      admin/
+      Farm/
+      components/
+      Layout/
+      assets/
+    public/
     package.json
-  project.sql     
+  project.sql
   README.md
 ```
 
@@ -167,5 +167,3 @@ npm run dev
 
 ดูรายละเอียดในไฟล์ `project.sql`  
 ประกอบด้วยตารางหลัก เช่น `admin`, `farmer`, `animal_categories`, `animal_requests`, `posts`, `product_farm` ฯลฯ
-
-
