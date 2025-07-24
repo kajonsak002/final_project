@@ -231,7 +231,6 @@ exports.adminLogin = async (req, res) => {
       return res.status(401).json({ message: "รหัสผ่านไม่ถูกต้อง" });
     }
 
-    //สร้าง token เเละกำหนดระยะเวลาของ token
     const token = jwt.sign(
       {
         id: admin.admin_id,
@@ -239,7 +238,7 @@ exports.adminLogin = async (req, res) => {
         fullname: admin.full_name,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "2h" }
+      { expiresIn: "7d" }
     );
 
     res.status(200).json({

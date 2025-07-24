@@ -46,7 +46,7 @@ exports.get_summary_count = async (req, res) => {
       WHERE status = 'รออนุมัติ'
     `);
 
-    res.json({
+    return res.json({
       total_farm: farmCounts.total_farm,
       total_farm_waiting: farmCounts.total_farm_waiting,
       total_post_waiting: postCounts.total_post_waiting,

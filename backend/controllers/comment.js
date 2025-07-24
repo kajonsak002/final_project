@@ -24,10 +24,10 @@ exports.getComment = async (req, res) => {
         ? `${protocol}://${host}/${cm.farm_img.replace(/^\\+/, "")}`
         : null,
     }));
-    res.status(200).json({ msg: "ดึงความคิดเห็นสำเร็จ", comments });
+    return res.status(200).json({ msg: "ดึงความคิดเห็นสำเร็จ", comments });
   } catch (err) {
     console.log("Internal Server Error ", err);
-    res.status(500).json({ msg: "Error get comment" });
+    return res.status(500).json({ msg: "Error get comment" });
   }
 };
 
@@ -88,23 +88,27 @@ exports.reportComment = async (req, res) => {
       );
 
     if (rows.length < 0) {
-      res.status(500).json({ msg: "เกิดข้อผิดพลาดในการรายความคิดเห็น" });
+      return res.status(500).json({ msg: "เกิดข้อผิดพลาดในการรายความคิดเห็น" });
     }
 
-    res.status(201).json({ msg: "รายงานวามคิดเห็นเเล้ว" });
+    return res.status(201).json({ msg: "รายงานวามคิดเห็นเเล้ว" });
   } catch (err) {
     console.log("Internal Server Error : ", err);
-    res.status(500).json({ msg: "เกิดข้อผิดพลาดในการรายงานความคิดเห็น" });
+    return res
+      .status(500)
+      .json({ msg: "เกิดข้อผิดพลาดในการรายงานความคิดเห็น" });
   }
 };
 
 exports.getCommentReport = async (req, res) => {
   try {
     const [rows] = await db.promise()
-      .query(`SELECT t1.report_id , t1.post_id , t1.reason , t1.status , t1.report_date , t2.farm_name , t2.farmer_id , t3.content
+      .query(`SELECT t1.report_id , t1.post_id , t1.reason , t1.status , t1.report_date , t1.comment_id , t2.farm_name , t2.farmer_id , t3.content 
 FROM comment_report as t1
 JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id
-JOIN comments as t3 ON t1.comment_id = t3.comment_id`);
+JOIN comments as t3 ON t1.comment_id = t3.comment_id
+WHERE t1.status = 'รอดำเนินการ'
+`);
 
     if (rows.length == 0) {
       res.status(404).json({ msg: "ไม่พบข้อมูลการรายงาน" });
@@ -113,36 +117,45 @@ JOIN comments as t3 ON t1.comment_id = t3.comment_id`);
   } catch (err) {
     console.log("Error getCommentReport : ", err);
   }
-  res.json({ msg: "API getComment Report" });
 };
 
 exports.manageComment = async (req, res) => {
-  const { comment_id, report_id } = req.body;
+  const { comment_id, report_id, report_review, action } = req.body;
 
   try {
     if (!comment_id || !report_id) {
       return res.status(500).json({ msg: "ข้อมูลไม่ครบถ้วน" });
     }
-    const [rs] = await db
-      .promise()
-      .query("UPDATE comments set status ='ลบแล้ว' WHERE comment_id = ?", [
-        comment_id,
-      ]);
 
-    if (rs.affectedRows === 0) {
-      return res.status(500).json({ msg: "เกิดข้อผิดพลาดในการลบความคิดเห็น" });
+    if (action === "approve") {
+      [result] = await db
+        .promise()
+        .execute("UPDATE comments SET status = 'ลบแล้ว' WHERE comment_id = ?", [
+          comment_id,
+        ]);
+      await db
+        .promise()
+        .query(
+          "UPDATE comment_report SET status = 'ดำเนินการแล้ว', report_review = ? WHERE report_id = ?",
+          [
+            "ทางเราได้ทำการตรวจสอบความคิดเห็นนี้แล้ว เเละมีความไม่เหมาะสมจริงจึงได้ทำการลบความคิดเห็นนี้ออกจากระบบชุมชนของเรา",
+            report_id,
+          ]
+        );
+
+      return res.status(200).json({ msg: "ดำเนินการสำเร็จ" });
+    } else if (action === "reject") {
+      await db
+        .promise()
+        .query(
+          "UPDATE comment_report SET status = 'ดำเนินการแล้ว', report_review = ? WHERE report_id = ?",
+          [report_review, report_id]
+        );
+
+      return res.status(200).json({ msg: "ดำเนินการสำเร็จ" });
+    } else {
+      return res.status(400).json({ msg: "action ไม่ถูกต้อง" });
     }
-
-    await db
-      .promise()
-      .query(
-        "UPDATE comment_report SET status = 'ดำเนินการแล้ว' WHERE report_id = ?",
-        [report_id]
-      );
-
-    return res
-      .status(200)
-      .json({ msg: "ดำเนินการลบความคิดเห็นเรียบร้อยเเล้ว" });
   } catch (err) {
     console.log("Error delete comment", err);
     res.status(500).json({ msg: "เกิดข้อผิดพลาดในการลบความคิดเห็น" });

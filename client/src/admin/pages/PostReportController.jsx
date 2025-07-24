@@ -6,6 +6,7 @@ import Pagination from "../components/Pagination";
 import dayjs from "dayjs";
 import "dayjs/locale/th";
 import { Eye, Check, X } from "lucide-react";
+import { useSummaryCount } from "../components/SummaryCountContext";
 
 dayjs.locale("th");
 
@@ -18,7 +19,8 @@ function PostReportController() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [reviewText, setReviewText] = useState("");
   const [showRejectInput, setShowRejectInput] = useState(false);
-  const itemsPerPage = 5;
+  const itemsPerPage = 12;
+  const { fetchSummary } = useSummaryCount();
 
   const getReportData = async () => {
     try {
@@ -53,7 +55,6 @@ function PostReportController() {
     setShowRejectInput(false);
   };
 
-  // รวมฟังก์ชันอนุมัติและปฏิเสธ
   const handleProcessReport = async (action) => {
     if (!selectedReport) return;
     setIsProcessing(true);
@@ -72,6 +73,7 @@ function PostReportController() {
           ? "อนุมัติการรายงานเรียบร้อย"
           : "ปฏิเสธการรายงานเรียบร้อย"
       );
+      await fetchSummary();
       await getReportData();
       setSelectReport(null);
       setIsReportModalOpen(false);
