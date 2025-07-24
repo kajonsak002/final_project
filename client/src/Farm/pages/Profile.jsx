@@ -29,9 +29,9 @@ function Profile() {
         },
       });
       // console.log(res.data);
-      localStorage.setItem("image_profile", res.data.farm_img);
-      localStorage.setItem("farmer_id", res.data.farmer_id);
-      setFarm(res.data);
+      localStorage.setItem("image_profile", res.data.data.farm_img);
+      localStorage.setItem("farmer_id", res.data.data.farmer_id);
+      setFarm(res.data.data);
     } catch (error) {
       console.error("Error fetching farm data:", error);
     }
