@@ -38,7 +38,20 @@ exports.getFarmProfile = async (req, res) => {
         : null,
     };
 
-    return res.status(200).json({ msg: "sucess", data: updatedFarmer });
+    const [[product]] = await db
+      .promise()
+      .query(`SELECT * FROM products WHERE farmer_id = ?`, [id]);
+
+    const formattedProducts = {
+      ...product,
+      image: product.image
+        ? `${req.protocol}://${req.headers.host}/${product.image}`
+        : null,
+    };
+
+    return res
+      .status(200)
+      .json({ msg: "sucess", data: updatedFarmer, product: formattedProducts });
   } catch (err) {
     console.error("Error fetching farm profile:", err);
     res.status(500).json({ error: "Internal Server Error" });

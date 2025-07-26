@@ -27,7 +27,14 @@ exports.getProductFarm = async (req, res) => {
       return res.status(404).json({ msg: "ไม่พบข้อมูลสินค้า" });
     }
 
-    return res.status(200).json({ msg: "sucess", data: rows });
+    const formattedProducts = rows.map((product) => ({
+      ...product,
+      image: product.image
+        ? `${req.protocol}://${req.headers.host}/${product.image}`
+        : null,
+    }));
+
+    return res.status(200).json({ msg: "sucess", data: formattedProducts });
   } catch (err) {
     console.error("Error fetching products:", err);
     return res.status(500).json({ msg: "ไม่สามารถดึงข้อมูลสินค้าได้" });

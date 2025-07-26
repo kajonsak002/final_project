@@ -22,7 +22,7 @@ function Product() {
   return (
     <div>
       Product
-      <pre>{JSON.stringify(products, null, 2)}</pre>
+      <pre className="p-4">{JSON.stringify(products, null, 2)}</pre>
     </div>
   );
 }
