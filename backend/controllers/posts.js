@@ -313,14 +313,27 @@ exports.reportPost = async (req, res) => {
 
 exports.getPostReport = async (req, res) => {
   try {
-    const [rows] = await db.promise()
-      .query(`SELECT t1.report_id , t1.post_id , t1.reason , t1.status , t1.report_date , t2.farm_name , t2.farmer_id ,
-                        t3.content , t3.image_post
-                          FROM post_report as t1
-                          JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id
-                          JOIN posts as t3 ON t1.post_id = t3.post_id
-                          WHERE t1.status = 'รอดำเนินการ'
-                          `);
+    const [rows] = await db.promise().query(`SELECT 
+                r.report_id,
+                r.post_id,
+                r.reason,
+                r.status,
+                r.report_date,
+                
+                rp.farm_name AS reporter_farm_name,      
+                p.content,
+                p.image_post,
+                p.create_at AS post_create_at,
+                pf.farm_name AS post_owner_farm_name        
+                
+              FROM post_report AS r
+
+              JOIN farmer AS rp ON r.farmer_id = rp.farmer_id     
+              JOIN posts AS p ON r.post_id = p.post_id
+              JOIN farmer AS pf ON p.farmer_id = pf.farmer_id     
+
+              WHERE r.status = 'รอดำเนินการ';
+   `);
     if (rows.length === 0) {
       res.status(404).json({ msg: "ไม่พบการรายงานโพสต์" });
     }

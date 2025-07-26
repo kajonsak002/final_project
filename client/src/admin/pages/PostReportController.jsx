@@ -5,7 +5,7 @@ import Pagination from "../components/Pagination";
 
 import dayjs from "dayjs";
 import "dayjs/locale/th";
-import { Eye, Check, X } from "lucide-react";
+import { Eye, Check, X, Clock } from "lucide-react";
 import { useSummaryCount } from "../components/SummaryCountContext";
 
 dayjs.locale("th");
@@ -19,6 +19,8 @@ function PostReportController() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [reviewText, setReviewText] = useState("");
   const [showRejectInput, setShowRejectInput] = useState(false);
+  const [detailPost, setDetailPost] = useState(null);
+  const [isDetailPostOpen, setIsDetailPostOpen] = useState(false);
   const itemsPerPage = 12;
   const { fetchSummary } = useSummaryCount();
 
@@ -143,7 +145,7 @@ function PostReportController() {
                   </td>
                   <td>{item.reason}</td>
                   <td>{dayjs(item.report_date).format("D MMMM YYYY")}</td>
-                  <td>{item.farm_name}</td>
+                  <td>{item.reporter_farm_name}</td>
                   <td className="flex justify-center">
                     <Eye
                       className="cursor-pointer hover:text-blue-500"
@@ -185,27 +187,6 @@ function PostReportController() {
               </h3>
 
               <div className="space-y-4">
-                {/* Post Content */}
-                <div className="flex flex-row">
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-md mb-2">
-                      เนื้อหาโพสต์:
-                    </h4>
-                    <p className="text-gray-700 whitespace-pre-wrap">
-                      {selectedReport.content}
-                    </p>
-                  </div>
-                  {selectedReport.image_post && (
-                    <div className="flex-1 ml-4">
-                      <img
-                        src={selectedReport.image_post}
-                        alt="Post image"
-                        className="w-full h-auto"
-                      />
-                    </div>
-                  )}
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="font-semibold text-sm">
@@ -227,44 +208,24 @@ function PostReportController() {
                     </p>
                   </div>
 
-                  <div>
-                    <label className="font-semibold text-sm">
-                      ผู้แจ้งรายงาน:
-                    </label>
-                    <p className="text-gray-700 mt-1">
-                      {selectedReport.farm_name}
-                    </p>
-                  </div>
-
-                  {selectedReport.reporter_id && (
-                    <div>
-                      <label className="font-semibold text-sm">
-                        ID ผู้รายงาน:
-                      </label>
-                      <p className="text-gray-700 mt-1">
-                        {selectedReport.reporter_id}
-                      </p>
-                    </div>
-                  )}
-
-                  {selectedReport.post_author && (
+                  {selectedReport.post_owner_farm_name && (
                     <div>
                       <label className="font-semibold text-sm">
                         เจ้าของโพสต์:
                       </label>
                       <p className="text-gray-700 mt-1">
-                        {selectedReport.post_author}
+                        {selectedReport.post_owner_farm_name}
                       </p>
                     </div>
                   )}
 
-                  {selectedReport.post_date && (
+                  {selectedReport.post_create_at && (
                     <div>
                       <label className="font-semibold text-sm">
                         วันที่โพสต์:
                       </label>
                       <p className="text-gray-700 mt-1">
-                        {dayjs(selectedReport.post_date).format(
+                        {dayjs(selectedReport.post_create_at).format(
                           "D MMMM YYYY HH:mm"
                         )}
                       </p>
@@ -272,16 +233,17 @@ function PostReportController() {
                   )}
                 </div>
 
-                {selectedReport.additional_details && (
-                  <div className="bg-yellow-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-sm mb-2">
-                      รายละเอียดเพิ่มเติม:
-                    </h4>
-                    <p className="text-gray-700 text-sm">
-                      {selectedReport.additional_details}
+                <div>
+                  <div className="text-blue-700">
+                    <p
+                      className="cursor-pointer"
+                      onClick={(e) => {
+                        setIsDetailPostOpen(true);
+                      }}>
+                      ดูรายละเอียดโพสต์
                     </p>
                   </div>
-                )}
+                </div>
 
                 <div className="flex justify-end space-x-3 pt-4 border-t">
                   <button
@@ -337,6 +299,56 @@ function PostReportController() {
                   disabled={isProcessing || !reviewText.trim()}>
                   ยืนยันปฏิเสธ
                 </button>
+              </div>
+            </div>
+          </dialog>
+        )}
+
+        {isDetailPostOpen && selectedReport && (
+          <dialog open className="modal">
+            <div className="modal-box max-w-3xl bg-white shadow-2xl rounded-xl overflow-hidden p-6">
+              <button
+                className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                onClick={() => setIsDetailPostOpen(false)}>
+                ✕
+              </button>
+              <h3 className="font-bold text-xl mb-4">รายละเอียดโพสต์</h3>
+              <div className="flex flex-col md:flex-row gap-6">
+                {/* รูปภาพโพสต์ */}
+                {selectedReport.image_post && (
+                  <div className="md:w-1/2 flex justify-center items-center">
+                    <img
+                      src={selectedReport.image_post}
+                      alt="โพสต์"
+                      className="rounded-lg shadow-lg max-h-64 object-contain"
+                    />
+                  </div>
+                )}
+                {/* ข้อมูลโพสต์ */}
+                <div className="md:w-1/2">
+                  <div className="mb-2">
+                    <span className="font-semibold">เนื้อหาโพสต์:</span>
+                    <p className="text-gray-700 mt-1">
+                      {selectedReport.content || "ไม่มีเนื้อหา"}
+                    </p>
+                  </div>
+                  <div className="mb-2">
+                    <span className="font-semibold">เจ้าของโพสต์:</span>
+                    <p className="text-gray-700 mt-1">
+                      {selectedReport.post_owner_farm_name || "-"}
+                    </p>
+                  </div>
+                  <div className="mb-2">
+                    <span className="font-semibold">วันที่โพสต์:</span>
+                    <p className="text-gray-700 mt-1">
+                      {selectedReport.post_create_at
+                        ? dayjs(selectedReport.post_create_at).format(
+                            "D MMMM YYYY HH:mm"
+                          )
+                        : "-"}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </dialog>
