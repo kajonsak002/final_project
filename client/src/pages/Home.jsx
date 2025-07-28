@@ -258,27 +258,12 @@ function Home() {
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    document.getElementById(`${item.id}`).showModal();
                   }}
                   className="relative inline-block text-sm text-green-600 font-medium transition-all duration-300 hover:text-green-800 hover:underline">
                   อ่านเพิ่มเติม →
                 </a>
               </div>
             </div>
-            {/* Modal Section */}
-            <dialog id={item.id} className="modal">
-              <div className="modal-box">
-                <form method="dialog">
-                  <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-                    ✕
-                  </button>
-                </form>
-                <h3 className="font-bold text-lg text-green-800">
-                  {item.title}
-                </h3>
-                <p className="py-4">{item.des}</p>
-              </div>
-            </dialog>
           </div>
         ))}
       </div>

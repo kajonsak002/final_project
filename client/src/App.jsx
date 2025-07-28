@@ -12,7 +12,6 @@ import Register from "./pages/Register";
 import GuildBookController from "./admin/pages/GuildBookController";
 import PostController from "./admin/pages/PostController";
 import PostReportController from "./admin/pages/PostReportController";
-import NewsController from "./admin/pages/NewsController";
 import ReportAnimals from "./admin/pages/ReportAnimals";
 import ReportProducts from "./admin/pages/ReportProducts";
 import AddGuileBook from "./admin/From/AddGuileBook";
@@ -40,8 +39,10 @@ import CategoryController from "./admin/pages/CategoryController";
 import ForGotPassAdmin from "./admin/pages/forGotPassword";
 import { SummaryCountProvider } from "./admin/components/SummaryCountContext";
 import Newslist from "./pages/Newslist";
+import AddNews from "./Farm/pages/AddNews";
 
 function App() {
+  const link = ["/admin/dashboard", "/admin/news"];
   const router = createBrowserRouter([
     { path: "/admin/reset_password", element: <ForGotPassAdmin /> },
     {
@@ -88,7 +89,8 @@ function App() {
         },
         { path: "/admin/post", element: <PostController /> },
         { path: "/admin/report_post", element: <PostReportController /> },
-        { path: "/admin/news", element: <NewsController /> },
+        { path: "/admin/news", element: <News /> },
+        { path: "/admin/news/insert", element: <AddNews navigate={link} /> },
         { path: "/admin/report_animal", element: <ReportAnimals /> },
         { path: "/admin/report_product", element: <ReportProducts /> },
         { path: "/admin/book/add_guild_book", element: <AddGuileBook /> },
@@ -111,6 +113,7 @@ function App() {
         { path: "/profile/animal-type/request", element: <AnimalTypeReq /> },
         { path: "/profile/social", element: <Comunity /> },
         { path: "/profile/news", element: <News /> },
+        { path: "/profile/news/insert", element: <AddNews /> },
         { path: "/profile/logs", element: <Logs /> },
       ],
     },

@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import TinyEditor from "../../components/TinyEditor";
+import { Link } from "react-router-dom";
 
 function News() {
   const [news, setNews] = useState([
@@ -39,24 +41,35 @@ function News() {
       date: "5 เมษายน 2568",
     },
   ]);
+
   return (
     <>
       <div className="w-full">
-        <div className="breadcrumbs text-md">
-          <ul>
-            <li>หน้าเเรก</li>
-            <li>ข่าวสาร</li>
-          </ul>
+        <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
+          <div className="breadcrumbs text-sm">
+            <ul>
+              <li>
+                <a
+                  href="/profile"
+                  className="text-blue-600 hover:text-blue-800">
+                  หน้าแรก
+                </a>
+              </li>
+              <li>
+                <a className="text-gray-500">ข่าวสาร</a>
+              </li>
+            </ul>
+          </div>
         </div>
         <div className="card w-full bg-base-100">
           <div className="card-body">
             <div className="flex flex-col justify-between items-center sm:flex-row gap-2">
               <h1 className="font-bold text-lg">ค้นหา</h1>
-              <button
-                className="btn btn-primary w-full sm:w-auto "
-                onClick={() => document.getElementById("add_news").showModal()}>
-                เพิ่มข่าวสาร
-              </button>
+              <Link to={"insert"}>
+                <button className="btn btn-primary w-full sm:w-auto ">
+                  เพิ่มข่าวสาร
+                </button>
+              </Link>
             </div>
             <input
               type="text"
@@ -79,43 +92,13 @@ function News() {
                 <p className="text-gray-600 text-sm">{item.des}</p>
                 <a
                   href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById(`${item.id}`).showModal();
-                  }}
                   className="relative inline-block text-sm text-green-600 font-medium transition-all duration-300 hover:text-green-800 hover:underline">
                   อ่านเพิ่มเติม →
                 </a>
               </div>
             </div>
-
-            {/* Modal Section */}
-            <dialog id={item.id} className="modal modal-bottom sm:modal-middle">
-              <div className="modal-box">
-                <form method="dialog">
-                  <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-                    ✕
-                  </button>
-                </form>
-                <h3 className="font-bold text-lg text-green-800">
-                  {item.title}
-                </h3>
-                <p className="py-4">{item.des}</p>
-              </div>
-            </dialog>
           </>
         ))}
-
-        {/* Modal Add News */}
-        <dialog id="add_news" className="modal">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg">เพิ่มข่าวสาร</h3>
-            <p className="py-4">Press ESC key or click outside to close</p>
-          </div>
-          <form method="dialog" className="modal-backdrop">
-            <button>close</button>
-          </form>
-        </dialog>
       </div>
     </>
   );

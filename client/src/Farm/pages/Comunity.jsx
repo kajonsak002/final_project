@@ -289,11 +289,19 @@ function Community() {
     <>
       <ToastContainer />
       {/* Breadcrumb */}
-      <div className="breadcrumbs text-md">
-        <ul>
-          <li>หน้าเเรก</li>
-          <li>ระบบชุมชน</li>
-        </ul>
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
+        <div className="breadcrumbs text-sm">
+          <ul>
+            <li>
+              <a href="/profile" className="text-blue-600 hover:text-blue-800">
+                หน้าแรก
+              </a>
+            </li>
+            <li>
+              <a className="text-gray-500">ระบบชุมชน</a>
+            </li>
+          </ul>
+        </div>
       </div>
 
       {/* Add Post */}

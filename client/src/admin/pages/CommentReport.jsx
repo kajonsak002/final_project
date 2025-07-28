@@ -101,19 +101,20 @@ function CommentReport() {
       <div>
         <ToastContainer />
       </div>
-      <div className="breadcrumbs text-md">
-        <ul>
-          <li>
-            <a>หน้าเเรก</a>
-          </li>
-          <li>จัดการรายงานโพสต์</li>
-        </ul>
-      </div>
-
-      <div className="card bg-base-100 w-full shadow-sm mt-4">
-        <div className="card-body">
-          <div className="flex justify-between items-center flex-wrap gap-4"></div>
-          {/* <SearchBar value={searchTerm} onChange={setSearchTerm} /> */}
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
+        <div className="breadcrumbs text-sm">
+          <ul>
+            <li>
+              <a
+                href="/admin/dashboard"
+                className="text-blue-600 hover:text-blue-800">
+                หน้าแรก
+              </a>
+            </li>
+            <li>
+              <a className="text-gray-500">จัดการรายงานความคิดเห็น</a>
+            </li>
+          </ul>
         </div>
       </div>
 

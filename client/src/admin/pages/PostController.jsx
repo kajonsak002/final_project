@@ -91,21 +91,20 @@ function PostController() {
       <div>
         <ToastContainer />
       </div>
-      <div className="breadcrumbs text-md">
-        <ul>
-          <li>
-            <a>หน้าเเรก</a>
-          </li>
-          <li>จัดการอนุมัติโพสต์</li>
-        </ul>
-      </div>
-
-      <div className="card bg-base-100 w-full shadow-md rounded-xl">
-        <div className="card-body">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-            {/* ส่วนค้นหา */}
-            <div className="w-full lg:w-auto"></div>
-          </div>
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
+        <div className="breadcrumbs text-sm">
+          <ul>
+            <li>
+              <a
+                href="/admin/dashboard"
+                className="text-blue-600 hover:text-blue-800">
+                หน้าแรก
+              </a>
+            </li>
+            <li>
+              <a className="text-gray-500">จัดการอนุมัติโพสต์</a>
+            </li>
+          </ul>
         </div>
       </div>
 

@@ -114,13 +114,23 @@ const CategoryController = () => {
   };
 
   return (
-    <div className="w-full min-h-screen px-4 py-2">
+    <div className="w-full min-h-screen">
       <ToastContainer />
-      <div className="breadcrumbs text-md mb-2">
-        <ul>
-          <li>หน้าแรก</li>
-          <li>จัดการหมวดหมู่สัตว์</li>
-        </ul>
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
+        <div className="breadcrumbs text-sm">
+          <ul>
+            <li>
+              <a
+                href="/admin/dashboard"
+                className="text-blue-600 hover:text-blue-800">
+                หน้าแรก
+              </a>
+            </li>
+            <li>
+              <a className="text-gray-500">จัดการหมวดหมู่สัตว์</a>
+            </li>
+          </ul>
+        </div>
       </div>
       <div className="card bg-base-100 w-full shadow-sm mb-4">
         <div className="card-body">

@@ -180,11 +180,19 @@ function Product() {
 
   return (
     <div>
-      <div className="breadcrumbs text-md">
-        <ul>
-          <li>หน้าเเรก</li>
-          <li>จัดการสินค้า</li>
-        </ul>
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
+        <div className="breadcrumbs text-sm">
+          <ul>
+            <li>
+              <a href="/profile" className="text-blue-600 hover:text-blue-800">
+                หน้าแรก
+              </a>
+            </li>
+            <li>
+              <a className="text-gray-500">จัดการสินค้า</a>
+            </li>
+          </ul>
+        </div>
       </div>
       <div className="card bg-base-100 w-full shadow-md mt-6 rounded-xl">
         <div className="card-body">

@@ -98,11 +98,19 @@ const AnimalReq = () => {
   return (
     <div>
       <ToastContainer />
-      <div className="breadcrumbs text-md">
-        <ul>
-          <li>หน้าเเรก</li>
-          <li>ส่งคำร้องเพิ่มรายการสัตว์</li>
-        </ul>
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
+        <div className="breadcrumbs text-sm">
+          <ul>
+            <li>
+              <a href="/profile" className="text-blue-600 hover:text-blue-800">
+                หน้าแรก
+              </a>
+            </li>
+            <li>
+              <a className="text-gray-500">ส่งคำร้องเพิ่มรายการสัตว์</a>
+            </li>
+          </ul>
+        </div>
       </div>
 
       <div className="card bg-base-100 w-full shadow-md mt-6 rounded-xl">
@@ -127,7 +135,8 @@ const AnimalReq = () => {
               className="btn bg-green-600 hover:bg-green-700 text-white w-full lg:w-[160px]"
               onClick={() => {
                 setIsModalOpen(true);
-                setFormData({ animal_name: "", category_id: "" });
+                setAnimal_name("");
+                setCategory_id("");
               }}>
               <CirclePlus className="mr-2" /> เพิ่มคำร้อง
             </button>

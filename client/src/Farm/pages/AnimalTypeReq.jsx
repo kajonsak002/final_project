@@ -95,11 +95,19 @@ function AnimalTypeReq() {
   return (
     <div>
       <ToastContainer />
-      <div className="breadcrumbs text-md">
-        <ul>
-          <li>หน้าเเรก</li>
-          <li>ส่งคำร้องเพิ่มประเภทสัตว์</li>
-        </ul>
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
+        <div className="breadcrumbs text-sm">
+          <ul>
+            <li>
+              <a href="/profile" className="text-blue-600 hover:text-blue-800">
+                หน้าแรก
+              </a>
+            </li>
+            <li>
+              <a className="text-gray-500">ส่งคำร้องเพิ่มประเภทสัตว์</a>
+            </li>
+          </ul>
+        </div>
       </div>
 
       <div className="card bg-base-100 w-full shadow-md mt-6 rounded-xl">
