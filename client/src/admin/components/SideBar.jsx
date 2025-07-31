@@ -59,7 +59,7 @@ const menuItems = [
     path: "comment_report",
     countKey: "total_comment_report_waiting",
   },
-  { label: "เเจ้งเตือนข่าวสาร", icon: <Newspaper size={20} />, path: "news" },
+  { label: "ข่าวสาร", icon: <Newspaper size={20} />, path: "news" },
   {
     label: "คำร้องเพิ่มรายการสัตว์",
     icon: <ChartColumnBig size={20} />,

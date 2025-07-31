@@ -1,47 +1,50 @@
 import React, { useState } from "react";
-import TinyEditor from "../../components/TinyEditor";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { useEffect } from "react";
+import dayjs from "dayjs";
+import "dayjs/locale/th";
+import Pagination from "../../admin/components/Pagination";
+import SearchBar from "../../admin/components/SearchBar";
+
+dayjs.locale("th");
 
 function News() {
-  const [news, setNews] = useState([
-    {
-      id: 1,
-      title: "โรคระบาดร้ายแรงในไก่",
-      des: "พบการระบาดของโรคไข้หวัดนกในหลายพื้นที่ เกษตรกรควรเฝ้าระวังและฉีดวัคซีนป้องกัน",
-      date: "19 เมษายน 2568",
-    },
-    {
-      id: 2,
-      title: "เทคนิคการเลี้ยงหมูแบบประหยัดต้นทุน",
-      des: "เรียนรู้วิธีการจัดการอาหารและที่อยู่อาศัยเพื่อลดต้นทุนการเลี้ยงหมู",
-      date: "31 เมษายน 2568",
-    },
-    {
-      id: 3,
-      title: "การปรับปรุงพันธุ์วัวนมเพื่อเพิ่มผลผลิต",
-      des: "เทคนิคการคัดเลือกและผสมพันธุ์วัวนมเพื่อเพิ่มปริมาณน้ำนม",
-      date: "22 เมษายน 2568",
-    },
-    {
-      id: 4,
-      title: "การจัดการฟาร์มแบบออแกนิก",
-      des: "แนวทางการทำฟาร์มแบบธรรมชาติ ไม่ใช้สารเคมี เพื่อผลผลิตที่ปลอดภัย",
-      date: "19 มกราคม 2568",
-    },
-    {
-      id: 5,
-      title: "การตลาดออนไลน์สำหรับเกษตรกร",
-      des: "วิธีการใช้ช่องทางออนไลน์ในการขายผลผลิตทางการเกษตร",
-      date: "8 เมษายน 2568",
-    },
-    {
-      id: 6,
-      title: "การจัดการน้ำในฟาร์ม",
-      des: "เทคนิคการประหยัดน้ำและระบบการให้น้ำที่เหมาะสมสำหรับสัตว์เลี้ยง",
-      date: "5 เมษายน 2568",
-    },
-  ]);
+  const [news, setNews] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
+  const getNews = async () => {
+    try {
+      const res = await axios.get(import.meta.env.VITE_URL_API + "news");
+      console.log(res.data);
+      setNews(res.data.data);
+    } catch (err) {
+      console.log("Error get news : ", err);
+    }
+  };
+
+  useEffect(() => {
+    getNews();
+  }, []);
+
+  const filteredData = news.filter(
+    (item) =>
+      (item.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.content || "").toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+  const pageData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
   return (
     <>
       <div className="w-full">
@@ -66,39 +69,50 @@ function News() {
             <div className="flex flex-col justify-between items-center sm:flex-row gap-2">
               <h1 className="font-bold text-lg">ค้นหา</h1>
               <Link to={"insert"}>
-                <button className="btn btn-primary w-full sm:w-auto ">
+                <button className="btn bg-green-500 text-white w-full sm:w-auto ">
                   เพิ่มข่าวสาร
                 </button>
               </Link>
             </div>
-            <input
-              type="text"
-              className="input w-full"
-              placeholder="ค้นหาข้อมูลข่าวสารจากชื่อข่าว , เนื้อหา"
-            />
+            <SearchBar value={searchTerm} onChange={setSearchTerm} />
           </div>
         </div>
 
-        {news.map((item, index) => (
-          <>
+        {pageData.map((item, index) => (
+          <div key={index}>
             <div className="card card-side bg-base-100 shadow-sm w-full h-[150px] my-2">
               <div className="card-body">
                 <div className="flex justify-between">
                   <div>
-                    <h2 className="card-title text-green-800">{item.title}</h2>
+                    <h2 className="card-title text-green-800">
+                      {item.title.length > 100
+                        ? item.title.slice(0, 130) + "..."
+                        : item.title}
+                    </h2>
                   </div>
-                  <div className="card-date text-green-500">{item.date}</div>
+                  <div className="card-date text-green-500">
+                    {dayjs(item.created_at).format("D MMMM YYYY HH:mm:ss")}
+                  </div>
                 </div>
-                <p className="text-gray-600 text-sm">{item.des}</p>
-                <a
-                  href="#"
-                  className="relative inline-block text-sm text-green-600 font-medium transition-all duration-300 hover:text-green-800 hover:underline">
-                  อ่านเพิ่มเติม →
-                </a>
+                <p className="text-gray-600 text-sm line-clamp-2">
+                  {item.content.replace(/<[^>]+>/g, "").slice(0, 100) + "..."}
+                </p>
+
+                <Link to={`detail/${item.news_id}`}>
+                  <span className="relative inline-block text-sm text-green-600 font-medium transition-all duration-300 hover:text-green-800 hover:underline">
+                    อ่านเพิ่มเติม →
+                  </span>
+                </Link>
               </div>
             </div>
-          </>
+          </div>
         ))}
+
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </>
   );

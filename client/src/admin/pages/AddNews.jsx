@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 function AddNews({ navigate }) {
   const [newsTitle, setNewsTitle] = useState("");
   const [content, setContent] = useState("");
-  const owner_id = localStorage.getItem("farmer_id");
+  const owner_id = "1";
   const navigater = useNavigate();
 
   const handleEditorChange = (value, editor) => {
@@ -17,13 +17,12 @@ function AddNews({ navigate }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // alert("กำลังพัฒนา....");
 
     const payload = {
       newsTitle,
       content,
       owner_id,
-      owner_type: "farmer",
+      owner_type: "admin",
     };
 
     try {
@@ -33,7 +32,7 @@ function AddNews({ navigate }) {
       );
       toast.success(res.data.msg);
       setTimeout(() => {
-        navigater("/profile/news");
+        navigater("/admin/news");
       }, 1000);
       console.log(res.data.msg);
     } catch (err) {
@@ -51,14 +50,14 @@ function AddNews({ navigate }) {
             <ul>
               <li>
                 <a
-                  href="/profile"
+                  href="/admin/dashboard"
                   className="text-blue-600 hover:text-blue-800">
                   หน้าแรก
                 </a>
               </li>
               <li>
                 <a
-                  href="/profile/news"
+                  href="/admin/news"
                   className="text-blue-600 hover:text-blue-800">
                   ข่าวสาร
                 </a>

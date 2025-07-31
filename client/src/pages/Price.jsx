@@ -80,8 +80,8 @@ function Price() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50">
-      <div className="mx-8 my-5 px-5">
+    <div className="w-full min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 overflow-x-hidden">
+      <div className="max-w-7xl mx-auto py-5 px-4">
         {/* Header */}
         <div className="bg-gradient-to-r from-green-600 to-green-800 rounded-xl p-6 mb-6 text-white shadow-lg">
           <div className="flex items-center gap-3 mb-2">

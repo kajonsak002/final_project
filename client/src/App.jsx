@@ -40,9 +40,11 @@ import ForGotPassAdmin from "./admin/pages/forGotPassword";
 import { SummaryCountProvider } from "./admin/components/SummaryCountContext";
 import Newslist from "./pages/Newslist";
 import AddNews from "./Farm/pages/AddNews";
+import AddNewsAdmin from "./admin/pages/AddNews.jsx";
+import NewTest from "./newtest.jsx";
+import NewsDetail from "./pages/NewsDetail.jsx";
 
 function App() {
-  const link = ["/admin/dashboard", "/admin/news"];
   const router = createBrowserRouter([
     { path: "/admin/reset_password", element: <ForGotPassAdmin /> },
     {
@@ -75,6 +77,10 @@ function App() {
           path: "forgot_password",
           element: <ForGotPass />,
         },
+        {
+          path: "news/detail/:id",
+          element: <NewsDetail />,
+        },
       ],
     },
     {
@@ -90,7 +96,8 @@ function App() {
         { path: "/admin/post", element: <PostController /> },
         { path: "/admin/report_post", element: <PostReportController /> },
         { path: "/admin/news", element: <News /> },
-        { path: "/admin/news/insert", element: <AddNews navigate={link} /> },
+        { path: "/admin/news/detail/:id", element: <NewsDetail /> },
+        { path: "/admin/news/insert", element: <AddNewsAdmin /> },
         { path: "/admin/report_animal", element: <ReportAnimals /> },
         { path: "/admin/report_product", element: <ReportProducts /> },
         { path: "/admin/book/add_guild_book", element: <AddGuileBook /> },
@@ -114,6 +121,7 @@ function App() {
         { path: "/profile/social", element: <Comunity /> },
         { path: "/profile/news", element: <News /> },
         { path: "/profile/news/insert", element: <AddNews /> },
+        { path: "/profile/news/detail/:id", element: <NewsDetail /> },
         { path: "/profile/logs", element: <Logs /> },
       ],
     },
