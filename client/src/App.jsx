@@ -43,6 +43,8 @@ import AddNews from "./Farm/pages/AddNews";
 import AddNewsAdmin from "./admin/pages/AddNews.jsx";
 import NewTest from "./newtest.jsx";
 import NewsDetail from "./pages/NewsDetail.jsx";
+import GuildBookContro from "./admin/pages/GuildBookContro.jsx";
+import EditGuildBook from "./admin/pages/EditGuildBook.jsx";
 
 function App() {
   const router = createBrowserRouter([
@@ -100,7 +102,8 @@ function App() {
         { path: "/admin/news/insert", element: <AddNewsAdmin /> },
         { path: "/admin/report_animal", element: <ReportAnimals /> },
         { path: "/admin/report_product", element: <ReportProducts /> },
-        { path: "/admin/book/add_guild_book", element: <AddGuileBook /> },
+        { path: "/admin/book/add_guild_book", element: <GuildBookContro /> },
+        { path: "/admin/book/edit/:id", element: <EditGuildBook /> },
         { path: "/admin/comment_report", element: <CommentReport /> },
         { path: "/admin/animal_request", element: <AnimalRequest /> },
         { path: "/admin/animal_type_request", element: <AnimalTypeRequest /> },

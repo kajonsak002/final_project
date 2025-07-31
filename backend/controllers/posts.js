@@ -109,7 +109,6 @@ exports.editPost = async (req, res) => {
 
     let newImagePath = post.image_post;
 
-    // ถ้าต้องการลบรูปภาพเดิม
     if (remove_image === "true" || remove_image === true) {
       if (post.image_post) {
         deleteImage(post.image_post);
@@ -117,7 +116,6 @@ exports.editPost = async (req, res) => {
       newImagePath = null;
     }
 
-    // ถ้ามีการอัปโหลดรูปใหม่
     if (image) {
       if (post.image_post) {
         deleteImage(post.image_post);
