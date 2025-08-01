@@ -1,6 +1,6 @@
 import { CircleDollarSign, Earth, Heart, Info, Users } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, Links } from "react-router-dom";
 import axios from "axios";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
@@ -10,6 +10,7 @@ import "swiper/css/navigation";
 
 function Home() {
   const [data, setData] = useState([]);
+  const [news, setNews] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -17,7 +18,9 @@ function Home() {
         const response = await axios.get(
           import.meta.env.VITE_URL_API + "all_farms"
         );
+        const res = await axios.get(import.meta.env.VITE_URL_API + "news");
         setData(response.data);
+        setNews(res.data.data);
       } catch (error) {
         console.error("Error fetching farm data:", error);
       }
@@ -25,44 +28,44 @@ function Home() {
     fetchData();
   }, []);
 
-  const [news, setNews] = useState([
-    {
-      id: 1,
-      title: "โรคระบาดร้ายแรงในไก่",
-      des: "พบการระบาดของโรคไข้หวัดนกในหลายพื้นที่ เกษตรกรควรเฝ้าระวังและฉีดวัคซีนป้องกัน",
-      date: "19 เมษายน 2568",
-    },
-    {
-      id: 2,
-      title: "เทคนิคการเลี้ยงหมูแบบประหยัดต้นทุน",
-      des: "เรียนรู้วิธีการจัดการอาหารและที่อยู่อาศัยเพื่อลดต้นทุนการเลี้ยงหมู",
-      date: "31 เมษายน 2568",
-    },
-    {
-      id: 3,
-      title: "การปรับปรุงพันธุ์วัวนมเพื่อเพิ่มผลผลิต",
-      des: "เทคนิคการคัดเลือกและผสมพันธุ์วัวนมเพื่อเพิ่มปริมาณน้ำนม",
-      date: "22 เมษายน 2568",
-    },
-    {
-      id: 4,
-      title: "การจัดการฟาร์มแบบออแกนิก",
-      des: "แนวทางการทำฟาร์มแบบธรรมชาติ ไม่ใช้สารเคมี เพื่อผลผลิตที่ปลอดภัย",
-      date: "19 มกราคม 2568",
-    },
-    {
-      id: 5,
-      title: "การตลาดออนไลน์สำหรับเกษตรกร",
-      des: "วิธีการใช้ช่องทางออนไลน์ในการขายผลผลิตทางการเกษตร",
-      date: "8 เมษายน 2568",
-    },
-    {
-      id: 6,
-      title: "การจัดการน้ำในฟาร์ม",
-      des: "เทคนิคการประหยัดน้ำและระบบการให้น้ำที่เหมาะสมสำหรับสัตว์เลี้ยง",
-      date: "5 เมษายน 2568",
-    },
-  ]);
+  // const [news, setNews] = useState([
+  //   {
+  //     id: 1,
+  //     title: "โรคระบาดร้ายแรงในไก่",
+  //     des: "พบการระบาดของโรคไข้หวัดนกในหลายพื้นที่ เกษตรกรควรเฝ้าระวังและฉีดวัคซีนป้องกัน",
+  //     date: "19 เมษายน 2568",
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "เทคนิคการเลี้ยงหมูแบบประหยัดต้นทุน",
+  //     des: "เรียนรู้วิธีการจัดการอาหารและที่อยู่อาศัยเพื่อลดต้นทุนการเลี้ยงหมู",
+  //     date: "31 เมษายน 2568",
+  //   },
+  //   {
+  //     id: 3,
+  //     title: "การปรับปรุงพันธุ์วัวนมเพื่อเพิ่มผลผลิต",
+  //     des: "เทคนิคการคัดเลือกและผสมพันธุ์วัวนมเพื่อเพิ่มปริมาณน้ำนม",
+  //     date: "22 เมษายน 2568",
+  //   },
+  //   {
+  //     id: 4,
+  //     title: "การจัดการฟาร์มแบบออแกนิก",
+  //     des: "แนวทางการทำฟาร์มแบบธรรมชาติ ไม่ใช้สารเคมี เพื่อผลผลิตที่ปลอดภัย",
+  //     date: "19 มกราคม 2568",
+  //   },
+  //   {
+  //     id: 5,
+  //     title: "การตลาดออนไลน์สำหรับเกษตรกร",
+  //     des: "วิธีการใช้ช่องทางออนไลน์ในการขายผลผลิตทางการเกษตร",
+  //     date: "8 เมษายน 2568",
+  //   },
+  //   {
+  //     id: 6,
+  //     title: "การจัดการน้ำในฟาร์ม",
+  //     des: "เทคนิคการประหยัดน้ำและระบบการให้น้ำที่เหมาะสมสำหรับสัตว์เลี้ยง",
+  //     date: "5 เมษายน 2568",
+  //   },
+  // ]);
 
   return (
     <div className="bg-[#F9FAFB]">
@@ -183,6 +186,55 @@ function Home() {
         </Swiper>
       </div>
 
+      {/* News section */}
+      <div className="w-full bg-white p-8">
+        <h2 className="text-3xl font-bold text-center mb-8 text-green-800">
+          ข่าวสารต่างๆ
+        </h2>
+        <p className="text-green-800 font-bold text-xl">การเเจ้งเตือนข่าวสาร</p>
+        <p className="text-gray-600 mb-5">
+          ข่าวสารต่างๆจากปศุสัตว์ เเละฟาร์มในระบบของเรา
+        </p>
+        {news.slice(0, 5).map((item, index) => (
+          <div key={index}>
+            <div
+              className="card card-side bg-base-100 shadow-sm w-full h-[150px] my-2"
+              key={index}>
+              <div className="card-body">
+                <div className="flex justify-between">
+                  <div>
+                    <h2 className="card-title text-green-800">{item.title}</h2>
+                  </div>
+                  <div className="card-date text-green-500">
+                    {new Date(item.created_at).toLocaleDateString("th-TH", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </div>
+                </div>
+                <p className="text-gray-600 text-sm">
+                  {item.content.replace(/<[^>]+>/g, "").slice(0, 50) + "..."}
+                </p>
+                <Link
+                  to={`/news/detail/${item.news_id}`}
+                  className="relative inline-block text-sm text-green-600 font-medium transition-all duration-300 hover:text-green-800 hover:underline">
+                  อ่านเพิ่มเติม →
+                </Link>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        <div className="flex justify-center items-center">
+          <Link to={"news"}>
+            <button className="btn bg-green-500 text-white">
+              ดูข่าวทั้งหมด
+            </button>
+          </Link>
+        </div>
+      </div>
+
       {/* ประโยชน์ */}
       <div className="container mx-auto my-20 px-4 animate-on-scroll">
         <h2 className="text-3xl font-bold text-center mb-12 text-green-800">
@@ -230,42 +282,6 @@ function Home() {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* News section */}
-      <div className="w-full bg-white p-8">
-        <h2 className="text-3xl font-bold text-center mb-8 text-green-800">
-          ข่าวสารต่างๆ
-        </h2>
-        <p className="text-green-800 font-bold text-xl">การเเจ้งเตือนข่าวสาร</p>
-        <p className="text-gray-600 mb-5">
-          ข่าวสารต่างๆจากปศุสัตว์ เเละฟาร์มในระบบของเรา
-        </p>
-        {news.map((item, index) => (
-          <div key={index}>
-            <div
-              className="card card-side bg-base-100 shadow-sm w-full h-[150px] my-2"
-              key={index}>
-              <div className="card-body">
-                <div className="flex justify-between">
-                  <div>
-                    <h2 className="card-title text-green-800">{item.title}</h2>
-                  </div>
-                  <div className="card-date text-green-500">{item.date}</div>
-                </div>
-                <p className="text-gray-600 text-sm">{item.des}</p>
-                <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                  }}
-                  className="relative inline-block text-sm text-green-600 font-medium transition-all duration-300 hover:text-green-800 hover:underline">
-                  อ่านเพิ่มเติม →
-                </a>
-              </div>
-            </div>
-          </div>
-        ))}
       </div>
 
       {/* ฟีเจอร์ของระบบ */}

@@ -36,7 +36,7 @@ function FarmProfile() {
         }
       );
       console.log(res.data);
-      setFarm(res.data);
+      setFarm(res.data.data);
     } catch (error) {
       console.error("Error fetching farm data:", error);
     }
@@ -48,6 +48,7 @@ function FarmProfile() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* {JSON.stringify(farm, null, 2)} */}
       {/* Banner Section */}
       <div className="relative h-80 overflow-hidden">
         <img

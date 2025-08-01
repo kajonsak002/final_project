@@ -57,7 +57,7 @@ function App() {
         { path: "product", element: <ProductFarm /> },
         { path: "farmList", element: <FarmPage /> },
         { path: "book", element: <GuildBook /> },
-        { path: "book_detail", element: <BookDetail /> },
+        { path: "book/:id", element: <BookDetail /> },
         { path: "price", element: <Price /> },
         {
           path: "login",

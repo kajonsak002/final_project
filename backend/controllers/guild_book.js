@@ -39,6 +39,31 @@ exports.getGuildBook = async (req, res) => {
   }
 };
 
+exports.getGuildBookDetail = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [rows] = await db
+      .promise()
+      .query("SELECT * FROM guildbook WHERE guildbook_id = ?", [id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ msg: "ไม่พบข้อมูลคู่่มือการเลี้ยงสัตว์" });
+    }
+
+    const formatRows = rows.map((item) => ({
+      ...item,
+      image: item.image
+        ? `${req.protocol}://${req.headers.host}/${item.image}`
+        : null,
+    }));
+
+    return res.status(200).json({ msg: "success", data: formatRows });
+  } catch (err) {
+    console.error("Error get guild book", err);
+    return res.status(500).json({ msg: "เกิดข้อผิดพลาดในการดึงข้อมูลคู่มือ" });
+  }
+};
+
 exports.insertGuildBook = async (req, res) => {
   const { title, content } = req.body;
   const image = req.file;
