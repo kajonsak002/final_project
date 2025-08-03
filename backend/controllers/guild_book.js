@@ -50,14 +50,15 @@ exports.getGuildBookDetail = async (req, res) => {
       return res.status(404).json({ msg: "ไม่พบข้อมูลคู่่มือการเลี้ยงสัตว์" });
     }
 
-    const formatRows = rows.map((item) => ({
+    const item = rows[0];
+    const formatted = {
       ...item,
       image: item.image
         ? `${req.protocol}://${req.headers.host}/${item.image}`
         : null,
-    }));
+    };
 
-    return res.status(200).json({ msg: "success", data: formatRows });
+    return res.status(200).json({ msg: "success", data: formatted });
   } catch (err) {
     console.error("Error get guild book", err);
     return res.status(500).json({ msg: "เกิดข้อผิดพลาดในการดึงข้อมูลคู่มือ" });
@@ -65,7 +66,7 @@ exports.getGuildBookDetail = async (req, res) => {
 };
 
 exports.insertGuildBook = async (req, res) => {
-  const { title, content } = req.body;
+  const { title, content, source_refs } = req.body;
   const image = req.file;
 
   try {
@@ -76,11 +77,13 @@ exports.insertGuildBook = async (req, res) => {
 
     const now = getFormattedNow();
 
+    source_refs ? JSON.parse(source_refs) : [];
+
     const [result] = await db
       .promise()
       .query(
-        "INSERT INTO guildbook (title, content, image, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
-        [title, content, image.path, now, now]
+        "INSERT INTO guildbook (title, content, image, source_refs , created_at, updated_at) VALUES (?, ?, ?, ? , ?, ?)",
+        [title, content, image.path, source_refs, now, now]
       );
 
     if (result.affectedRows === 0) {
@@ -98,7 +101,7 @@ exports.insertGuildBook = async (req, res) => {
 
 exports.updateGuildBook = async (req, res) => {
   const { id } = req.params;
-  const { title, content } = req.body;
+  const { title, content, source_refs } = req.body;
   const image = req.file;
 
   try {
@@ -125,8 +128,8 @@ exports.updateGuildBook = async (req, res) => {
     const [result] = await db
       .promise()
       .query(
-        "UPDATE guildbook SET title = ?, content = ?, image = ?, updated_at = ? WHERE guildbook_id = ?",
-        [title, content, newImage, now, id]
+        "UPDATE guildbook SET title = ?, content = ?, image = ?, source_refs = ?, updated_at = ? WHERE guildbook_id = ?",
+        [title, content, newImage, source_refs, now, id]
       );
 
     if (result.affectedRows === 0) {

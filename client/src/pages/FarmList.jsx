@@ -104,14 +104,17 @@ function FarmPage() {
             <h2 className="text-xl font-semibold text-gray-800">ค้นหาฟาร์ม</h2>
           </div>
           <div className="relative">
-            <SearchBar
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="ค้นหาจากชื่อฟาร์ม..."
               value={searchTerm}
-              onChange={setSearchTerm}
-              className="w-full"
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
             />
           </div>
           <div className="mt-3">
-            <pre>{JSON.stringify({ province, district, tambon }, null, 2)}</pre>
+            {/* <pre>{JSON.stringify({ province, district, tambon }, null, 2)}</pre> */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Type Filter */}
               <div className="space-y-2">

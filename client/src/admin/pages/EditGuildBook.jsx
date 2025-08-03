@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import GuildBookEditor from "../components/GuildbookEditor";
+import { toast, ToastContainer } from "react-toastify";
 
 function EditGuildBook() {
   const [content, setContent] = useState("");
@@ -11,6 +12,7 @@ function EditGuildBook() {
   const [fetchLoading, setFetchLoading] = useState(true);
   const [imagePreview, setImagePreview] = useState(null);
   const [currentImage, setCurrentImage] = useState(null);
+  const [sourceRefs, setSourceRefs] = useState([""]);
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -22,33 +24,28 @@ function EditGuildBook() {
     try {
       setFetchLoading(true);
       const response = await axios.get(
-        import.meta.env.VITE_URL_API + "guildbook"
+        import.meta.env.VITE_URL_API + `guildbook/${id}`
       );
-      const guildBook = response.data.data.find(
-        (item) => item.guildbook_id == id
+      const guildBook = response.data.data;
+      // console.log(guildBook);
+      setTitle(guildBook.title || "");
+      setContent(guildBook.content || "");
+      setSourceRefs(
+        guildBook.source_refs && guildBook.source_refs.length > 0
+          ? guildBook.source_refs
+          : [""]
       );
-
-      if (guildBook) {
-        setTitle(guildBook.title);
-        setContent(guildBook.content);
-        if (guildBook.image) {
-          setCurrentImage(guildBook.image);
-          setImagePreview(guildBook.image);
-        }
-      } else {
-        alert("ไม่พบข้อมูลคู่มือที่ต้องการแก้ไข");
-        navigate("/admin/book");
-      }
+      setCurrentImage(guildBook.image || null);
+      setImagePreview(guildBook.image || null);
     } catch (error) {
       console.error("Error fetching guild book:", error);
-      alert("เกิดข้อผิดพลาดในการดึงข้อมูล");
       navigate("/admin/book");
     } finally {
       setFetchLoading(false);
     }
   };
 
-  const handleEditorChange = (value, editor) => {
+  const handleEditorChange = (value) => {
     setContent(value);
   };
 
@@ -78,6 +75,7 @@ function EditGuildBook() {
       const formData = new FormData();
       formData.append("title", title);
       formData.append("content", content);
+      formData.append("source_refs", JSON.stringify(sourceRefs));
       if (image) {
         formData.append("image", image);
       }
@@ -93,12 +91,14 @@ function EditGuildBook() {
       );
 
       if (response.status === 200) {
-        alert("แก้ไขคู่มือเรียบร้อยแล้ว");
-        navigate("/admin/book");
+        toast.success("แก้ไขคู่มือเรียบร้อยแล้ว");
+        setTimeout(() => {
+          navigate("/admin/book");
+        }, 1000);
       }
     } catch (error) {
       console.error("Error updating guild book:", error);
-      alert("เกิดข้อผิดพลาดในการแก้ไขคู่มือ");
+      toast.error("เกิดข้อผิดพลาดในการแก้ไขคู่มือ");
     } finally {
       setLoading(false);
     }
@@ -118,6 +118,7 @@ function EditGuildBook() {
 
   return (
     <div className="min-h-screen">
+      <ToastContainer />
       <div className="w-full">
         <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
           <div className="breadcrumbs text-sm">
@@ -137,7 +138,7 @@ function EditGuildBook() {
                 </a>
               </li>
               <li>
-                <a className="text-gray-500">แก้ไขคู่มือการเลี้ยงสัตว์</a>
+                <span className="text-gray-500">แก้ไขคู่มือการเลี้ยงสัตว์</span>
               </li>
             </ul>
           </div>
@@ -159,11 +160,12 @@ function EditGuildBook() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="ระบุหัวข้อ"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg"
                 maxLength={200}
                 required
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 ภาพปก
@@ -172,18 +174,23 @@ function EditGuildBook() {
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg"
               />
               {imagePreview && (
                 <div className="mt-2">
                   <img
-                    src={imagePreview}
+                    src={
+                      imagePreview.startsWith("http")
+                        ? imagePreview
+                        : URL.createObjectURL(image)
+                    }
                     alt="Preview"
                     className="w-32 h-32 object-cover rounded-lg border"
                   />
                 </div>
               )}
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 เนื้อหา <span className="text-red-500">*</span>
@@ -194,6 +201,41 @@ function EditGuildBook() {
                   handleEditorChange={handleEditorChange}
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                แหล่งที่มา
+              </label>
+              {sourceRefs.map((ref, i) => (
+                <div key={i} className="flex items-center gap-2 mb-2">
+                  <input
+                    type="text"
+                    placeholder="เช่น กรมปศุสัตว์ หรือ https://..."
+                    value={ref}
+                    onChange={(e) => {
+                      const updated = [...sourceRefs];
+                      updated[i] = e.target.value;
+                      setSourceRefs(updated);
+                    }}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSourceRefs(sourceRefs.filter((_, idx) => idx !== i))
+                    }
+                    className="text-red-500 hover:text-red-700 font-bold">
+                    ลบ
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setSourceRefs([...sourceRefs, ""])}
+                className="mt-2 px-3 py-1 btn btn-green-500">
+                + เพิ่มแหล่งอ้างอิง
+              </button>
             </div>
 
             <div className="flex justify-end gap-2">

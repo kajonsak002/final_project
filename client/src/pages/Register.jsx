@@ -1,4 +1,4 @@
-import { LocateFixed } from "lucide-react";
+import { LocateFixed, MapPin, Map } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
@@ -27,6 +27,8 @@ function MapEvents({ onLocationSelected }) {
 function Register() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [showMap, setShowMap] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -138,15 +140,76 @@ function Register() {
     setSelectedLocation(latlng);
     setFormData({
       ...formData,
-      latitude: latlng.lat.toString(),
-      longitude: latlng.lng.toString(),
+      latitude: latlng.lat.toFixed(6),
+      longitude: latlng.lng.toFixed(6),
     });
+  };
+
+  const getCurrentLocation = () => {
+    setLocationLoading(true);
+
+    if (!navigator.geolocation) {
+      toast.error("เบราว์เซอร์ไม่รองรับการระบุตำแหน่ง");
+      setLocationLoading(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const newLocation = { lat: latitude, lng: longitude };
+
+        setSelectedLocation(newLocation);
+        setFormData({
+          ...formData,
+          latitude: latitude.toFixed(6),
+          longitude: longitude.toFixed(6),
+        });
+
+        // Center map on current location if map is visible
+        if (showMap && mapRef.current) {
+          mapRef.current.setView([latitude, longitude], 15);
+        }
+
+        toast.success("ได้รับตำแหน่งปัจจุบันแล้ว");
+        setLocationLoading(false);
+      },
+      (error) => {
+        let errorMessage = "ไม่สามารถระบุตำแหน่งได้";
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "กรุณาอนุญาตการเข้าถึงตำแหน่งในเบราว์เซอร์";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "ไม่สามารถระบุตำแหน่งได้";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "หมดเวลาในการระบุตำแหน่ง";
+            break;
+        }
+        toast.error(errorMessage);
+        setLocationLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      }
+    );
+  };
+
+  const toggleMap = () => {
+    setShowMap(!showMap);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!files.farm_img || !files.farm_banner) {
       toast.error("กรุณาเลือกรูปภาพให้ครบ");
+      return;
+    }
+    if (!formData.latitude || !formData.longitude) {
+      toast.error("กรุณาเลือกตำแหน่งฟาร์มบนแผนที่");
       return;
     }
     setLoading(true); // Start loading
@@ -255,7 +318,7 @@ function Register() {
                       className="input input-bordered w-full"
                       required
                     />
-                  </div>{" "}
+                  </div>
                   <div className="form-control">
                     <label className="label">
                       <span className="label-text text-black font-medium">
@@ -351,39 +414,63 @@ function Register() {
                 </div>
 
                 <div className="form-control w-full mt-4">
-                  <label className="label">
+                  {/* <label className="label">
                     <span className="label-text text-black font-medium">
-                      เลือกที่ตั้งฟาร์มจากแผนที่ *
+                      เลือกที่ตั้งฟาร์ม *
                     </span>
-                  </label>
-                  <div className="h-[400px] w-full mb-4 relative">
-                    <MapContainer
-                      center={[13.7563, 100.5018]}
-                      zoom={13}
-                      className="h-full w-full"
-                      whenCreated={(map) => {
-                        mapRef.current = map;
-                      }}>
-                      <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                      />
-                      {selectedLocation && (
-                        <Marker
-                          position={[
-                            selectedLocation.lat,
-                            selectedLocation.lng,
-                          ]}
-                        />
+                  </label> */}
+
+                  {/* Location selection buttons */}
+                  {/* <div className="flex gap-2 mb-4"> */}
+                  {/* <button
+                      type="button"
+                      onClick={getCurrentLocation}
+                      disabled={locationLoading}
+                      className="btn btn-outline btn-sm flex items-center gap-2">
+                      {locationLoading ? (
+                        <>
+                          <svg
+                            className="animate-spin h-4 w-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24">
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                          </svg>
+                          กำลังค้นหา...
+                        </>
+                      ) : (
+                        <>
+                          <LocateFixed size={16} />
+                          ใช้ตำแหน่งปัจจุบัน
+                        </>
                       )}
-                      <MapEvents onLocationSelected={handleLocationSelect} />
-                    </MapContainer>
-                  </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={toggleMap}
+                      className="btn btn-outline btn-sm flex items-center gap-2">
+                      <Map size={16} />
+                      {showMap ? "ซ่อนแผนที่" : "เปิดแผนที่"}
+                    </button> */}
+                  {/* </div> */}
+
+                  {/* Coordinate inputs */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="form-control">
                       <label className="label">
                         <span className="label-text text-black font-medium">
-                          ละติจูด
+                          ละติจูด *
                         </span>
                       </label>
                       <input
@@ -391,14 +478,16 @@ function Register() {
                         name="latitude"
                         value={formData.latitude}
                         onChange={handleInputChange}
+                        placeholder="ละติจูด"
                         className="input input-bordered w-full"
                         readOnly
+                        required
                       />
                     </div>
                     <div className="form-control">
                       <label className="label">
                         <span className="label-text text-black font-medium">
-                          ลองจิจูด
+                          ลองจิจูด *
                         </span>
                       </label>
                       <input
@@ -406,11 +495,86 @@ function Register() {
                         name="longitude"
                         value={formData.longitude}
                         onChange={handleInputChange}
+                        placeholder="ลองจิจูด"
                         className="input input-bordered w-full"
                         readOnly
+                        required
                       />
                     </div>
+                    <button
+                      type="button"
+                      onClick={getCurrentLocation}
+                      disabled={locationLoading}
+                      className="btn btn-outline btn-sm flex items-center gap-2">
+                      {locationLoading ? (
+                        <>
+                          <svg
+                            className="animate-spin h-4 w-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24">
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                          </svg>
+                          กำลังค้นหา...
+                        </>
+                      ) : (
+                        <>
+                          <LocateFixed size={16} />
+                          ใช้ตำแหน่งปัจจุบัน
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={toggleMap}
+                      className="btn btn-outline btn-sm flex items-center gap-2">
+                      <Map size={16} />
+                      {showMap ? "ซ่อนแผนที่" : "เปิดแผนที่"}
+                    </button>
                   </div>
+
+                  {/* Map container - only show when showMap is true */}
+                  {showMap && (
+                    <div className="h-[400px] w-full mb-4 relative border rounded-lg overflow-hidden mt-5">
+                      <MapContainer
+                        center={
+                          selectedLocation
+                            ? [selectedLocation.lat, selectedLocation.lng]
+                            : [13.7563, 100.5018]
+                        }
+                        zoom={selectedLocation ? 15 : 13}
+                        className="h-full w-full"
+                        ref={mapRef}>
+                        <TileLayer
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                        />
+                        {selectedLocation && (
+                          <Marker
+                            position={[
+                              selectedLocation.lat,
+                              selectedLocation.lng,
+                            ]}
+                          />
+                        )}
+                        <MapEvents onLocationSelected={handleLocationSelect} />
+                      </MapContainer>
+                      <div className="absolute top-2 left-2 bg-white px-3 py-1 rounded-md shadow-md text-sm z-[1000]">
+                        คลิกบนแผนที่เพื่อเลือกตำแหน่ง
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-6">

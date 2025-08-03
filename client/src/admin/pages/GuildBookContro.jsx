@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import GuildBookEditor from "../components/GuildbookEditor";
+import { toast, ToastContainer } from "react-toastify";
 
 function GuildBookContro() {
   const [content, setContent] = useState("");
@@ -9,6 +10,7 @@ function GuildBookContro() {
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+  const [sourceRefs, setSourceRefs] = useState([""]);
   const navigate = useNavigate();
 
   const handleEditorChange = (value, editor) => {
@@ -41,6 +43,7 @@ function GuildBookContro() {
       const formData = new FormData();
       formData.append("title", title);
       formData.append("content", content);
+      formData.append("source_refs", JSON.stringify(sourceRefs));
       if (image) {
         formData.append("image", image);
       }
@@ -56,12 +59,14 @@ function GuildBookContro() {
       );
 
       if (response.status === 201) {
-        alert("เพิ่มคู่มือเรียบร้อยแล้ว");
-        navigate("/admin/book");
+        toast.success("เพิ่มคู่มือเรียบร้อยแล้ว");
+        setTimeout(() => {
+          navigate("/admin/book");
+        }, 1000);
       }
     } catch (error) {
       console.error("Error adding guild book:", error);
-      alert("เกิดข้อผิดพลาดในการเพิ่มคู่มือ");
+      toast.error("เกิดข้อผิดพลาดในการเพิ่มคู่มือ");
     } finally {
       setLoading(false);
     }
@@ -71,8 +76,24 @@ function GuildBookContro() {
     navigate("/admin/book");
   };
 
+  const handleSourceRefChange = (index, value) => {
+    const updated = [...sourceRefs];
+    updated[index] = value;
+    setSourceRefs(updated);
+  };
+
+  const addSourceRef = () => {
+    setSourceRefs([...sourceRefs, ""]);
+  };
+
+  const removeSourceRef = (index) => {
+    const updated = sourceRefs.filter((_, i) => i !== index);
+    setSourceRefs(updated);
+  };
+
   return (
     <div className="min-h-screen">
+      <ToastContainer />
       <div className="w-full">
         <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
           <div className="breadcrumbs text-sm">
@@ -149,6 +170,36 @@ function GuildBookContro() {
                   handleEditorChange={handleEditorChange}
                 />
               </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                แหล่งที่มา
+              </label>
+              {sourceRefs.map((ref, i) => (
+                <div key={i} className="flex items-center gap-2 mb-2">
+                  <input
+                    type="text"
+                    placeholder="เช่น กรมปศุสัตว์ หรือ https://..."
+                    value={ref}
+                    onChange={(e) => handleSourceRefChange(i, e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                  {i > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => removeSourceRef(i)}
+                      className="text-red-500 hover:text-red-700 font-bold">
+                      ลบ
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addSourceRef}
+                className="mt-2 px-3 py-1 btn bg-green-500 text-white">
+                + เพิ่มแหล่งอ้างอิง
+              </button>
             </div>
 
             <div className="flex justify-end gap-2">
