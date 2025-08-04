@@ -104,7 +104,9 @@ exports.updateProduct = async (req, res) => {
     let newImagePath = data.image;
 
     if (image) {
-      deleteImage(data.image);
+      if (data.image) {
+        deleteImage(data.image);
+      }
       newImagePath = image.path;
     }
 
