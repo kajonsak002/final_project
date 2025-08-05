@@ -285,6 +285,19 @@ function Community() {
     }
   };
 
+  const handleDelPost = async (postId) => {
+    try {
+      const res = await axios.post(
+        import.meta.env.VITE_URL_API + `post/delete/${postId}`,
+        { farmer_id: localStorage.getItem("farmer_id") }
+      );
+      toast.success("ลบโพสต์สำเร็จเเล้ว");
+      getPostHistoyry();
+    } catch (err) {
+      console.log("Error to Delete post : ", err);
+    }
+  };
+
   return (
     <>
       <ToastContainer />
@@ -335,14 +348,14 @@ function Community() {
       <div className="flex items-center justify-center mt-6 gap-4">
         <button
           className={`btn ${
-            !isShowPostMe ? "btn-primary" : "btn-outline"
+            !isShowPostMe ? "text-white bg-green-500" : "btn-outline"
           } rounded-md`}
           onClick={getAllPost}>
           โพสต์ทั้งหมด
         </button>
         <button
           className={`btn ${
-            isShowPostMe ? "btn-primary" : "btn-outline"
+            isShowPostMe ? "text-white bg-green-500" : "btn-outline"
           } rounded-md`}
           onClick={getPostHistoyry}>
           โพสต์ของฉัน
@@ -550,7 +563,6 @@ function Community() {
                       </div>
                     </div>
                   )}
-                  {/* Checkbox for remove image */}
                   {editPreview && (
                     <label className="flex items-center gap-2 mt-2">
                       <input
@@ -686,11 +698,18 @@ function Community() {
                       tabIndex={0}
                       className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
                       {isShowPostMe ? (
-                        <li>
-                          <a onClick={() => handleOpenEditPost(post)}>
-                            แก้ไขโพสต์
-                          </a>
-                        </li>
+                        <>
+                          <li>
+                            <a onClick={() => handleOpenEditPost(post)}>
+                              แก้ไขโพสต์
+                            </a>
+                          </li>
+                          <li>
+                            <a onClick={() => handleDelPost(post.post_id)}>
+                              ลบโพสต์
+                            </a>
+                          </li>
+                        </>
                       ) : (
                         <li>
                           <a onClick={() => handleOpenReportModal(post)}>

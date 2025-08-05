@@ -146,7 +146,7 @@ exports.editPost = async (req, res) => {
 };
 
 exports.remove = async (req, res) => {
-  const farmer_id = req.user.id;
+  const { farmer_id } = req.body;
   const postId = req.params.id;
   const [[post]] = await db
     .promise()
@@ -154,10 +154,6 @@ exports.remove = async (req, res) => {
 
   if (!post) {
     return res.status(404).json({ message: "โพสต์ไม่พบ" });
-  }
-
-  if (post.farmer_id !== farmer_id) {
-    return res.status(403).json({ message: "คุณไม่มีสิทธิ์ลบโพสต์นี้" });
   }
 
   await db.promise().query("DELETE FROM posts WHERE post_id = ?", [postId]);

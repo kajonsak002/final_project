@@ -41,7 +41,7 @@ router.post(
   editPost
 );
 
-router.post("/post/delete/:id", auth_Token, remove);
+router.post("/post/delete/:id", remove);
 
 // Route to approval posts
 router.post("/post/approval-post/:id", approvalPost);
