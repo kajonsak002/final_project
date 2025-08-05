@@ -63,7 +63,11 @@ const Sidebar = ({ isOpen }) => {
     {
       name: "ข่าวสาร",
       icon: <MailWarning size={20} />,
-      path: "news",
+      hasDropdown: true,
+      subItems: [
+        { name: "ดูข่าวสาร", path: "news" },
+        { name: "ประวัติข่าวสารของฉัน", path: "news-history" },
+      ],
     },
     {
       name: "บันทึกเหตุการณ์สัตว์",

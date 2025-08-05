@@ -59,7 +59,15 @@ const menuItems = [
     path: "comment_report",
     countKey: "total_comment_report_waiting",
   },
-  { label: "ข่าวสาร", icon: <Newspaper size={20} />, path: "news" },
+  {
+    label: "ข่าวสาร",
+    icon: <Newspaper size={20} />,
+    hasDropdown: true,
+    subItems: [
+      { label: "จัดการข่าวสาร", path: "news" },
+      { label: "ประวัติข่าวสารของฉัน", path: "news-history" },
+    ],
+  },
   {
     label: "คำร้องเพิ่มรายการสัตว์",
     icon: <ChartColumnBig size={20} />,

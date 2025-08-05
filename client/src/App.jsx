@@ -47,6 +47,10 @@ import GuildBookContro from "./admin/pages/GuildBookContro.jsx";
 import EditGuildBook from "./admin/pages/EditGuildBook.jsx";
 import HistoryPostReport from "./Farm/pages/HistoryPostReport.jsx";
 import HistoryCommentReport from "./Farm/pages/HistoryCommentReport.jsx";
+import NewsHistory from "./admin/pages/NewsHistory.jsx";
+import FarmNewsHistory from "./Farm/pages/NewsHistory.jsx";
+import EditNews from "./admin/pages/EditNews.jsx";
+import FarmEditNews from "./Farm/pages/EditNews.jsx";
 
 function App() {
   const router = createBrowserRouter([
@@ -112,6 +116,8 @@ function App() {
         { path: "/admin/animal_all", element: <AnimalAll /> },
         { path: "/admin/animal_type_all", element: <AnimalTypeAll /> },
         { path: "/admin/category", element: <CategoryController /> },
+        { path: "/admin/news-history", element: <NewsHistory /> },
+        { path: "/admin/edit-news/:id", element: <EditNews /> },
       ],
     },
     {
@@ -130,6 +136,8 @@ function App() {
         { path: "/profile/logs", element: <Logs /> },
         { path: "/profile/report/post", element: <HistoryPostReport /> },
         { path: "/profile/report/comment", element: <HistoryCommentReport /> },
+        { path: "/profile/news-history", element: <FarmNewsHistory /> },
+        { path: "/profile/edit-news/:id", element: <FarmEditNews /> },
       ],
     },
     {

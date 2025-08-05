@@ -1,0 +1,215 @@
+import React, { useState, useEffect } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { Edit, Trash2, Eye, Plus } from "lucide-react";
+import Pagination from "../../admin/components/Pagination";
+import dayjs from "dayjs";
+import "dayjs/locale/th";
+
+dayjs.locale("th");
+
+function NewsHistory() {
+  const [newsList, setNewsList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+
+  const navigate = useNavigate();
+
+  const farmer_id = localStorage.getItem("farmer_id");
+
+  useEffect(() => {
+    fetchMyNews();
+  }, []);
+
+  const fetchMyNews = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_URL_API}news/my-news/${farmer_id}/farmer`
+      );
+      setNewsList(response.data.data || []);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching news:", error);
+      toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูล");
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (newsId) => {
+    if (window.confirm("คุณต้องการลบข่าวสารนี้หรือไม่?")) {
+      try {
+        const response = await axios.delete(
+          `${import.meta.env.VITE_URL_API}news/${newsId}`
+        );
+        toast.success(response.data.msg);
+        fetchMyNews();
+      } catch (error) {
+        console.error("Error deleting news:", error);
+        toast.error("เกิดข้อผิดพลาดในการลบข่าวสาร");
+      }
+    }
+  };
+
+  const formatDate = (dateString) => {
+    return dayjs(dateString)
+      .locale("th")
+      .add(543, "year")
+      .format("D MMMM YYYY");
+  };
+
+  const pageData = newsList.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(newsList.length / itemsPerPage);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="loading loading-spinner loading-lg"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen">
+      <ToastContainer />
+      <div className="w-full">
+        {/* Breadcrumb */}
+        <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
+          <div className="breadcrumbs text-sm">
+            <ul>
+              <li>
+                <a
+                  href="/profile"
+                  className="text-blue-600 hover:text-blue-800">
+                  หน้าแรก
+                </a>
+              </li>
+              <li>
+                <a className="text-gray-500">ประวัติข่าวสารของฉัน</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-sm mb-4">
+          <div className="border-b border-gray-200 px-6 py-4">
+            <div className="flex justify-between items-center">
+              <h1 className="text-2xl font-bold text-gray-900">
+                ประวัติข่าวสารของฉัน
+              </h1>
+              {/* <button
+                onClick={() => navigate("/profile/add-news")}
+                className="btn btn-primary flex items-center gap-2">
+                <Plus size={16} />
+                เพิ่มข่าวสารใหม่
+              </button> */}
+            </div>
+          </div>
+        </div>
+
+        {/* News List */}
+        <div className="bg-white rounded-lg shadow-sm">
+          <div className="p-6">
+            {newsList.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500 text-lg">
+                  ยังไม่มีข่าวสารที่คุณโพสต์
+                </p>
+                <button
+                  onClick={() => navigate("/profile/news/insert")}
+                  className="btn btn-primary mt-4">
+                  เพิ่มข่าวสารแรก
+                </button>
+              </div>
+            ) : (
+              <div className="mt-3 w-full">
+                <table className="table bg-base-100 w-full">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>หัวข้อข่าว</th>
+                      <th>วันที่โพสต์</th>
+                      <th>วันที่แก้ไขล่าสุด</th>
+                      <th>แหล่งที่มา</th>
+                      <th className="text-center">การดำเนินการ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageData.length > 0 ? (
+                      pageData.map((news, index) => (
+                        <tr key={news.news_id}>
+                          <td>
+                            {index + 1 + (currentPage - 1) * itemsPerPage}
+                          </td>
+                          <td className="max-w-xs truncate">{news.title}</td>
+                          <td>{formatDate(news.created_at)}</td>
+                          <td>
+                            {news.updated_at
+                              ? formatDate(news.updated_at)
+                              : "-"}
+                          </td>
+                          <td className="max-w-xs truncate">
+                            {news.source_ref || "-"}
+                          </td>
+
+                          <td className="flex justify-center gap-2">
+                            <button
+                              onClick={() =>
+                                navigate(`/profile/news/detail/${news.news_id}`)
+                              }
+                              className="btn btn-sm btn-outline flex items-center gap-1"
+                              title="ดูข่าวสาร">
+                              <Eye size={16} />
+                            </button>
+                            <button
+                              onClick={() =>
+                                navigate(`/profile/edit-news/${news.news_id}`)
+                              }
+                              className="btn btn-sm btn-warning flex items-center gap-1"
+                              title="แก้ไขข่าวสาร">
+                              <Edit size={16} />
+                              แก้ไข
+                            </button>
+                            <button
+                              onClick={() => handleDelete(news.news_id)}
+                              className="btn btn-sm btn-error flex items-center gap-1"
+                              title="ลบข่าวสาร">
+                              <Trash2 size={16} />
+                              ลบ
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="text-center py-4">
+                          ไม่พบข้อมูล
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+
+                {pageData.length > 15 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default NewsHistory;
