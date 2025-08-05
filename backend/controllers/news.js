@@ -60,13 +60,13 @@ exports.getNewsgetNewsDetail = async (req, res) => {
 };
 
 exports.insertNews = async (req, res) => {
-  const { newsTitle, owner_id, content, owner_type } = req.body;
+  const { newsTitle, owner_id, content, owner_type, sourceRef } = req.body;
   try {
     const [rows] = await db
       .promise()
       .query(
-        "INSERT INTO news (owner_id , owner_type ,  title , content ) VALUES (?,?,?,?)",
-        [owner_id, owner_type, newsTitle, content]
+        "INSERT INTO news (owner_id , owner_type ,  title , content , source_ref ) VALUES (?,?,?,?,?)",
+        [owner_id, owner_type, newsTitle, content, sourceRef]
       );
 
     if (rows.affectedRows === 0) {

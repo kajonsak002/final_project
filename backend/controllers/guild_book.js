@@ -79,11 +79,15 @@ exports.insertGuildBook = async (req, res) => {
 
     source_refs ? JSON.parse(source_refs) : [];
 
+    const [[{ next_id }]] = await db
+      .promise()
+      .query("SELECT MAX(guildbook_id) as next_id FROM guildbook");
+
     const [result] = await db
       .promise()
       .query(
-        "INSERT INTO guildbook (title, content, image, source_refs , created_at, updated_at) VALUES (?, ?, ?, ? , ?, ?)",
-        [title, content, image.path, source_refs, now, now]
+        "INSERT INTO guildbook (guildbook_id,title, content, image, source_refs , created_at, updated_at) VALUES (?,?, ?, ?, ? , ?, ?)",
+        [next_id + 1, title, content, image.path, source_refs, now, now]
       );
 
     if (result.affectedRows === 0) {

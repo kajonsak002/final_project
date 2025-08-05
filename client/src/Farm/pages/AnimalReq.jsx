@@ -145,6 +145,11 @@ const AnimalReq = () => {
       </div>
 
       <div className="mt-3 w-full">
+        <div>
+          <h2 className="font-bold text-2xl">
+            ประวัติการส่งคำร้องเพิ่มรายการสัตว์
+          </h2>
+        </div>
         <table className="table bg-base-100 w-full">
           <thead>
             <tr>
@@ -189,7 +194,6 @@ const AnimalReq = () => {
             )}
           </tbody>
         </table>
-
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}

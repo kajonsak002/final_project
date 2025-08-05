@@ -45,6 +45,8 @@ import NewTest from "./newtest.jsx";
 import NewsDetail from "./pages/NewsDetail.jsx";
 import GuildBookContro from "./admin/pages/GuildBookContro.jsx";
 import EditGuildBook from "./admin/pages/EditGuildBook.jsx";
+import HistoryPostReport from "./Farm/pages/HistoryPostReport.jsx";
+import HistoryCommentReport from "./Farm/pages/HistoryCommentReport.jsx";
 
 function App() {
   const router = createBrowserRouter([
@@ -126,6 +128,8 @@ function App() {
         { path: "/profile/news/insert", element: <AddNews /> },
         { path: "/profile/news/detail/:id", element: <NewsDetail /> },
         { path: "/profile/logs", element: <Logs /> },
+        { path: "/profile/report/post", element: <HistoryPostReport /> },
+        { path: "/profile/report/comment", element: <HistoryCommentReport /> },
       ],
     },
     {

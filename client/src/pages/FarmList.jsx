@@ -237,12 +237,12 @@ function FarmPage() {
                     </div>
 
                     {/* View Count */}
-                    <div className="flex items-center mb-4 text-gray-500">
+                    {/* <div className="flex items-center mb-4 text-gray-500">
                       <Eye className="w-4 h-4 mr-2 text-blue-500" />
                       <span className="text-sm">
                         เข้าชม {farm.view_count?.toLocaleString() || 0} ครั้ง
                       </span>
-                    </div>
+                    </div> */}
 
                     {/* Action Button */}
                     <Link

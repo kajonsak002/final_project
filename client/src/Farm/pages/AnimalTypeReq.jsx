@@ -141,6 +141,11 @@ function AnimalTypeReq() {
       </div>
 
       <div className="mt-3 w-full">
+        <div className="my-3">
+          <h2 className="font-bold text-xl">
+            ประวัติการส่งคำร้องเพิ่มประเภทสัตว์
+          </h2>
+        </div>
         <table className="table bg-base-100 w-full">
           <thead>
             <tr>

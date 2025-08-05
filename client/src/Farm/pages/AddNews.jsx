@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 function AddNews({ navigate }) {
   const [newsTitle, setNewsTitle] = useState("");
   const [content, setContent] = useState("");
+  const [sourceRef, setSourceRef] = useState("");
   const owner_id = localStorage.getItem("farmer_id");
   const navigater = useNavigate();
 
@@ -24,6 +25,7 @@ function AddNews({ navigate }) {
       content,
       owner_id,
       owner_type: "farmer",
+      sourceRef,
     };
 
     try {
@@ -99,6 +101,21 @@ function AddNews({ navigate }) {
                 <TinyEditor
                   content={content}
                   handleEditorChange={handleEditorChange}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                แหล่งที่มา
+              </label>
+              <div className="flex items-center gap-2 mb-2">
+                <input
+                  type="text"
+                  placeholder="เช่น กรมปศุสัตว์ หรือ https://..."
+                  value={sourceRef}
+                  onChange={(e) => setSourceRef(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
                 />
               </div>
             </div>

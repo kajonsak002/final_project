@@ -6,6 +6,7 @@ const {
   manageComment,
   hideComment,
   getCommentReport,
+  getReportRecive,
 } = require("../controllers/comment");
 const router = express.Router();
 
@@ -17,5 +18,8 @@ router.post("/comment/hide-comment", hideComment);
 router.post("/comment/report-comment", reportComment);
 router.post("/comment/get-comment-report", getCommentReport);
 router.post("/comment/manage-comment", manageComment);
+
+// history report comment
+router.get("/reports/comment/received/:id", getReportRecive);
 
 module.exports = router;

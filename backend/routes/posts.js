@@ -12,6 +12,8 @@ const {
   getPostByFarmerid,
   getPostReport,
   manageReportPost,
+  getReportRecive,
+  getDetailPost,
 } = require("../controllers/posts");
 const router = express.Router();
 const uploadTo = require("../middleware/upload");
@@ -20,6 +22,7 @@ const uploadImgPost = uploadTo("post_images");
 const auth_Token = require("../middleware/auth_token");
 
 router.post("/post", getAll);
+router.get("/post/:id", getDetailPost);
 router.post("/post-history", getPostByFarmerid);
 router.get("/post-wait-approval", getPostsWaitApproval);
 
@@ -48,5 +51,8 @@ router.post("/post/report-post", reportPost);
 
 router.post("/post/get-post-report", getPostReport);
 router.post("/post/manage-report-post", manageReportPost);
+
+// history report post
+router.get("/reports/post/received/:id", getReportRecive);
 
 module.exports = router;

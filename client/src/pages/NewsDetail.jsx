@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 
 function NewsDetail() {
   const [data, setData] = useState("");
@@ -145,6 +145,15 @@ function NewsDetail() {
     navigate(-1);
   };
 
+  const isValidUrl = (string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
   return (
     <div className="min-h-screen p-4">
       <div className="">
@@ -175,7 +184,7 @@ function NewsDetail() {
               )}
               {data.owner_name && (
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                  ✍️ ผู้เเจ้ง {data.owner_name}
+                  ✍️ ผู้แจ้ง {data.owner_name}
                 </span>
               )}
             </div>
@@ -185,6 +194,33 @@ function NewsDetail() {
               className="prose prose-lg max-w-none text-gray-800 leading-relaxed"
               dangerouslySetInnerHTML={{ __html: data.content }}
             />
+
+            {/* Source Reference Section */}
+            {data.source_ref && (
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                    🔗 แหล่งที่มา
+                  </h3>
+                  <div className="space-y-2">
+                    {isValidUrl(data.source_ref) ? (
+                      <a
+                        href={data.source_ref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        <span className="break-all">{data.source_ref}</span>
+                      </a>
+                    ) : (
+                      <div className="text-gray-700">
+                        <span className="break-all">{data.source_ref}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

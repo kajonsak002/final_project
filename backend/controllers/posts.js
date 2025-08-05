@@ -68,6 +68,7 @@ exports.insert = async (req, res) => {
     const [[{ next_id }]] = await db
       .promise()
       .query("SELECT MAX(post_id) as next_id FROM posts");
+
     const [rows] = await db
       .promise()
       .query(
@@ -185,9 +186,9 @@ exports.getAll = async (req, res) => {
     const protocol = req.protocol;
     const posts = rows.map((post) => ({
       ...post,
-      // image_post: post.image_post
-      //   ? `${protocol}://${host}/${post.image_post.replace(/^\\+/, "")}`
-      //   : null,
+      image_post: post.image_post
+        ? `${protocol}://${host}/${post.image_post.replace(/^\\+/, "")}`
+        : null,
       farm_img: post.farm_img
         ? `${protocol}://${host}/${post.farm_img.replace(/^\\+/, "")}`
         : null,
@@ -197,6 +198,41 @@ exports.getAll = async (req, res) => {
       .json({ message: "Posts fetched successfully", posts, host, protocol });
   } catch (err) {
     console.log(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.getDetailPost = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [rows] = await db.promise().query(
+      `SELECT t1.*, t2.farm_name, t2.farm_img 
+       FROM posts AS t1
+       JOIN farmer AS t2 ON t1.farmer_id = t2.farmer_id
+       WHERE t1.status = 'อนุมัติ'  AND t1.post_id = ?`,
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const host = req.headers.host;
+    const protocol = req.protocol;
+
+    const posts = rows.map((post) => ({
+      ...post,
+      image_post: post.image_post
+        ? `${protocol}://${host}/${post.image_post.replace(/^\\+/, "")}`
+        : null,
+      farm_img: post.farm_img
+        ? `${protocol}://${host}/${post.farm_img.replace(/^\\+/, "")}`
+        : null,
+    }));
+
+    res.status(200).json({ message: "Post fetched successfully", posts });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -401,5 +437,39 @@ exports.manageReportPost = async (req, res) => {
     return res
       .status(500)
       .json({ msg: "เกิดข้อผิดพลาดในการจัดการรายงานโพสต์" });
+  }
+};
+
+exports.getReportRecive = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [rows] = await db.promise().query(
+      `SELECT 
+          pr.report_id,
+          pr.post_id,
+          p.content,
+          pr.reason,
+          pr.report_date,
+          f.farm_name AS reporter_name
+      FROM 
+          post_report pr
+      JOIN 
+          posts p ON pr.post_id = p.post_id
+      JOIN 
+          farmer f ON pr.farmer_id = f.farmer_id
+      WHERE 
+          p.farmer_id = ?
+      ORDER BY pr.report_date ASC
+`,
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ msg: "ไม่พบข้อมูลการถูกรายงาน" });
+    }
+
+    return res.status(200).json({ msg: "success", rows });
+  } catch (err) {
+    console.log("Error get ReportRecive Post : ", err);
   }
 };

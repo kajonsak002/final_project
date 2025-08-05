@@ -161,3 +161,32 @@ exports.manageComment = async (req, res) => {
     res.status(500).json({ msg: "เกิดข้อผิดพลาดในการลบความคิดเห็น" });
   }
 };
+
+exports.getReportRecive = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [rows] = await db.promise().query(
+      `SELECT c.comment_id,
+          c.post_id, c.content, 
+          c.create_at, cr.reason,
+          cr.status AS report_status,
+          cr.report_date,
+          f.farm_name
+        FROM comment_report cr
+        JOIN comments c ON cr.comment_id = c.comment_id
+        JOIN farmer f ON f.farmer_id = cr.farmer_id
+        WHERE c.farmer_id = ?
+        ORDER BY cr.report_date ASC
+        `,
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ msg: "ไม่พบข้อมูลการถูกรายงาน" });
+    }
+
+    return res.status(200).json({ msg: "success", rows });
+  } catch (err) {
+    console.log("Error get ReportRecive Post : ", err);
+  }
+};

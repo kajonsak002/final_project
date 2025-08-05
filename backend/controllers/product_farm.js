@@ -52,11 +52,15 @@ exports.addProduct = async (req, res) => {
   }
 
   try {
+    const [[{ next_id }]] = await db
+      .promise()
+      .query("SELECT MAX(product_id) as next_id FROM products");
+
     const [row] = await db
       .promise()
       .query(
-        `INSERT INTO products (farmer_id, product_name, price, unit, image) VALUES (?, ?, ?, ?, ?)`,
-        [id, name, price, unit, image.path]
+        `INSERT INTO products (product_id,farmer_id, product_name, price, unit, image) VALUES (?,?, ?, ?, ?, ?)`,
+        [next_id + 1, id, name, price, unit, image.path]
       );
 
     if (row.affectedRows === 0) {

@@ -97,10 +97,10 @@ function FarmProfile() {
                     <Mail className="w-5 h-5 mr-3 text-green-600" />
                     <span>{farm.email}</span>
                   </div>
-                  <div className="flex items-center text-gray-700">
+                  {/* <div className="flex items-center text-gray-700">
                     <Eye className="w-5 h-5 mr-3 text-green-600" />
                     <span>เข้าชม {farm.view_count} ครั้ง</span>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
