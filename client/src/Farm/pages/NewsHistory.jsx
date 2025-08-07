@@ -165,23 +165,19 @@ function NewsHistory() {
                               }
                               className="btn btn-sm btn-outline flex items-center gap-1"
                               title="ดูข่าวสาร">
-                              <Eye size={16} />
+                              <Eye size={18} />
                             </button>
                             <button
                               onClick={() =>
                                 navigate(`/profile/edit-news/${news.news_id}`)
                               }
-                              className="btn btn-sm btn-warning flex items-center gap-1"
-                              title="แก้ไขข่าวสาร">
-                              <Edit size={16} />
-                              แก้ไข
+                              className="btn btn-sm bg-green-500 flex items-center gap-1 text-white">
+                              <Edit size={18} />
                             </button>
                             <button
                               onClick={() => handleDelete(news.news_id)}
-                              className="btn btn-sm btn-error flex items-center gap-1"
-                              title="ลบข่าวสาร">
-                              <Trash2 size={16} />
-                              ลบ
+                              className="btn btn-sm bg-red-500 flex items-center gap-1 text-white">
+                              <Trash2 size={18} />
                             </button>
                           </td>
                         </tr>

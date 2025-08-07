@@ -19,6 +19,7 @@ import axios from "axios";
 
 function Profile() {
   const [farm, setFarm] = useState([]);
+  const [products, setProducts] = useState([]);
   const [activeTab, setActiveTab] = useState("products");
 
   const getFarmData = async () => {
@@ -37,9 +38,29 @@ function Profile() {
     }
   };
 
+  const getProductFarm = async () => {
+    const id = localStorage.getItem("farmer_id");
+    try {
+      setProducts([]);
+      const res = await axios.get(
+        import.meta.env.VITE_URL_API + `farm-products/${id}`
+      );
+      setProducts(res.data.data);
+    } catch (error) {
+      toast.error(
+        error.response?.data?.msg || "เกิดข้อผิดพลาดในการดึงข้อมูลสินค้า"
+      );
+    }
+  };
+
   useEffect(() => {
-    getFarmData();
+    const fetchData = async () => {
+      await getFarmData();
+      await getProductFarm();
+    };
+    fetchData();
   }, []);
+
   return (
     <div>
       <div className="min-h-screen bg-gray-50">
@@ -92,10 +113,10 @@ function Profile() {
                       <Mail className="w-5 h-5 mr-3 text-green-600" />
                       <span>{farm.email}</span>
                     </div>
-                    <div className="flex items-center text-gray-700">
+                    {/* <div className="flex items-center text-gray-700">
                       <Eye className="w-5 h-5 mr-3 text-green-600" />
                       <span>เข้าชม {farm.view_count} ครั้ง</span>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>
@@ -118,7 +139,7 @@ function Profile() {
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}>
                 <Package className="w-4 h-4 inline mr-1" />
-                สินค้า (0)
+                สินค้า ({products.length})
               </button>
               <button
                 onClick={() => setActiveTab("animals")}
@@ -135,49 +156,50 @@ function Profile() {
         </div>
 
         {/* Content Section */}
-        <div className="w-full mx-auto px-20 py-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
           {activeTab === "products" && (
-            // <div>
-            //   <h2 className="text-2xl font-bold mb-6">สินค้าจากฟาร์ม</h2>
-            //   <Swiper
-            //     modules={[Autoplay, Pagination, Navigation]}
-            //     spaceBetween={24}
-            //     slidesPerView={1}
-            //     breakpoints={{
-            //       640: { slidesPerView: 1 },
-            //       768: { slidesPerView: 2 },
-            //       1024: { slidesPerView: 3 },
-            //       1280: { slidesPerView: 4 },
-            //     }}
-            //     autoplay={{ delay: 1000, disableOnInteraction: false }}
-            //     pagination={{ clickable: true }}
-            //     navigation
-            //     className="mySwiper">
-            //     {products.map((product) => (
-            //       <SwiperSlide key={product.id}>
-            //         <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-            //           <img
-            //             src={product.image}
-            //             alt={product.name}
-            //             className="w-full h-48 object-cover"
-            //           />
-            //           <div className="p-4">
-            //             <h3 className="font-semibold text-lg mb-2">
-            //               {product.name}
-            //             </h3>
-            //             <div className="flex justify-between items-center mb-2">
-            //               <span className="text-2xl font-bold text-green-600">
-            //                 ฿{product.price}
-            //               </span>
-            //               <span className="text-gray-500">/{product.unit}</span>
-            //             </div>
-            //           </div>
-            //         </div>
-            //       </SwiperSlide>
-            //     ))}
-            //   </Swiper>
-            // </div>
-            <p>อยู่ระหว่างการพัฒนา</p>
+            <div className="max-w-7xl w-full mx-auto">
+              <h2 className="text-2xl font-bold mb-6">สินค้าของเรา</h2>
+
+              <Swiper
+                modules={[Autoplay, Pagination, Navigation]}
+                spaceBetween={24}
+                slidesPerView={1}
+                breakpoints={{
+                  640: { slidesPerView: 1 },
+                  768: { slidesPerView: 2 },
+                  1024: { slidesPerView: 3 },
+                  1280: { slidesPerView: 4 },
+                }}
+                autoplay={{ delay: 2000, disableOnInteraction: false }}
+                pagination={{ clickable: true }}
+                navigation
+                className="mySwiper"
+                onInit={(swiper) => swiper.update()}>
+                {products.map((product) => (
+                  <SwiperSlide key={product.id}>
+                    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full">
+                      <img
+                        src={product.image}
+                        alt={product.product_name}
+                        className="w-full h-48 object-cover"
+                      />
+                      <div className="p-4">
+                        <h3 className="font-semibold text-lg mb-2">
+                          {product.product_name}
+                        </h3>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-2xl font-bold text-green-600">
+                            ฿{product.price}
+                          </span>
+                          <span className="text-gray-500">/{product.unit}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
           )}
 
           {/* Animals Farm */}

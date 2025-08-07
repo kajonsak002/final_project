@@ -74,7 +74,7 @@ function App() {
           element: <Register />,
         },
         {
-          path: "farm",
+          path: "farm/:id",
           element: <FarmProfile />,
         },
         {

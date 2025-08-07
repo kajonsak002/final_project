@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Check, X, User } from "lucide-react";
+import { Check, X, User, Eye } from "lucide-react";
 import axios from "axios";
 import Pagination from "./components/Pagination";
 import dayjs from "dayjs";
@@ -15,6 +15,7 @@ function TableUser() {
   const [loadingStates, setLoadingStates] = useState({});
   const [reason, setReason] = useState("");
   const [rejectModal, setRejectModal] = useState(false);
+  const [detailsModal, setDetailsModal] = useState(false);
   const [selectUser, setSelectUser] = useState([]);
 
   const getUserApproved = async () => {
@@ -22,7 +23,6 @@ function TableUser() {
       const res = await axios.get(
         import.meta.env.VITE_URL_API + "farmer/waiting-approval"
       );
-      // console.log(res.data);
       setAllData(res.data);
     } catch (err) {
       console.log("Error get User Wait Approved : ", err);
@@ -72,13 +72,25 @@ function TableUser() {
       setLoadingStates((prev) => ({ ...prev, [farmer_id]: null }));
       setSelectUser(null);
       setRejectModal(false);
-      setReason(null);
+      setDetailsModal(false);
+      setReason("");
     }
   };
 
   const handleReject = (user) => {
-    setSelectUser(user);
     setRejectModal(true);
+  };
+
+  const handleViewDetails = (user) => {
+    setSelectUser(user);
+    setDetailsModal(true);
+  };
+
+  const closeModals = () => {
+    setReason("");
+    setRejectModal(false);
+    setDetailsModal(false);
+    setSelectUser(null);
   };
 
   return (
@@ -106,7 +118,6 @@ function TableUser() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10 relative">
-                      {/* {console.log(user.farm_img)} */}
                       <img
                         className="h-10 w-10 rounded-full object-cover"
                         src={user.farm_img}
@@ -134,25 +145,12 @@ function TableUser() {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <div className="flex items-center justify-center space-x-2">
-                    <button
-                      onClick={() => handleSubmit(user, "อนุมัติ")}
-                      disabled={loadingStates[user.farmer_id]}
-                      className="inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                      {loadingStates[user.farmer_id] === "อนุมัติ" ? (
-                        <span className="loading loading-spinner loading-xs mr-1"></span>
-                      ) : (
-                        <Check className="w-3 h-3 mr-1" />
-                      )}
-                      อนุมัติ
-                    </button>
-                    <button
-                      onClick={() => handleReject(user)}
-                      className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                      <X className="w-3 h-3 mr-1" />
-                      ปฏิเสธ
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => handleViewDetails(user)}
+                    className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-colors duration-200">
+                    <Eye className="w-3 h-3 mr-1" />
+                    ดูรายละเอียด
+                  </button>
                 </td>
               </tr>
             ))}
@@ -164,43 +162,126 @@ function TableUser() {
         totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
-      {rejectModal && (
+
+      {/* Farm Details Modal */}
+      {detailsModal && selectUser && (
+        <dialog open className="modal">
+          <div className="modal-box w-full max-w-lg bg-white shadow-2xl">
+            <h3 className="font-bold text-lg mb-4">รายละเอียดฟาร์ม</h3>
+
+            {/* Farm Info in compact layout */}
+            <div className="flex items-start gap-4 mb-4">
+              <img
+                className="h-16 w-16 rounded-lg object-cover border"
+                src={selectUser.farm_img}
+                alt={selectUser.farm_name}
+              />
+              <div className="flex-1 space-y-1">
+                <h4 className="font-semibold text-gray-900">
+                  {selectUser.farm_name}
+                </h4>
+                <p className="text-sm text-gray-600">{selectUser.email}</p>
+                <p className="text-xs text-gray-500">
+                  ID: {selectUser.farmer_id} | สมัคร:{" "}
+                  {dayjs(selectUser.create_at)
+                    .add(543, "year")
+                    .format("DD/MM/YYYY")}
+                </p>
+              </div>
+            </div>
+
+            {/* Additional compact details */}
+            {(selectUser.phone || selectUser.address) && (
+              <div className="mb-4 p-3 bg-gray-50 rounded-lg space-y-1">
+                {selectUser.phone && (
+                  <p className="text-sm">
+                    <span className="font-medium">โทร:</span> {selectUser.phone}
+                  </p>
+                )}
+                {selectUser.address && (
+                  <p className="text-sm">
+                    <span className="font-medium">ที่อยู่:</span>{" "}
+                    {selectUser.address}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleSubmit(selectUser, "อนุมัติ")}
+                disabled={loadingStates[selectUser.farmer_id]}
+                className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg disabled:opacity-50">
+                {loadingStates[selectUser.farmer_id] === "อนุมัติ" ? (
+                  <span className="loading loading-spinner loading-xs mr-1"></span>
+                ) : (
+                  <Check className="w-4 h-4 mr-1" />
+                )}
+                อนุมัติ
+              </button>
+
+              <button
+                onClick={() => handleReject(selectUser)}
+                disabled={loadingStates[selectUser.farmer_id]}
+                className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg disabled:opacity-50">
+                <X className="w-4 h-4 mr-1" />
+                ปฏิเสธ
+              </button>
+
+              <button
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                onClick={closeModals}>
+                ปิด
+              </button>
+            </div>
+          </div>
+          <div className="modal-backdrop" onClick={closeModals}></div>
+        </dialog>
+      )}
+
+      {/* Reject Modal */}
+      {rejectModal && selectUser && (
         <dialog open className="modal">
           <div className="modal-box w-full max-w-md bg-white shadow-2xl">
-            <h3 className="font-bold text-lg mb-4">ปฏิเสธการสมัครสมาชิก</h3>
+            <h3 className="font-bold text-lg mb-4 text-red-600">
+              ปฏิเสธการสมัครสมาชิก
+            </h3>
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">
+                ฟาร์ม:{" "}
+                <span className="font-medium">{selectUser.farm_name}</span>
+              </p>
+              <p className="text-sm text-gray-600">
+                อีเมล: <span className="font-medium">{selectUser.email}</span>
+              </p>
+            </div>
             <textarea
-              className="textarea textarea-bordered w-full"
+              className="textarea textarea-bordered w-full h-24"
               placeholder="โปรดระบุเหตุผลในการปฏิเสธการสมัครสมาชิก"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
             />
             <div className="modal-action mt-4 flex gap-3">
               <button
-                className="btn bg-green-500  text-white"
+                className="btn bg-red-600 hover:bg-red-700 text-white"
                 onClick={() => handleSubmit(selectUser, "ปฏิเสธ")}
-                disabled={!reason?.trim()}>
+                disabled={
+                  !reason?.trim() || loadingStates[selectUser.farmer_id]
+                }>
                 {loadingStates[selectUser.farmer_id] === "ปฏิเสธ" ? (
                   <span className="loading loading-spinner loading-xs mr-1"></span>
                 ) : (
-                  <p>ยืนยัน</p>
+                  <X className="w-4 h-4 mr-1" />
                 )}
+                ยืนยันปฏิเสธ
               </button>
-              <button
-                className="btn"
-                onClick={() => {
-                  setReason(null);
-                  setRejectModal(false);
-                }}>
+              <button className="btn btn-outline" onClick={closeModals}>
                 ยกเลิก
               </button>
             </div>
           </div>
-          <div
-            className="modal-backdrop"
-            onClick={() => {
-              setReason(null);
-              setRejectModal(false);
-            }}></div>
+          <div className="modal-backdrop" onClick={closeModals}></div>
         </dialog>
       )}
     </div>

@@ -80,20 +80,20 @@ const menuItems = [
     path: "animal_type_request",
     countKey: "total_animal_type_request_waiting",
   },
-  {
-    label: "ข้อมูลฟาร์ม",
-    icon: <Users size={20} />,
-    path: "user",
-  },
-  {
-    label: "รายงาน",
-    icon: <ChartColumnBig size={20} />,
-    hasDropdown: true,
-    subItems: [
-      { label: "รายงานสัตว์ที่เลี้ยง", path: "report_animal" },
-      { label: "รายงานสินค้าของฟาร์ม", path: "report_product" },
-    ],
-  },
+  // {
+  //   label: "ข้อมูลฟาร์ม",
+  //   icon: <Users size={20} />,
+  //   path: "user",
+  // },
+  // {
+  //   label: "รายงาน",
+  //   icon: <ChartColumnBig size={20} />,
+  //   hasDropdown: true,
+  //   subItems: [
+  //     { label: "รายงานสัตว์ที่เลี้ยง", path: "report_animal" },
+  //     { label: "รายงานสินค้าของฟาร์ม", path: "report_product" },
+  //   ],
+  // },
 ];
 
 const Sidebar = ({ isOpen }) => {

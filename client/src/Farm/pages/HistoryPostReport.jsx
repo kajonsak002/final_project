@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import Pagination from "../../admin/components/Pagination";
 import dayjs from "dayjs";
 import "dayjs/locale/th";
-import { Eye } from "lucide-react";
+import { Eye, Clock } from "lucide-react";
 
 dayjs.locale("th");
 
@@ -49,6 +49,10 @@ function HistoryPostReport() {
 
   const totalPages = Math.ceil(reportRecive.length / itemsPerPage);
 
+  const formatDate = (dateString) => {
+    return dayjs(dateString).locale("th").format("D MMMM YYYY เวลา HH:mm");
+  };
+
   return (
     <div>
       <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
@@ -60,7 +64,7 @@ function HistoryPostReport() {
               </a>
             </li>
             <li>
-              <a className="text-gray-500">ประวัติการถูกรายงานโพสต์</a>
+              <a className="text-black">ประวัติการถูกรายงานโพสต์</a>
             </li>
           </ul>
         </div>
@@ -72,7 +76,7 @@ function HistoryPostReport() {
             <tr>
               <th>#</th>
               {/* <th>ชื่อผู้รายงาน</th> */}
-              <th>เหตุผล</th>
+              <th className="text-blue-500">เหตุผล</th>
               <th>วันที่รายงาน</th>
               <th className="text-center">รายละเอียดโพสต์</th>
             </tr>
@@ -119,26 +123,57 @@ function HistoryPostReport() {
 
       {isModalOpen && (
         <dialog open className="modal">
-          <div className="modal-box">
+          <div
+            key={detailPost.post_id}
+            className="relative bg-white rounded-2xl shadow-lg overflow-hidden border border-green-50 hover:shadow-xl transition-all duration-300">
+            {/* ปุ่มปิด */}
             <button
               type="button"
-              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-              onClick={() => {
-                setIsModalOpen(false);
-                setDetailPost([]);
-              }}>
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-10"
+              onClick={() => setIsModalOpen(false)}>
               ✕
             </button>
-            <pre>{JSON.stringify(detailPost, null, 2)}</pre>
-            <div className="modal-action">
-              <button
-                className="btn bg-green-500 text-white"
-                onClick={() => {
-                  setIsModalOpen(false);
-                  setDetailPost([]);
-                }}>
-                ปิด
-              </button>
+
+            {/* Header */}
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="avatar">
+                    <div className="w-12 h-12 rounded-full ring-2 ring-primary/20">
+                      <img
+                        src={detailPost?.farm_img}
+                        alt="Farm"
+                        className="rounded-full object-cover"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-800 text-lg">
+                      {detailPost.farm_name}
+                    </h3>
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Clock className="w-4 h-4" />
+                      {formatDate(detailPost.create_at)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="text-gray-700 mb-4 leading-relaxed whitespace-pre-line">
+                {detailPost.content}
+              </div>
+
+              {/* Image */}
+              {detailPost.image_post && (
+                <div className="mb-4">
+                  <img
+                    src={detailPost.image_post}
+                    alt="โพสต์"
+                    className="w-full h-120 object-cover rounded-xl"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </dialog>

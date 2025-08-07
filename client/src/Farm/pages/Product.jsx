@@ -23,7 +23,7 @@ function Product() {
   const [deleteId, setDeleteId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 7;
 
   const getProductFarm = async () => {
     const id = localStorage.getItem("farmer_id");
