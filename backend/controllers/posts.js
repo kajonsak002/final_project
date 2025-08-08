@@ -169,15 +169,31 @@ exports.remove = async (req, res) => {
 
 exports.getAll = async (req, res) => {
   try {
-    const { farmer_id } = req.body;
+    // const { farmer_id } = req.body;
+    // const [rows] = await db.promise().query(
+    //   `SELECT t1.* , t2.farm_name , t2.farm_img FROM posts as t1
+    //   JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id
+    //   WHERE t1.status = 'อนุมัติ' AND t1.is_visible == 'ซ่อน'
+    //   AND t1.farmer_id != ?
+    //   ORDER BY t1.create_at DESC`
+    // );
+
     const [rows] = await db.promise().query(
-      `SELECT t1.* , t2.farm_name , t2.farm_img FROM posts as t1 
-      JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id 
-      WHERE t1.status = 'อนุมัติ' AND t1.is_visible != 'ซ่อน' 
-      AND t1.farmer_id != ?
-      ORDER BY t1.create_at DESC`,
-      [farmer_id]
+      `SELECT 
+          t1.*,
+          t2.farm_name,
+          t2.farm_img,
+          COUNT(t3.comment_id) AS comment_count
+        FROM posts AS t1
+        JOIN farmer AS t2 ON t1.farmer_id = t2.farmer_id
+        LEFT JOIN comments AS t3 
+          ON t1.post_id = t3.post_id AND t3.status = 'แสดง'
+        WHERE t1.is_visible = 'เเสดง'
+        GROUP BY t1.post_id
+        ORDER BY t1.create_at DESC;
+      `
     );
+
     const host = req.headers.host;
     const protocol = req.protocol;
     const posts = rows.map((post) => ({
@@ -189,9 +205,7 @@ exports.getAll = async (req, res) => {
         ? `${protocol}://${host}/${post.farm_img.replace(/^\\+/, "")}`
         : null,
     }));
-    res
-      .status(200)
-      .json({ message: "Posts fetched successfully", posts, host, protocol });
+    res.status(200).json({ message: "Posts fetched successfully", posts });
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Internal Server Error" });
@@ -205,7 +219,7 @@ exports.getDetailPost = async (req, res) => {
       `SELECT t1.*, t2.farm_name, t2.farm_img 
        FROM posts AS t1
        JOIN farmer AS t2 ON t1.farmer_id = t2.farmer_id
-       WHERE t1.status = 'อนุมัติ'  AND t1.post_id = ?`,
+       WHERE t1.post_id = ?`,
       [id]
     );
 
@@ -240,8 +254,7 @@ exports.getPostByFarmerid = async (req, res) => {
     const [rows] = await db.promise().query(
       `SELECT t1.* , t2.farm_name , t2.farm_img FROM posts as t1 
       JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id 
-      WHERE t1.status = 'อนุมัติ' AND t1.is_visible != 'ซ่อน' 
-      AND t1.farmer_id = ?
+      WHERE t1.farmer_id = ?
       ORDER BY t1.create_at DESC`,
       [farmer_id]
     );
@@ -446,6 +459,7 @@ exports.getReportRecive = async (req, res) => {
           p.content,
           pr.reason,
           pr.report_date,
+          pr.report_review,
           f.farm_name AS reporter_name
       FROM 
           post_report pr
@@ -453,8 +467,10 @@ exports.getReportRecive = async (req, res) => {
           posts p ON pr.post_id = p.post_id
       JOIN 
           farmer f ON pr.farmer_id = f.farmer_id
-      WHERE 
-          p.farmer_id = ?
+      WHERE
+          pr.status = 'ดำเนินการแล้ว'
+      AND 
+          p.farmer_id = ? 
       ORDER BY pr.report_date ASC
 `,
       [id]

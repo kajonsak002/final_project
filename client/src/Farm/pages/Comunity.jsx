@@ -9,12 +9,15 @@ import {
   Clock,
   UserCircle,
   Send,
+  Plus,
 } from "lucide-react";
 import dayjs from "dayjs";
 import "dayjs/locale/th";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import DetailPost from "../components/DetailPost";
+import Pagination from "../../admin/components/Pagination";
+import { Link } from "react-router-dom";
 function Community() {
   const [posts, setPosts] = useState([]);
   const [isShowPostMe, setIsShowPostMe] = useState(false);
@@ -39,6 +42,8 @@ function Community() {
   const [reportComment, setReportComment] = useState(false);
   const [reportCommentReason, setReportCommentReason] = useState("");
   const [selectedComment, setSelectedComment] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchDate, setSearchDate] = useState("");
 
   const getAllPost = async () => {
     try {
@@ -157,6 +162,7 @@ function Community() {
         }
       );
       getComment(post_id);
+      getAllPost();
       toast.success(res.data.msg);
       setComment("");
     } catch (err) {
@@ -298,6 +304,31 @@ function Community() {
     }
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageData, setPageData] = useState([]);
+  const itemPerpage = 5;
+
+  useEffect(() => {
+    const indexOfLast = currentPage * itemPerpage;
+    const indexOfFirst = indexOfLast - itemPerpage;
+
+    setPageData(filteredPosts.slice(indexOfFirst, indexOfLast));
+  }, [currentPage, posts, searchTerm, searchDate]);
+
+  const filteredPosts = posts.filter((post) => {
+    const matchText =
+      post.farm_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      post.content?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchDate = searchDate
+      ? dayjs(post.create_at).format("YYYY-MM-DD") === searchDate
+      : true;
+
+    return matchText && matchDate;
+  });
+
+  const totalPages = Math.ceil(filteredPosts.length / itemPerpage);
+
   return (
     <>
       <ToastContainer />
@@ -317,49 +348,67 @@ function Community() {
         </div>
       </div>
 
-      {/* Add Post */}
-      <div className="flex justify-center items-center mt-4">
-        <div
-          className="card bg-white shadow-lg hover:shadow-xl h-[140px] transition-shadow duration-200 w-full max-w-2xl border border-gray-200 cursor-pointer"
-          onClick={() => setAddPostModal(true)}>
-          <div className="card-body flex flex-row items-center w-full p-4">
-            <div className="avatar">
-              <div className="w-12 h-12 rounded-full ring-2 ring-gray-200">
-                <img
-                  src={localStorage.getItem("image_profile")}
-                  alt="Profile"
-                  className="rounded-full"
+      <div className="flex justify-center">
+        <div className="card bg-white shadow-lg hover:shadow-xl  transition-shadow duration-200 w-full border border-gray-200">
+          <div className="card-body w-full p-4">
+            <div className="flex items-center">
+              <div className="avatar">
+                <div className="w-12 h-12 rounded-full ring-2 ring-gray-200">
+                  <img
+                    src={localStorage.getItem("image_profile")}
+                    alt="Profile"
+                    className="rounded-full"
+                  />
+                </div>
+              </div>
+              <div className="input-form w-full ml-4">
+                <input
+                  onClick={() => setAddPostModal(true)}
+                  type="text"
+                  placeholder="คุณกำลังคิดอะไรอยู่..."
+                  className="input w-full bg-gray-50 border-gray-200 focus:border-blue-400 focus:bg-white transition-all duration-200 rounded-full px-4"
+                  readOnly
                 />
               </div>
+              <button
+                className="p-2 mx-2 text-white cursor-pointer bg-green-500 rounded-2xl"
+                onClick={() => setAddPostModal(true)}>
+                <Plus />
+              </button>
             </div>
-            <div className="input-form w-full ml-4">
+            <div className="flex gap-2 mt-2">
               <input
                 type="text"
-                placeholder="คุณกำลังคิดอะไรอยู่..."
-                className="input w-full bg-gray-50 border-gray-200 focus:border-blue-400 focus:bg-white transition-all duration-200 rounded-full px-4"
-                readOnly
+                placeholder="ค้นหาด้วยชื่อฟาร์ม หรือ เนื้อหาโพสต์..."
+                className="input  input-bordered w-full sm:w-2/3"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
+              <input
+                type="date"
+                className="input input-bordered w-full sm:w-1/3"
+                value={searchDate}
+                onChange={(e) => setSearchDate(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-3 mt-2">
+              <button
+                className={`btn ${
+                  !isShowPostMe ? "text-white bg-green-500" : "btn-outline"
+                } rounded-md`}
+                onClick={getAllPost}>
+                โพสต์ทั้งหมด
+              </button>
+              <button
+                className={`btn ${
+                  isShowPostMe ? "text-white bg-green-500" : "btn-outline"
+                } rounded-md`}
+                onClick={getPostHistoyry}>
+                โพสต์ของฉัน
+              </button>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Option Show Post */}
-      <div className="flex items-center justify-center mt-6 gap-4">
-        <button
-          className={`btn ${
-            !isShowPostMe ? "text-white bg-green-500" : "btn-outline"
-          } rounded-md`}
-          onClick={getAllPost}>
-          โพสต์ทั้งหมด
-        </button>
-        <button
-          className={`btn ${
-            isShowPostMe ? "text-white bg-green-500" : "btn-outline"
-          } rounded-md`}
-          onClick={getPostHistoyry}>
-          โพสต์ของฉัน
-        </button>
       </div>
 
       {/* Modal Add post */}
@@ -648,15 +697,20 @@ function Community() {
       )}
 
       {/* แสดงโพสต์ทั้งหมด */}
-      <div className="max-w-2xl mx-auto space-y-6 mt-4">
-        {posts.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🌱</div>
-            <p className="text-gray-500 text-lg">ยังไม่มีโพสต์ในชุมชน</p>
-            <p className="text-gray-400">เป็นคนแรกที่แบ่งปันประสบการณ์!</p>
+      {/* <div className="max-w-2xl mx-auto space-y-6 mt-4"> */}
+      <div className=" space-y-6 mt-4">
+        {filteredPosts.length === 0 ? (
+          <div className="card card-body bg-base-100 h-screen">
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">🌱</div>
+              <p className="text-gray-500 text-lg">ไม่พบข้อมูลที่ค้นหา</p>
+              <p className="text-gray-400">
+                ลองเปลี่ยนการค้นหาจากวันที่ เนื้อหา ชื่อฟาร์ม!
+              </p>
+            </div>
           </div>
         ) : (
-          posts.map((post) => (
+          pageData.map((post) => (
             <div
               key={post.post_id}
               className="bg-white rounded-2xl shadow-lg overflow-hidden border border-green-50 hover:shadow-xl transition-all duration-300">
@@ -666,17 +720,21 @@ function Community() {
                   <div className="flex items-center gap-3">
                     <div className="avatar">
                       <div className="w-12 h-12 rounded-full ring-2 ring-primary/20">
-                        <img
-                          src={post?.farm_img}
-                          alt="Farm"
-                          className="rounded-full object-cover"
-                        />
+                        <Link to={`/profile/farm/${post.farmer_id}`}>
+                          <img
+                            src={post?.farm_img}
+                            alt="Farm"
+                            className="rounded-full object-cover"
+                          />
+                        </Link>
                       </div>
                     </div>
                     <div>
-                      <h3 className="font-bold text-gray-800 text-lg">
-                        {post.farm_name}
-                      </h3>
+                      <Link to={`/profile/farm/${post.farmer_id}`}>
+                        <h3 className="font-bold text-gray-800 text-lg">
+                          {post.farm_name}
+                        </h3>
+                      </Link>
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <Clock className="w-4 h-4" />
                         {formatDate(post.create_at)}
@@ -737,7 +795,10 @@ function Community() {
                 )}
 
                 {/* Actions */}
-                <div className="flex items-center justify-end pt-4 border-t border-gray-100">
+                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                  <div>
+                    <p>ความคิดเห็นทั้งหมด {`(${post.comment_count})`}</p>
+                  </div>
                   <button
                     onClick={() => handleViewDetails(post)}
                     className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-medium">
@@ -749,7 +810,14 @@ function Community() {
             </div>
           ))
         )}
-
+        {pageData.length > 10}
+        {
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        }
         {showPostDetail && (
           <DetailPost
             open={showPostDetail}

@@ -76,8 +76,9 @@ function HistoryPostReport() {
             <tr>
               <th>#</th>
               {/* <th>ชื่อผู้รายงาน</th> */}
-              <th className="text-blue-500">เหตุผล</th>
+              <th>เหตุผล</th>
               <th>วันที่รายงาน</th>
+              <th>การดำเนินการ</th>
               <th className="text-center">รายละเอียดโพสต์</th>
             </tr>
           </thead>
@@ -94,6 +95,7 @@ function HistoryPostReport() {
                       .add(543, "year")
                       .format("D MMMM YYYY")}
                   </td>
+                  <td>{item.report_review}</td>
                   <td className="flex justify-center">
                     <Eye
                       className="cursor-pointer"
@@ -154,6 +156,11 @@ function HistoryPostReport() {
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                       <Clock className="w-4 h-4" />
                       {formatDate(detailPost.create_at)}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <div className="w-30 h-10 rounded-2xl p-2 text-center text-white bg-green-500">
+                      <p className="">สถานะ {detailPost.is_visible}</p>
                     </div>
                   </div>
                 </div>

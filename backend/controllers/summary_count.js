@@ -10,13 +10,13 @@ exports.get_summary_count = async (req, res) => {
       FROM farmer
     `);
 
-    // โพสต์
-    const [[postCounts]] = await db.promise().query(`
-      SELECT
-        COUNT(*) AS total_post,
-        COUNT(CASE WHEN status = 'รออนุมัติ' THEN 1 END) AS total_post_waiting
-      FROM posts
-    `);
+    // // โพสต์
+    // const [[postCounts]] = await db.promise().query(`
+    //   SELECT
+    //     COUNT(*) AS total_post,
+    //     COUNT(CASE WHEN status = 'รออนุมัติ' THEN 1 END) AS total_post_waiting
+    //   FROM posts
+    // `);
 
     // รายงานโพสต์
     const [[reportPostCounts]] = await db.promise().query(`
@@ -49,7 +49,7 @@ exports.get_summary_count = async (req, res) => {
     return res.json({
       total_farm: farmCounts.total_farm,
       total_farm_waiting: farmCounts.total_farm_waiting,
-      total_post_waiting: postCounts.total_post_waiting,
+      // total_post_waiting: postCounts.total_post_waiting,
       total_report_post_waiting: reportPostCounts.total_report_post_waiting,
       total_comment_report_waiting:
         commentReportCounts.total_comment_report_waiting,

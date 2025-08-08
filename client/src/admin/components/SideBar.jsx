@@ -21,7 +21,11 @@ const menuItems = [
     icon: <LayoutDashboard size={20} />,
     path: "dashboard",
   },
-
+  {
+    label: "ข้อมูลฟาร์ม",
+    icon: <Users size={20} />,
+    path: "user",
+  },
   {
     label: "ข้อมูลคู่มือการเลี้ยงสัตว์",
     icon: <BookText size={20} />,
@@ -80,11 +84,7 @@ const menuItems = [
     path: "animal_type_request",
     countKey: "total_animal_type_request_waiting",
   },
-  // {
-  //   label: "ข้อมูลฟาร์ม",
-  //   icon: <Users size={20} />,
-  //   path: "user",
-  // },
+
   // {
   //   label: "รายงาน",
   //   icon: <ChartColumnBig size={20} />,

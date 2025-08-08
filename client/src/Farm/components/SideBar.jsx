@@ -119,20 +119,30 @@ const Sidebar = ({ isOpen }) => {
         theme="light"
       />
 
-      <div className="p-4 border-b border-base-200">
-        <h2
-          className={`text-xl font-bold text-center text-green-600 transition-all duration-300 ${
-            !isOpen && "hidden"
-          }`}>
-          <span className="bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent">
-            Farm Panel
-          </span>
-        </h2>
-        {!isOpen && (
-          <div className="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center mx-auto">
-            <span className="text-green-600 font-bold text-lg">F</span>
-          </div>
+      <div className="p-4 border-b border-base-200 text-center space-y-2">
+        {isOpen && (
+          <>
+            <img
+              src={localStorage.getItem("image_profile")}
+              alt="Farm"
+              className="w-16 h-16 object-cover rounded-full mx-auto"
+            />
+          </>
         )}
+
+        <div className="flex items-center justify-center space-x-2">
+          {!isOpen ? (
+            <div className="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center">
+              <span className="text-green-600 font-bold text-lg">
+                {localStorage.getItem("username").slice(0, 1)}
+              </span>
+            </div>
+          ) : (
+            <span className="text-xl font-bold text-gray-700">
+              {localStorage.getItem("username")}
+            </span>
+          )}
+        </div>
       </div>
 
       <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-150px)]">

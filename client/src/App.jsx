@@ -98,6 +98,10 @@ function App() {
         { path: "/admin/dashBoard", element: <DashBoard /> },
         { path: "/admin/user", element: <UserController /> },
         {
+          path: "/admin/farm/:id",
+          element: <FarmProfile />,
+        },
+        {
           path: "/admin/book",
           element: <GuildBookController />,
         },
@@ -125,6 +129,10 @@ function App() {
       element: <FarmLayout />,
       children: [
         { path: "/profile", element: <Profile /> },
+        {
+          path: "/profile/farm/:id",
+          element: <FarmProfile />,
+        },
         { path: "/profile/product", element: <Product /> },
         { path: "/profile/animal", element: <Animal /> },
         { path: "/profile/animal/request", element: <AnimalReq /> },

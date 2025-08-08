@@ -171,11 +171,12 @@ exports.getReportRecive = async (req, res) => {
           c.create_at, cr.reason,
           cr.status AS report_status,
           cr.report_date,
+          cr.report_review,
           f.farm_name
         FROM comment_report cr
         JOIN comments c ON cr.comment_id = c.comment_id
         JOIN farmer f ON f.farmer_id = cr.farmer_id
-        WHERE c.farmer_id = ?
+        WHERE c.farmer_id = ? AND cr.status = 'ดำเนินการแล้ว'
         ORDER BY cr.report_date ASC
         `,
       [id]

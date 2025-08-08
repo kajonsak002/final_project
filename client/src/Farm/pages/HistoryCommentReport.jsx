@@ -63,6 +63,7 @@ function HistoryCommentReport() {
               <th>เนื้อหา</th>
               <th>เหตุผล</th>
               <th>วันที่รายงาน</th>
+              <th>การดำเนินการ</th>
               {/* <th className="text-center">ดูรายละเอียดโพสต์</th> */}
             </tr>
           </thead>
@@ -80,6 +81,7 @@ function HistoryCommentReport() {
                       .add(543, "year")
                       .format("D MMMM YYYY")}
                   </td>
+                  <td>{item.report_review}</td>
                   {/* <td className="flex justify-center">
                     <Eye />
                   </td> */}

@@ -30,6 +30,7 @@ function AdminLayout() {
           },
         }
       );
+      localStorage.setItem("username", res.data.username);
       toast.success(res.data.message, { autoClose: 1000 });
       setIsLogin(true);
     } catch (err) {

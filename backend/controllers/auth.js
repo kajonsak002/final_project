@@ -259,5 +259,6 @@ exports.adminLogin = async (req, res) => {
 exports.check_token = (req, res) => {
   res.json({
     message: `ยินดีต้อนรับ คุณ${req.user.fullname}`,
+    username: req.user.fullname,
   });
 };
