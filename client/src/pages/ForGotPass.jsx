@@ -7,35 +7,23 @@ import { toast } from "react-toastify";
 function ForGotPass() {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [newPassword, setNewPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const res = await axios.post(
         import.meta.env.VITE_URL_API + "verify_email",
         { email }
       );
       setStep(res.data.step);
+      console.log(res.data);
     } catch (err) {
       console.log(err);
-      toast.error(err.response.data.message);
-    }
-  };
-
-  const handleResetPassword = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await axios.post(
-        import.meta.env.VITE_URL_API + "reset_password",
-        { email, newPassword }
-      );
-      console.log(res.data);
-      setStep(res.data.step);
-      toast.success(res.data.message, { autoClose: 800 });
-    } catch (err) {
-      console.log("Error : ", err);
+      toast.error(err.response?.data?.message || "เกิดข้อผิดพลาด");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,9 +41,6 @@ function ForGotPass() {
               กรอกอีเมล์
             </li>
             <li className={`step ${step >= 2 ? "step-warning" : ""}`}>
-              ตั้งรหัสผ่านใหม่
-            </li>
-            <li className={`step ${step >= 3 ? "step-warning" : ""}`}>
               สำเร็จ
             </li>
           </ul>
@@ -75,55 +60,29 @@ function ForGotPass() {
                   placeholder="กรอกอีเมล์"
                   className="input input-bordered w-full"
                   required
+                  disabled={loading}
                 />
               </div>
 
               <div className="card-actions mt-4 mb-2">
                 <button
                   type="submit"
-                  className="btn bg-[#16A34A] text-white w-full rounded-xl hover:bg-[#15803D]">
-                  ยืนยัน
+                  className="btn bg-[#16A34A] text-white w-full rounded-xl hover:bg-[#15803D]"
+                  disabled={loading}>
+                  {loading ? "กำลังส่ง..." : "ยืนยัน"}
                 </button>
               </div>
             </form>
           )}
 
           {step === 2 && (
-            <form onSubmit={handleResetPassword}>
-              <div className="form-control w-full mb-2">
-                <label className="label mb-2">
-                  <span className="label-text text-black font-medium">
-                    รหัสผ่านใหม่
-                  </span>
-                </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="กรอกรหัสผ่านใหม่"
-                  className="input input-bordered w-full"
-                  required
-                />
-              </div>
-
-              <div className="card-actions mt-4 mb-2">
-                <button
-                  type="submit"
-                  className="btn bg-[#16A34A] text-white w-full rounded-xl hover:bg-[#15803D]">
-                  รีเซ็ตรหัสผ่าน
-                </button>
-              </div>
-            </form>
-          )}
-
-          {step === 3 && (
-            <div className="text-center mt-6 flex flex-col items-center space-y-4">
+            <div className="text-center flex flex-col items-center space-y-2">
               <div className="text-green-600 text-4xl">✅</div>
               <h3 className="text-xl font-semibold text-green-700">
-                รีเซ็ตรหัสผ่านเรียบร้อยแล้ว
+                ส่งลิงค์สำหรับรีเซ็ตรหัสผ่านเรียบร้อยเเล้ว
               </h3>
               <p className="text-gray-600">
-                คุณสามารถเข้าสู่ระบบด้วยรหัสผ่านใหม่ได้ทันที
+                ตรวจสอบในอีเมล์ของท่านเเล้วทำการกดลิ้งค์เพื่อทำการเปลี่ยนรหัสผ่าน
               </p>
               <Link
                 to="/login"

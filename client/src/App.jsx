@@ -51,6 +51,7 @@ import NewsHistory from "./admin/pages/NewsHistory.jsx";
 import FarmNewsHistory from "./Farm/pages/NewsHistory.jsx";
 import EditNews from "./admin/pages/EditNews.jsx";
 import FarmEditNews from "./Farm/pages/EditNews.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 
 function App() {
   const router = createBrowserRouter([
@@ -84,6 +85,10 @@ function App() {
         {
           path: "forgot_password",
           element: <ForGotPass />,
+        },
+        {
+          path: "reset-password/:token",
+          element: <ResetPassword />,
         },
         {
           path: "news/detail/:id",
