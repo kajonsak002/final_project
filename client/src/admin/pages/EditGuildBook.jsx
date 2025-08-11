@@ -13,6 +13,7 @@ function EditGuildBook() {
   const [imagePreview, setImagePreview] = useState(null);
   const [currentImage, setCurrentImage] = useState(null);
   const [sourceRefs, setSourceRefs] = useState([""]);
+  const [tags, setTags] = useState([""]);
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -35,6 +36,10 @@ function EditGuildBook() {
           ? guildBook.source_refs
           : [""]
       );
+      setTags(
+        guildBook.tags && guildBook.tags.length > 0 ? guildBook.tags : [""]
+      );
+
       setCurrentImage(guildBook.image || null);
       setImagePreview(guildBook.image || null);
     } catch (error) {
@@ -76,6 +81,7 @@ function EditGuildBook() {
       formData.append("title", title);
       formData.append("content", content);
       formData.append("source_refs", JSON.stringify(sourceRefs));
+      formData.append("tags", JSON.stringify(tags));
       if (image) {
         formData.append("image", image);
       }
@@ -235,6 +241,39 @@ function EditGuildBook() {
                 onClick={() => setSourceRefs([...sourceRefs, ""])}
                 className="mt-2 px-3 py-1 btn btn-green-500">
                 + เพิ่มแหล่งอ้างอิง
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                หมวดหมู่ที่เกี่ยวข้อง
+              </label>
+              {tags.map((ref, i) => (
+                <div key={i} className="flex items-center gap-2 mb-2">
+                  <input
+                    type="text"
+                    placeholder="เช่น กรมปศุสัตว์ หรือ https://..."
+                    value={ref}
+                    onChange={(e) => {
+                      const updated = [...tags];
+                      updated[i] = e.target.value;
+                      setTags(updated);
+                    }}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setTags(tags.filter((_, idx) => idx !== i))}
+                    className="text-red-500 hover:text-red-700 font-bold">
+                    ลบ
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setTags([...tags, ""])}
+                className="mt-2 px-3 py-1 btn btn-green-500">
+                + เพิ่มหมวดหมู่ที่เกี่ยวข้อง
               </button>
             </div>
 

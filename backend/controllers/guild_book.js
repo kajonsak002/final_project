@@ -66,7 +66,7 @@ exports.getGuildBookDetail = async (req, res) => {
 };
 
 exports.insertGuildBook = async (req, res) => {
-  const { title, content, source_refs } = req.body;
+  const { title, content, source_refs, tags } = req.body;
   const image = req.file;
 
   try {
@@ -78,6 +78,7 @@ exports.insertGuildBook = async (req, res) => {
     const now = getFormattedNow();
 
     source_refs ? JSON.parse(source_refs) : [];
+    tags ? JSON.parse(tags) : [];
 
     const [[{ next_id }]] = await db
       .promise()
@@ -86,8 +87,8 @@ exports.insertGuildBook = async (req, res) => {
     const [result] = await db
       .promise()
       .query(
-        "INSERT INTO guildbook (guildbook_id,title, content, image, source_refs , created_at, updated_at) VALUES (?,?, ?, ?, ? , ?, ?)",
-        [next_id + 1, title, content, image.path, source_refs, now, now]
+        "INSERT INTO guildbook (guildbook_id,title, content, image, source_refs , tags , created_at, updated_at) VALUES (?, ?, ?, ?, ?, ? , ?, ?)",
+        [next_id + 1, title, content, image.path, source_refs, tags, now, now]
       );
 
     if (result.affectedRows === 0) {
@@ -105,7 +106,7 @@ exports.insertGuildBook = async (req, res) => {
 
 exports.updateGuildBook = async (req, res) => {
   const { id } = req.params;
-  const { title, content, source_refs } = req.body;
+  const { title, content, source_refs, tags } = req.body;
   const image = req.file;
 
   try {
@@ -132,8 +133,8 @@ exports.updateGuildBook = async (req, res) => {
     const [result] = await db
       .promise()
       .query(
-        "UPDATE guildbook SET title = ?, content = ?, image = ?, source_refs = ?, updated_at = ? WHERE guildbook_id = ?",
-        [title, content, newImage, source_refs, now, id]
+        "UPDATE guildbook SET title = ?, content = ?, image = ?, source_refs = ?, tags = ?  WHERE guildbook_id = ?",
+        [title, content, newImage, source_refs, tags, id]
       );
 
     if (result.affectedRows === 0) {

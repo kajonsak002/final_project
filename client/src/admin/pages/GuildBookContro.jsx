@@ -11,6 +11,7 @@ function GuildBookContro() {
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [sourceRefs, setSourceRefs] = useState([""]);
+  const [tags, setTags] = useState([""]);
   const navigate = useNavigate();
 
   const handleEditorChange = (value, editor) => {
@@ -44,6 +45,7 @@ function GuildBookContro() {
       formData.append("title", title);
       formData.append("content", content);
       formData.append("source_refs", JSON.stringify(sourceRefs));
+      formData.append("tags", JSON.stringify(tags));
       if (image) {
         formData.append("image", image);
       }
@@ -89,6 +91,21 @@ function GuildBookContro() {
   const removeSourceRef = (index) => {
     const updated = sourceRefs.filter((_, i) => i !== index);
     setSourceRefs(updated);
+  };
+
+  const handleTagsChange = (index, value) => {
+    const updated = [...tags];
+    updated[index] = value;
+    setTags(updated);
+  };
+
+  const addTags = () => {
+    setTags([...tags, ""]);
+  };
+
+  const removeTags = (index) => {
+    const updated = tags.filter((_, i) => i !== index);
+    setTags(updated);
   };
 
   return (
@@ -173,7 +190,38 @@ function GuildBookContro() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                แหล่งที่มา
+                เพิ่มหมวดหมู่ที่เกี่ยวข้อง
+              </label>
+              {tags.map((ref, i) => (
+                <div key={i} className="flex items-center gap-2 mb-2">
+                  <input
+                    type="text"
+                    placeholder="เช่น โรคในไก่ หรือ โรคระบาด..."
+                    value={ref}
+                    onChange={(e) => handleTagsChange(i, e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                  {i > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => removeTags(i)}
+                      className="text-red-500 hover:text-red-700 font-bold">
+                      ลบ
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addTags}
+                className="mt-2 px-3 py-1 btn bg-green-500 text-white">
+                + เพิ่มหมวดหมู่ที่เกี่ยวข้อง
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                เพิ่มแหล่งที่มา
               </label>
               {sourceRefs.map((ref, i) => (
                 <div key={i} className="flex items-center gap-2 mb-2">

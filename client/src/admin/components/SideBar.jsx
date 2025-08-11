@@ -44,18 +44,24 @@ const menuItems = [
       },
     ],
   },
+  // {
+  //   label: "จัดการโพสต์",
+  //   icon: <Settings size={20} />,
+  //   hasDropdown: true,
+  //   subItems: [
+  //     // { label: "อนุมัติโพสต์", path: "post", countKey: "total_post_waiting" },
+  //     {
+  //       label: "รายงานโพสต์",
+  //       path: "report_post",
+  //       countKey: "total_report_post_waiting",
+  //     },
+  //   ],
+  // },
   {
-    label: "จัดการโพสต์",
-    icon: <Settings size={20} />,
-    hasDropdown: true,
-    subItems: [
-      { label: "อนุมัติโพสต์", path: "post", countKey: "total_post_waiting" },
-      {
-        label: "รายงานโพสต์",
-        path: "report_post",
-        countKey: "total_report_post_waiting",
-      },
-    ],
+    label: "รายงานโพสต์",
+    icon: <MailWarning size={20} />,
+    path: "report_post",
+    countKey: "total_report_post_waiting",
   },
   {
     label: "รายงานความคิดเห็น",
