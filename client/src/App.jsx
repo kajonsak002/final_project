@@ -29,12 +29,10 @@ import Animal from "./Farm/pages/Animal";
 import FarmProfile from "./pages/FarmProfile";
 import ForGotPass from "./pages/ForGotPass";
 import BookDetail from "./pages/BookDetail";
-import AnimalRequest from "./admin/pages/AnimalRequest";
+import AnimalTypeAll from "./admin/pages/AnimalTypeAll";
+import AnimalTypeReq from "./Farm/pages/AnimalTypeReq";
 import AnimalTypeRequest from "./admin/pages/AnimalTypeRequest";
 import AnimalAll from "./admin/pages/AnimalAll";
-import AnimalTypeAll from "./admin/pages/AnimalTypeAll";
-import AnimalReq from "./Farm/pages/AnimalReq";
-import AnimalTypeReq from "./Farm/pages/AnimalTypeReq";
 import CategoryController from "./admin/pages/CategoryController";
 import ForGotPassAdmin from "./admin/pages/forGotPassword";
 import { SummaryCountProvider } from "./admin/components/SummaryCountContext";
@@ -120,7 +118,6 @@ function App() {
         { path: "/admin/book/add_guild_book", element: <GuildBookContro /> },
         { path: "/admin/book/edit/:id", element: <EditGuildBook /> },
         { path: "/admin/comment_report", element: <CommentReport /> },
-        { path: "/admin/animal_request", element: <AnimalRequest /> },
         { path: "/admin/animal_type_request", element: <AnimalTypeRequest /> },
         { path: "/admin/animal_all", element: <AnimalAll /> },
         { path: "/admin/animal_type_all", element: <AnimalTypeAll /> },
@@ -140,7 +137,6 @@ function App() {
         },
         { path: "/profile/product", element: <Product /> },
         { path: "/profile/animal", element: <Animal /> },
-        { path: "/profile/animal/request", element: <AnimalReq /> },
         { path: "/profile/animal-type/request", element: <AnimalTypeReq /> },
         { path: "/profile/social", element: <Comunity /> },
         { path: "/profile/news", element: <News /> },

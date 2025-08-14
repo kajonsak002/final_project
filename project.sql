@@ -122,6 +122,52 @@ CREATE TABLE `animals`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
+-- New unified request table for animal + type
+-- ----------------------------
+DROP TABLE IF EXISTS `animal_full_requests`;
+CREATE TABLE `animal_full_requests` (
+  `request_id` int(11) NOT NULL AUTO_INCREMENT,
+  `farmer_id` int(11) NOT NULL,
+  `animal_name` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `type_name` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `status` enum('รออนุมัติ','อนุมัติ','ปฏิเสธ') CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT 'รออนุมัติ',
+  `reason` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL,
+  `create_at` datetime NULL DEFAULT CURRENT_TIMESTAMP,
+  `approved_date` datetime NULL DEFAULT NULL,
+  `category_id` int(11) NULL DEFAULT NULL,
+  PRIMARY KEY (`request_id`) USING BTREE,
+  INDEX `fk_farmer_full`(`farmer_id`) USING BTREE,
+  CONSTRAINT `fk_farmer_full` FOREIGN KEY (`farmer_id`) REFERENCES `farmer` (`farmer_id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+
+-- Add unique constraints only if they don't exist
+-- Check and add unique constraint for animal names
+SET @sql = (SELECT IF(
+  (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS 
+   WHERE TABLE_SCHEMA = DATABASE() 
+   AND TABLE_NAME = 'animals' 
+   AND INDEX_NAME = 'uq_animal_name') = 0,
+  'ALTER TABLE `animals` ADD UNIQUE KEY `uq_animal_name` (`name`)',
+  'SELECT "Unique key uq_animal_name already exists" as message'
+));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Check and add unique constraint for type names
+SET @sql = (SELECT IF(
+  (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS 
+   WHERE TABLE_SCHEMA = DATABASE() 
+   AND TABLE_NAME = 'animal_types' 
+   AND INDEX_NAME = 'uq_type_name') = 0,
+  'ALTER TABLE `animal_types` ADD UNIQUE KEY `uq_type_name` (`type_name`)',
+  'SELECT "Unique key uq_type_name already exists" as message'
+));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- ----------------------------
 -- Table structure for comment_report
 -- ----------------------------
 DROP TABLE IF EXISTS `comment_report`;
@@ -260,11 +306,4 @@ CREATE TABLE `tambons`  (
   `zip_code` int(11) NOT NULL,
   `name_th` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `name_en` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `amphure_id` int(11) NOT NULL,
-  `created_at` datetime NULL DEFAULT NULL,
-  `updated_at` datetime NULL DEFAULT NULL,
-  `deleted_at` datetime NULL DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
-
-SET FOREIGN_KEY_CHECKS = 1;
+  `

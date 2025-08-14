@@ -32,17 +32,10 @@ exports.get_summary_count = async (req, res) => {
       WHERE status = 'รอดำเนินการ'
     `);
 
-    // คำร้องขอเพิ่มรายการสัตว์
-    const [[animalRequestCounts]] = await db.promise().query(`
-      SELECT COUNT(*) AS total_animal_request_waiting
-      FROM animal_requests
-      WHERE status = 'รออนุมัติ'
-    `);
-
-    // คำร้องขอเพิ่มประเภทสัตว์
-    const [[animalTypeRequestCounts]] = await db.promise().query(`
-      SELECT COUNT(*) AS total_animal_type_request_waiting
-      FROM animal_type_requests
+    // คำร้องขอเพิ่มรายการสัตว์ (รวมสัตว์+ประเภท)
+    const [[animalFullRequestCounts]] = await db.promise().query(`
+      SELECT COUNT(*) AS total_animal_full_request_waiting
+      FROM animal_full_requests
       WHERE status = 'รออนุมัติ'
     `);
 
@@ -53,10 +46,8 @@ exports.get_summary_count = async (req, res) => {
       total_report_post_waiting: reportPostCounts.total_report_post_waiting,
       total_comment_report_waiting:
         commentReportCounts.total_comment_report_waiting,
-      total_animal_request_waiting:
-        animalRequestCounts.total_animal_request_waiting,
-      total_animal_type_request_waiting:
-        animalTypeRequestCounts.total_animal_type_request_waiting,
+      total_animal_full_request_waiting:
+        animalFullRequestCounts.total_animal_full_request_waiting,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -48,11 +48,6 @@ const Sidebar = ({ isOpen }) => {
     {
       name: "ส่งคำร้องเพิ่มรายการสัตว์",
       icon: <CirclePlus size={20} />,
-      path: "animal/request",
-    },
-    {
-      name: "ส่งคำร้องเพิ่มรายการประเภทสัตว์",
-      icon: <CirclePlus size={20} />,
       path: "animal-type/request",
     },
     {
@@ -92,10 +87,8 @@ const Sidebar = ({ isOpen }) => {
     }));
   };
 
-  // ฟังก์ชันตรวจสอบ active สำหรับเมนูหลักหรือซับเมนู
   const isMenuActive = (item, index) => {
     if (item.hasDropdown) {
-      // ถ้ามีซับเมนู ให้เช็คว่า path ปัจจุบันตรงกับ subitem ไหนไหม
       return (
         item.subItems.some(
           (sub) => location.pathname === `/profile/${sub.path}`

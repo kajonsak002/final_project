@@ -13,7 +13,7 @@ function AnimalTypeRequest() {
   const [allData, setAlldata] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [pendingReject, setPendingReject] = useState(null);
@@ -21,7 +21,7 @@ function AnimalTypeRequest() {
   const getAnimalTypeReq = async () => {
     try {
       const res = await axios.get(
-        import.meta.env.VITE_URL_API + "animal_type/get-req"
+        import.meta.env.VITE_URL_API + "animal/full/get-req"
       );
       setAlldata(res.data);
       // console.log(res.data);
@@ -36,7 +36,9 @@ function AnimalTypeRequest() {
   }, []);
 
   const filteredData = allData.filter((item) =>
-    item.type_name.toLowerCase().includes(searchTerm.toLowerCase())
+    (item.animal_name + " " + item.type_name)
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -63,7 +65,7 @@ function AnimalTypeRequest() {
     }
     try {
       const res = await axios.post(
-        import.meta.env.VITE_URL_API + "animal_type/manage-req",
+        import.meta.env.VITE_URL_API + "animal/full/manage-req",
         dataObj
       );
       toast.success(res.data.message);
@@ -93,7 +95,7 @@ function AnimalTypeRequest() {
   };
 
   return (
-    <div className="w-full min-h-screen px-4 py-2">
+    <div className="w-full min-h-screen">
       <ToastContainer />
 
       <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
@@ -112,13 +114,13 @@ function AnimalTypeRequest() {
           </ul>
         </div>
       </div>
-
+      {/* 
       <div className="card bg-base-100 w-full shadow-sm mt-2">
         <div className="card-body">
           <h4 className="font-bold">ค้นหาข้อมูล</h4>
           <SearchBar value={searchTerm} onChange={setSearchTerm} />
         </div>
-      </div>
+      </div> */}
 
       {/* Table */}
       <div className="overflow-x-auto mt-3">
@@ -129,6 +131,7 @@ function AnimalTypeRequest() {
               {/* <th>รหัสคำร้อง</th> */}
               <th>ชื่อผู้ส่งคำร้อง</th>
               <th>ชื่อสัตว์</th>
+              <th>ชื่อประเภท</th>
               <th>วันที่</th>
               <th>สถานะ</th>
               <th className="text-center">การดำเนินการ</th>
@@ -141,6 +144,7 @@ function AnimalTypeRequest() {
                   <td>{index + 1}</td>
                   {/* <td>{item.request_id}</td> */}
                   <td>{item.farm_name}</td>
+                  <td>{item.animal_name}</td>
                   <td>{item.type_name}</td>
                   <td>
                     {dayjs(item.create_at)

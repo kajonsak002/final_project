@@ -8,6 +8,11 @@ const {
   request,
   manageRequest,
   getHistory,
+  // full request api
+  getWaitApprovalFull,
+  requestFull,
+  manageRequestFull,
+  getHistoryFull,
 } = require("../controllers/animal");
 const authToken = require("../middleware/auth_token");
 const router = express.Router();
@@ -27,5 +32,11 @@ router.delete("/animal/delete/:id", remove);
 
 // Get all history req
 router.get("/animal/history", authToken, getHistory);
+
+// Unified Full Request (Animal + Type)
+router.get("/animal/full/get-req", getWaitApprovalFull);
+router.post("/animal/full/req", authToken, requestFull);
+router.post("/animal/full/manage-req", manageRequestFull);
+router.get("/animal/full/history", authToken, getHistoryFull);
 
 module.exports = router;
