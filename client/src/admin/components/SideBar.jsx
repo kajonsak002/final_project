@@ -85,15 +85,15 @@ const menuItems = [
     countKey: "total_animal_full_request_waiting",
   },
 
-  // {
-  //   label: "รายงาน",
-  //   icon: <ChartColumnBig size={20} />,
-  //   hasDropdown: true,
-  //   subItems: [
-  //     { label: "รายงานสัตว์ที่เลี้ยง", path: "report_animal" },
-  //     { label: "รายงานสินค้าของฟาร์ม", path: "report_product" },
-  //   ],
-  // },
+  {
+    label: "รายงาน",
+    icon: <ChartColumnBig size={20} />,
+    hasDropdown: true,
+    subItems: [
+      { label: "รายงานสัตว์ที่เลี้ยง", path: "report_animal" },
+      { label: "รายงานสินค้าของฟาร์ม", path: "report_product" },
+    ],
+  },
 ];
 
 const Sidebar = ({ isOpen }) => {

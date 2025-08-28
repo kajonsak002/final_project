@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 function ReportAnimals() {
   return (
@@ -14,11 +15,20 @@ function ReportAnimals() {
               </a>
             </li>
             <li>
-              <a className="text-gray-500">รายงานสัตว์ที่เลี้ยง</a>
+              <span className="text-gray-500">รายงานสัตว์ที่เลี้ยง</span>
             </li>
           </ul>
         </div>
       </div>
+
+      {/* ลิงก์เปิดในแท็บใหม่ */}
+      <Link
+        to="/admin/report/animals"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 hover:text-blue-800">
+        ดูรายงานสัตว์
+      </Link>
     </div>
   );
 }
