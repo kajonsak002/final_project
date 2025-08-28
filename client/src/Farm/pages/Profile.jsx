@@ -8,19 +8,23 @@ import {
   Star,
   Users,
   Package,
+  Pencil,
 } from "lucide-react";
-import { useLocation } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
 
 function Profile() {
   const [farm, setFarm] = useState([]);
   const [products, setProducts] = useState([]);
   const [activeTab, setActiveTab] = useState("products");
+  const [profile, setProfile] = useState([]);
+  const [editProfile, setEditProfile] = useState(profile);
+  const [modalShowProfile, setModalShowProfile] = useState(false);
 
   const getFarmData = async () => {
     try {
@@ -60,6 +64,112 @@ function Profile() {
     };
     fetchData();
   }, []);
+
+  const handleCheckEditProfile = (farm) => {
+    setProfile(farm);
+    setEditProfile(farm);
+    setModalShowProfile(true);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setEditProfile((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [tambons, setTambons] = useState([]);
+
+  useEffect(() => {
+    if (modalShowProfile) {
+      // โหลดจังหวัดทั้งหมด
+      axios
+        .get(import.meta.env.VITE_URL_API + "provinces")
+        .then((res) => setProvinces(res.data.provinces));
+
+      // โหลดอำเภอของ province_id เดิม
+      if (profile.province_id) {
+        axios
+          .get(
+            import.meta.env.VITE_URL_API + `districts/${profile.province_id}`
+          )
+          .then((res) => setDistricts(res.data.districts));
+      }
+
+      // โหลดตำบลของ amphure_id เดิม
+      if (profile.amphure_id) {
+        axios
+          .get(import.meta.env.VITE_URL_API + `tambons/${profile.amphure_id}`)
+          .then((res) => setTambons(res.data.tambons));
+      }
+    }
+  }, [modalShowProfile]);
+
+  const handleProvinceChange = async (e) => {
+    const provinceId = e.target.value;
+    setEditProfile((prev) => ({
+      ...prev,
+      province_id: provinceId,
+      amphure_id: "",
+      tambon_id: "",
+    }));
+    if (provinceId) {
+      const res = await axios.get(
+        import.meta.env.VITE_URL_API + `districts/${provinceId}`
+      );
+      setDistricts(res.data.districts);
+      setTambons([]); // เคลียร์ตำบล
+    }
+  };
+
+  const handleDistrictChange = async (e) => {
+    const districtId = e.target.value;
+    setEditProfile((prev) => ({
+      ...prev,
+      amphure_id: districtId,
+      tambon_id: "",
+    }));
+    if (districtId) {
+      const res = await axios.get(
+        import.meta.env.VITE_URL_API + `tambons/${districtId}`
+      );
+      setTambons(res.data.tambons);
+    }
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+
+    const profileData = new FormData();
+    profileData.append("farmerId", localStorage.getItem("farmer_id"));
+    profileData.append("farmName", editProfile.farm_name); // ใช้ farm_name ให้ตรง
+    profileData.append("phone", editProfile.phone);
+    profileData.append("email", editProfile.email);
+    profileData.append("address", editProfile.address);
+    profileData.append("province", editProfile.province_id);
+    profileData.append("amphure", editProfile.amphure_id);
+    profileData.append("tambon", editProfile.tambon_id);
+
+    if (editProfile.farm_img instanceof File) {
+      profileData.append("farm_img", editProfile.farm_img);
+    }
+    if (editProfile.farm_banner instanceof File) {
+      profileData.append("farm_banner", editProfile.farm_banner);
+    }
+
+    try {
+      const res = await axios.put(
+        import.meta.env.VITE_URL_API + "edit-profile",
+        profileData
+      );
+      toast.success("อัปเดตข้อมูลสำเร็จ");
+      setModalShowProfile(false);
+      getFarmData();
+    } catch (err) {
+      toast.error("เกิดข้อผิดพลาด");
+      console.error(err);
+    }
+  };
 
   return (
     <div>
@@ -117,12 +227,169 @@ function Profile() {
                       <Eye className="w-5 h-5 mr-3 text-green-600" />
                       <span>เข้าชม {farm.view_count} ครั้ง</span>
                     </div> */}
+                    <div className="flex items-center">
+                      <button
+                        className="btn bg-green-500 text-white"
+                        onClick={() => handleCheckEditProfile(farm)}>
+                        <Pencil size={18} />
+                        แก้ไขข้อมูลส่วนตัว
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Modal show profile Data */}
+        {modalShowProfile && (
+          <dialog open className="modal">
+            <div className="modal-box">
+              <button
+                type="button"
+                className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                onClick={() => setModalShowProfile(false)}>
+                ✕
+              </button>
+              <h3 className="font-bold text-lg mb-4">แก้ไขข้อมูลส่วนตัว</h3>
+
+              <form onSubmit={handleSave} className="space-y-4">
+                {/* ชื่อฟาร์ม */}
+                <div>
+                  <label className="block font-semibold">ชื่อฟาร์ม</label>
+                  <input
+                    type="text"
+                    name="farm_name"
+                    value={editProfile.farm_name}
+                    onChange={handleChange}
+                    className="input input-bordered w-full"
+                  />
+                </div>
+
+                {/* เบอร์โทร */}
+                <div>
+                  <label className="block font-semibold">เบอร์โทร</label>
+                  <input
+                    type="text"
+                    name="phone"
+                    value={editProfile.phone}
+                    onChange={handleChange}
+                    className="input input-bordered w-full"
+                  />
+                </div>
+
+                {/* อีเมล์ */}
+                <div>
+                  <label className="block font-semibold">อีเมล์</label>
+                  <input
+                    type="text"
+                    name="email"
+                    value={editProfile.email}
+                    onChange={handleChange}
+                    className="input input-bordered w-full"
+                  />
+                </div>
+
+                {/* จังหวัด */}
+                <div>
+                  <label className="block font-semibold">จังหวัด</label>
+                  <select
+                    name="province_id"
+                    value={editProfile.province_id || ""}
+                    onChange={handleProvinceChange}
+                    className="select select-bordered w-full">
+                    <option value="">เลือกจังหวัด</option>
+                    {provinces.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name_th}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* อำเภอ */}
+                <div>
+                  <label className="block font-semibold">อำเภอ</label>
+                  <select
+                    name="amphure_id"
+                    value={editProfile.amphure_id || ""}
+                    onChange={handleDistrictChange}
+                    className="select select-bordered w-full">
+                    <option value="">เลือกอำเภอ</option>
+                    {districts.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name_th}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* ตำบล */}
+                <div>
+                  <label className="block font-semibold">ตำบล</label>
+                  <select
+                    name="tambon_id"
+                    value={editProfile.tambon_id || ""}
+                    onChange={(e) =>
+                      setEditProfile((prev) => ({
+                        ...prev,
+                        tambon_id: e.target.value,
+                      }))
+                    }
+                    className="select select-bordered w-full">
+                    <option value="">เลือกตำบล</option>
+                    {tambons.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name_th}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* รูปโปรไฟล์ */}
+                <div>
+                  <label className="block font-semibold">รูปฟาร์ม</label>
+                  <input
+                    type="file"
+                    name="farm_img"
+                    accept="image/*"
+                    onChange={(e) =>
+                      setEditProfile((prev) => ({
+                        ...prev,
+                        farm_img: e.target.files[0],
+                      }))
+                    }
+                    className="file-input file-input-bordered w-full"
+                  />
+                </div>
+
+                {/* รูปแบนเนอร์ */}
+                <div>
+                  <label className="block font-semibold">แบนเนอร์ฟาร์ม</label>
+                  <input
+                    type="file"
+                    name="farm_banner"
+                    accept="image/*"
+                    onChange={(e) =>
+                      setEditProfile((prev) => ({
+                        ...prev,
+                        farm_banner: e.target.files[0],
+                      }))
+                    }
+                    className="file-input file-input-bordered w-full"
+                  />
+                </div>
+
+                <div className="flex justify-end">
+                  <button type="submit" className="btn btn-primary">
+                    บันทึก
+                  </button>
+                </div>
+              </form>
+            </div>
+          </dialog>
+        )}
 
         {/* Spacer */}
         <div className="pt-8"></div>

@@ -79,7 +79,7 @@ const menuItems = [
     ],
   },
   {
-    label: "คำร้องเพิ่มประเภทสัตว์",
+    label: "คำร้องเพิ่มรายการสัตว์",
     icon: <ChartColumnBig size={20} />,
     path: "animal_type_request",
     countKey: "total_animal_full_request_waiting",

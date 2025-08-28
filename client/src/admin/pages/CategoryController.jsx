@@ -134,9 +134,10 @@ const CategoryController = () => {
       </div>
       <div className="card bg-base-100 w-full shadow-sm mb-4">
         <div className="card-body">
-          <h4 className="font-bold mb-2">เพิ่มหมวดหมู่สัตว์</h4>
+          <h3 className="font-bold text-xl mb-2">เพิ่มหมวดหมู่สัตว์</h3>
+
           <button
-            className="btn bg-green-600 text-white hover:bg-green-700"
+            className="btn bg-green-600 w-45  text-white hover:bg-green-700"
             onClick={openAddModal}>
             <Plus size={20} className="mr-2" />
             เพิ่มหมวดหมู่สัตว์
@@ -160,13 +161,13 @@ const CategoryController = () => {
               }}>
               <input
                 type="text"
-                className="input input-bordered w-full mb-4"
+                className="input input-bordered w-full"
                 placeholder="ชื่อหมวดหมู่สัตว์"
                 value={categoryName}
                 onChange={(e) => setCategoryName(e.target.value)}
                 required
               />
-              <div className="modal-action">
+              <div className="modal-action mt-[5px]">
                 <button
                   type="submit"
                   className="btn bg-green-600 text-white hover:bg-green-700">
