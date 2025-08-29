@@ -3,7 +3,187 @@ const PDFDocument = require("pdfkit");
 const path = require("path");
 
 exports.reportAnimal = async (req, res) => {
-  return res.send("Report Animal Api");
+  const { farm_id } = req.body;
+  try {
+    // ดึงข้อมูลสัตว์ในฟาร์ม
+    let query = `
+      SELECT fa.id as farm_animal_id, fa.quantity, fa.quantity_received,
+        a.animal_id, a.name as animal_name, t.type_id, t.type_name, f.farm_name
+      FROM farm_animals fa
+      JOIN animals a ON fa.animal_id = a.animal_id
+      JOIN animal_types t ON fa.type_id = t.type_id
+      JOIN farmer f ON fa.farmer_id = f.farmer_id
+    `;
+
+    let params = [];
+    if (farm_id && farm_id !== "") {
+      query += " WHERE fa.farmer_id = ?";
+      params.push(farm_id);
+    }
+    query += " ORDER BY fa.farmer_id, a.name, t.type_name";
+    const [rows] = await db.promise().query(query, params);
+
+    // จัดกลุ่มตามฟาร์ม
+    let result = [];
+    let reportHeader = "ทั้งหมด";
+    if (!farm_id || farm_id === "") {
+      const farmMap = {};
+      rows.forEach((row) => {
+        if (!farmMap[row.farm_name]) farmMap[row.farm_name] = [];
+        farmMap[row.farm_name].push(row);
+      });
+      result = Object.entries(farmMap).map(([farm_name, animals]) => ({
+        farm_name,
+        animals,
+      }));
+    } else {
+      if (rows.length > 0) {
+        reportHeader = rows[0].farm_name;
+        result = [{ farm_name: reportHeader, animals: rows }];
+      } else {
+        result = [];
+        reportHeader = "ไม่พบข้อมูลฟาร์มที่เลือก";
+      }
+    }
+
+    // สร้าง PDF
+    const margin = 40;
+    const doc = new PDFDocument({ size: "A4", margin });
+    let buffers = [];
+    doc.on("data", buffers.push.bind(buffers));
+    doc.on("end", () => {
+      const pdfData = Buffer.concat(buffers);
+      res.set({
+        "Content-Type": "application/pdf",
+        "Content-Disposition": "inline; filename=report_animal.pdf",
+      });
+      res.send(pdfData);
+    });
+
+    const fontDir = path.join(__dirname, "../fonts");
+    doc.registerFont("THSarabunNew", path.join(fontDir, "THSarabunNew.ttf"));
+    doc.registerFont(
+      "THSarabunNew-Bold",
+      path.join(fontDir, "THSarabunNew Bold.ttf")
+    );
+    doc.font("THSarabunNew");
+
+    // Header PDF
+    doc
+      .fontSize(20)
+      .font("THSarabunNew-Bold")
+      .text(`รายงานข้อมูลสัตว์ ฟาร์ม ${reportHeader}`, { align: "center" });
+    doc.moveDown(0.5);
+
+    const colWidths = [150, 120, 120, 120];
+    const rowHeight = 25;
+
+    const drawTable = (doc, startY, farm) => {
+      const headers = [
+        "ชื่อสัตว์",
+        "ประเภท",
+        "จำนวนที่รับเข้า",
+        "จำนวนคงเหลือ",
+      ];
+      let y = startY;
+
+      const drawHeader = () => {
+        let x = margin;
+        headers.forEach((text, i) => {
+          doc.rect(x, y, colWidths[i], rowHeight).stroke();
+          doc
+            .font("THSarabunNew-Bold")
+            .fontSize(14)
+            .text(text, x + 5, y + 7, {
+              width: colWidths[i] - 10,
+              align: "left",
+            });
+          x += colWidths[i];
+        });
+        y += rowHeight;
+      };
+
+      // ✅ วาด header ตารางครั้งแรก
+      drawHeader();
+
+      // เก็บผลรวม
+      let totalReceived = 0;
+      let totalRemain = 0;
+
+      // วาดข้อมูลสัตว์
+      farm.animals.forEach((item) => {
+        totalReceived += item.quantity_received;
+        totalRemain += item.quantity;
+
+        // ถ้าตำแหน่ง y เกินหน้ากระดาษ -> addPage
+        if (y + rowHeight > doc.page.height - margin) {
+          doc.addPage();
+          y = margin; // reset Y
+          drawHeader(); // ✅ วาดหัวตารางใหม่บนหน้าต่อไป
+        }
+
+        let x = margin;
+        const values = [
+          item.animal_name,
+          item.type_name,
+          item.quantity_received.toLocaleString("th-TH"),
+          item.quantity.toLocaleString("th-TH"),
+        ];
+        values.forEach((val, i) => {
+          doc.rect(x, y, colWidths[i], rowHeight).stroke();
+          doc
+            .font("THSarabunNew")
+            .fontSize(12)
+            .text(val.toString(), x + 5, y + 7, {
+              width: colWidths[i] - 10,
+              align: "left",
+            });
+          x += colWidths[i];
+        });
+        y += rowHeight;
+      });
+
+      // ✅ แสดงรวมท้ายตาราง
+      let x = margin;
+      const summary = [
+        "รวม",
+        "",
+        totalReceived.toLocaleString("th-TH"),
+        totalRemain.toLocaleString("th-TH"),
+      ];
+      summary.forEach((val, i) => {
+        doc.rect(x, y, colWidths[i], rowHeight).stroke();
+        doc
+          .font("THSarabunNew-Bold")
+          .fontSize(14)
+          .text(val.toString(), x + 5, y + 7, {
+            width: colWidths[i] - 10,
+            align: "left",
+          });
+        x += colWidths[i];
+      });
+      y += rowHeight;
+
+      return y + 10;
+    };
+
+    // วาดทุกฟาร์ม
+    let y = doc.y;
+    result.forEach((farm) => {
+      doc
+        .font("THSarabunNew-Bold")
+        .fontSize(16)
+        .text(`ชื่อฟาร์ม: ${farm.farm_name}`, margin, y);
+      y += 30;
+
+      y = drawTable(doc, y, farm);
+    });
+
+    doc.end();
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ msg: "เกิดข้อผิดพลาดในเซิร์ฟเวอร์" });
+  }
 };
 
 exports.reportProduct = async (req, res) => {
