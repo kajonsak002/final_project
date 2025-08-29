@@ -8,12 +8,14 @@ const {
   request,
   manageRequest,
   getHistory,
+  getById,
 } = require("../controllers/animal_type");
 const router = express.Router();
 const auth_token = require("../middleware/auth_token");
 
 // Get all animal types
 router.get("/animal_type", getAll);
+router.get("/animal_type/:id", getById);
 
 //Req. Add Animal Type
 router.get("/animal_type/get-req", getWaitApproval);

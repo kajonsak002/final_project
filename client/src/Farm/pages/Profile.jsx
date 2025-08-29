@@ -9,6 +9,7 @@ import {
   Users,
   Package,
   Pencil,
+  Hash,
 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
@@ -21,6 +22,7 @@ import { ToastContainer, toast } from "react-toastify";
 function Profile() {
   const [farm, setFarm] = useState([]);
   const [products, setProducts] = useState([]);
+  const [animals, setAnimals] = useState([]);
   const [activeTab, setActiveTab] = useState("products");
   const [profile, setProfile] = useState([]);
   const [editProfile, setEditProfile] = useState(profile);
@@ -57,10 +59,39 @@ function Profile() {
     }
   };
 
+  const getAnimalsFarm = async () => {
+    const id = localStorage.getItem("farmer_id");
+    try {
+      const res = await axios.get(
+        import.meta.env.VITE_URL_API + `animal/${id}`
+      );
+      const data = res.data.data;
+
+      // แปลงข้อมูลให้รวม animal_name + type_name + จำนวน + lot
+      const formatted = data.map((item) => ({
+        id: item.farm_animal_id,
+        type: `${item.animal_name} (${item.type_name})`, // ชื่อสัตว์ + ประเภท
+        count: item.quantity,
+        lot: item.lot_code,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        // description: `จำนวนรับเข้า: ${item.quantity_received}, รหัสล๊อต: ${item.lot_code}`,
+        description: `รหัสล๊อต: ${item.lot_code}`,
+        quantity_received: item.quantity_received,
+        image: `/images/${item.animal_name}.jpg`, // หรือใช้ URL จริงจาก API
+      }));
+
+      setAnimals(formatted);
+    } catch (err) {
+      console.log("Error fetching animals", err);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       await getFarmData();
       await getProductFarm();
+      await getAnimalsFarm();
     };
     fetchData();
   }, []);
@@ -416,7 +447,7 @@ function Profile() {
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}>
                 <Users className="w-4 h-4 inline mr-1" />
-                สัตว์เลี้ยง (0)
+                สัตว์เลี้ยง ({animals.length})
               </button>
             </nav>
           </div>
@@ -444,8 +475,8 @@ function Profile() {
                 className="mySwiper"
                 onInit={(swiper) => swiper.update()}>
                 {products.map((product) => (
-                  <SwiperSlide key={product.id}>
-                    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full">
+                  <SwiperSlide key={product.id} className="mb-3">
+                    <div className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow h-full">
                       <img
                         src={product.image}
                         alt={product.product_name}
@@ -469,59 +500,133 @@ function Profile() {
             </div>
           )}
 
-          {/* Animals Farm */}
           {activeTab === "animals" && (
-            // <div>
-            //   <h2 className="text-2xl font-bold mb-6">สัตว์เลี้ยงในฟาร์ม</h2>
-            //   <Swiper
-            //     modules={[Autoplay, Pagination, Navigation]}
-            //     spaceBetween={24}
-            //     slidesPerView={1}
-            //     breakpoints={{
-            //       640: { slidesPerView: 1 },
-            //       768: { slidesPerView: 2 },
-            //       1024: { slidesPerView: 3 },
-            //     }}
-            //     autoplay={{ delay: 2500, disableOnInteraction: false }}
-            //     pagination={{ clickable: true }}
-            //     navigation
-            //     className="mySwiper">
-            //     {[
-            //       {
-            //         id: 1,
-            //         type: "ไก่",
-            //         count: 150,
-            //         image:
-            //           "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=300&h=200&fit=crop",
-            //         description: "ไก่พื้นเมืองเลี้ยงแบบธรรมชาติ",
-            //       },
-            //     ].map((animal) => (
-            //       <SwiperSlide key={animal.id}>
-            //         <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-            //           <img
-            //             src={animal.image}
-            //             alt={animal.type}
-            //             className="w-full h-48 object-cover"
-            //           />
-            //           <div className="p-4">
-            //             <div className="flex justify-between items-center mb-2">
-            //               <h3 className="font-semibold text-xl">
-            //                 {animal.type}
-            //               </h3>
-            //               <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-            //                 {animal.count} ตัว
-            //               </span>
-            //             </div>
-            //             <p className="text-gray-600 text-sm">
-            //               {animal.description}
-            //             </p>
-            //           </div>
-            //         </div>
-            //       </SwiperSlide>
-            //     ))}
-            //   </Swiper>
-            // </div>
-            <p>อยู่ระหว่างการพัฒนา</p>
+            <div className="max-w-7xl w-full mx-auto px-4">
+              {/* Enhanced Swiper */}
+              <Swiper
+                spaceBetween={24}
+                slidesPerView={1}
+                breakpoints={{
+                  640: { slidesPerView: 1 },
+                  768: { slidesPerView: 2 },
+                  1024: { slidesPerView: 3 },
+                  1280: { slidesPerView: 4 },
+                }}
+                autoplay={{ delay: 2500, disableOnInteraction: false }}
+                pagination={{ clickable: true }}
+                navigation
+                className="mySwiper">
+                {animals.map((animal) => (
+                  <SwiperSlide key={animal.id} className="mb-3">
+                    <div className="group relative bg-white rounded-2xl shadow hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden border border-gray-100">
+                      {/* Enhanced Header */}
+                      <div
+                        className={`bg-gradient-to-br ${
+                          animal.color || "from-green-400 to-green-600"
+                        } p-6 text-white relative overflow-hidden`}>
+                        {/* Background Pattern */}
+                        <div className="absolute inset-0 opacity-10">
+                          <div className="absolute top-0 right-0 w-24 h-24 bg-white rounded-full -translate-y-12 translate-x-12"></div>
+                          <div className="absolute bottom-0 left-0 w-16 h-16 bg-white rounded-full translate-y-8 -translate-x-8"></div>
+                        </div>
+
+                        <div className="relative z-10">
+                          <div className="flex justify-between items-start mb-4">
+                            {/* <div className="text-4xl transform group-hover:scale-110 ">
+                              {animal.icon || "🐾"}
+                            </div> */}
+                            {/* <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1">
+                              <span className="font-bold text-lg">
+                                {animal.count} ตัว
+                              </span>
+                            </div> */}
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-semibold text-2xl mb-2">
+                              {animal.type}
+                            </h3>
+
+                            <span className="font-bold text-lg">
+                              {animal.count} ตัว
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Enhanced Content */}
+                      <div className="p-6 space-y-4">
+                        {/* Info Grid */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="hover:bg-blue-50 rounded-lg p-3 transition-colors group/item">
+                            <div className="flex items-center space-x-2">
+                              <Hash className="w-4 h-4 text-blue-500" />
+                              <div>
+                                <p className="text-xs text-gray-500 font-medium uppercase">
+                                  รหัสล๊อต
+                                </p>
+                                <p className="font-semibold text-gray-800">
+                                  {animal.lot}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="hover:bg-green-50 rounded-lg p-3 transition-colors group/item">
+                            <div className="flex items-center space-x-2">
+                              <Package className="w-4 h-4 text-green-500" />
+                              <div>
+                                <p className="text-xs text-gray-500 font-medium uppercase">
+                                  จำนวน
+                                </p>
+                                <p className="font-semibold text-gray-800">
+                                  {animal.quantity_received}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Location */}
+                        {animal.location && (
+                          <div className="flex items-center space-x-2 bg-gray-50 rounded-lg p-3">
+                            <MapPin className="w-4 h-4 text-gray-500" />
+                            <span className="text-sm font-medium text-gray-700">
+                              {animal.location}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Timeline */}
+                        <div className="space-y-3 text-sm text-gray-600 border-t border-gray-100 pt-4">
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="w-4 h-4 text-purple-500" />
+                            <span className="font-medium">สร้างเมื่อ:</span>
+                            <span>
+                              {new Date(animal.created_at).toLocaleDateString(
+                                "th-TH"
+                              )}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="w-4 h-4 text-orange-500" />
+                            <span className="font-medium">อัปเดตล่าสุด:</span>
+                            <span>
+                              {new Date(animal.updated_at).toLocaleDateString(
+                                "th-TH"
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Hover Glow Effect */}
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-400/0 via-purple-400/0 to-pink-400/0 group-hover:from-blue-400/5 group-hover:via-purple-400/5 group-hover:to-pink-400/5 transition-all duration-500 pointer-events-none"></div>
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
           )}
         </div>
       </div>

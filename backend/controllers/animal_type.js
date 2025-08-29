@@ -19,6 +19,25 @@ exports.getAll = async (req, res) => {
   }
 };
 
+exports.getById = async (req, res) => {
+  try {
+    const [rows] = await db
+      .promise()
+      .query("SELECT * FROM animal_types WHERE animal_id = ?", [req.params.id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "ไม่พบข้อมูลประเภทสัตว์" });
+    }
+
+    return res.status(200).json(rows);
+  } catch (err) {
+    console.log("Error Get AnimalType : ", err);
+    return res
+      .status(500)
+      .json({ message: "เกิดข้อผิดพลาดในการดึงประเภทสัตว์" });
+  }
+};
+
 // ดึงคำร้องประเภทสัตว์ที่รออนุมัติ
 exports.getWaitApproval = async (req, res) => {
   try {

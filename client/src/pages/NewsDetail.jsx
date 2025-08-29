@@ -155,9 +155,9 @@ function NewsDetail() {
   };
 
   return (
-    <div className="min-h-screen p-4">
+    <div className="min-h-screen p-4 bg-gradient-to-br from-green-50 to-emerald-50">
       <div className="">
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-white rounded-lg shadow-md overflow-hidden max-w-5xl mx-auto">
           <div className="p-8">
             <button
               onClick={handleGoBack}
