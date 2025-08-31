@@ -125,20 +125,22 @@ function BookDetail() {
             <style>
               {`
                 .prose {
-                  color: #374151;
+                  color: #000;
                 }
                 .prose h1, .prose h2, .prose h3, .prose h4 {
                   background: linear-gradient(135deg, #1f2937 0%, #059669 100%);
                   -webkit-background-clip: text;
                   -webkit-text-fill-color: transparent;
                   background-clip: text;
-                  font-weight: 700;
+                  font-weight: 800;
+                  font-size: 1.2rem;
                   margin-top: 2rem;
                   margin-bottom: 1rem;
+                  color: #000;
                 }
                 .prose p {
                   margin-bottom: 1.5rem;
-                  color: #4b5563;
+                  color: #000;
                   line-height: 1.8;
                 }
                 .prose img {
@@ -178,7 +180,7 @@ function BookDetail() {
                 }
                 .prose li {
                   margin: 0.5rem 0;
-                  color: #4b5563;
+                  color: #000;
                 }
               `}
             </style>
