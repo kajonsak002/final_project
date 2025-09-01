@@ -4,7 +4,11 @@ import { Link } from "react-router-dom";
 
 function ReportAnimals() {
   const [farmList, setFarmList] = useState([]);
+  const [animalList, setAnimalList] = useState([]);
+  const [animalTypeList, setAnimalTypeList] = useState([]);
   const [selectedFarm, setSelectedFarm] = useState("");
+  const [selectedAnimal, setSelectedAnimal] = useState("");
+  const [selectedAnimalType, setSelectedAnimalType] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -17,12 +21,53 @@ function ReportAnimals() {
     }
   };
 
+  const getAnimals = async () => {
+    try {
+      const res = await axios.get(import.meta.env.VITE_URL_API + "animals");
+      setAnimalList(res.data);
+    } catch (error) {
+      setError("เกิดข้อผิดพลาดในการดึงข้อมูลสัตว์");
+    }
+  };
+
+  const getAnimalTypes = async (animalId = null) => {
+    try {
+      let url = import.meta.env.VITE_URL_API + "animal-types";
+      if (animalId) {
+        url += `/${animalId}`;
+      }
+      const res = await axios.get(url);
+      setAnimalTypeList(res.data);
+    } catch (error) {
+      setError("เกิดข้อผิดพลาดในการดึงข้อมูลประเภทสัตว์");
+    }
+  };
+
   useEffect(() => {
     getFarm();
+    getAnimals();
+    getAnimalTypes();
   }, []);
 
   const handleFarmChange = (e) => {
     setSelectedFarm(e.target.value);
+  };
+
+  const handleAnimalChange = (e) => {
+    const animalId = e.target.value;
+    setSelectedAnimal(animalId);
+    setSelectedAnimalType(""); // รีเซ็ตประเภทสัตว์เมื่อเปลี่ยนสัตว์
+
+    // ดึงประเภทสัตว์ตามสัตว์ที่เลือก
+    if (animalId) {
+      getAnimalTypes(animalId);
+    } else {
+      getAnimalTypes(); // ดึงประเภทสัตว์ทั้งหมด
+    }
+  };
+
+  const handleAnimalTypeChange = (e) => {
+    setSelectedAnimalType(e.target.value);
   };
 
   const handleGenerateReport = async (e) => {
@@ -32,7 +77,11 @@ function ReportAnimals() {
     try {
       const res = await axios.post(
         import.meta.env.VITE_URL_API + "report/animal",
-        { farm_id: selectedFarm },
+        {
+          farm_id: selectedFarm,
+          animal_id: selectedAnimal,
+          type_id: selectedAnimalType,
+        },
         { responseType: "blob" }
       );
       const blob = new Blob([res.data], { type: "application/pdf" });
@@ -71,9 +120,9 @@ function ReportAnimals() {
           </h2>
 
           <form onSubmit={handleGenerateReport}>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-end">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-end">
               {/* ส่วนเลือกฟาร์ม */}
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-1">
                 <div className="form-control w-full">
                   <label className="label">
                     <span className="mb-2 label-text text-gray-700 font-semibold flex items-center text-base">
@@ -85,12 +134,61 @@ function ReportAnimals() {
                     className="select select-bordered w-full focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-base h-12"
                     value={selectedFarm}
                     onChange={handleFarmChange}>
-                    <option value="">
-                      -- เลือกฟาร์มที่ต้องการสร้างรายงาน (ทุกฟาร์ม) --
-                    </option>
+                    <option value="">-- ทุกฟาร์ม --</option>
                     {farmList.map((farm) => (
                       <option key={farm.farmer_id} value={farm.farmer_id}>
                         {farm.farm_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* ส่วนเลือกสัตว์ */}
+              <div className="lg:col-span-1">
+                <div className="form-control w-full">
+                  <label className="label">
+                    <span className="mb-2 label-text text-gray-700 font-semibold flex items-center text-base">
+                      เลือกสัตว์
+                    </span>
+                  </label>
+                  <select
+                    name="animal"
+                    className="select select-bordered w-full focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-base h-12"
+                    value={selectedAnimal}
+                    onChange={handleAnimalChange}>
+                    <option value="">-- ทุกสัตว์ --</option>
+                    {animalList.map((animal) => (
+                      <option key={animal.animal_id} value={animal.animal_id}>
+                        {animal.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* ส่วนเลือกประเภทสัตว์ */}
+              <div className="lg:col-span-1">
+                <div className="form-control w-full">
+                  <label className="label">
+                    <span className="mb-2 label-text text-gray-700 font-semibold flex items-center text-base">
+                      เลือกประเภท
+                    </span>
+                  </label>
+                  <select
+                    name="animalType"
+                    className="select select-bordered w-full focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-base h-12"
+                    value={selectedAnimalType}
+                    onChange={handleAnimalTypeChange}
+                    disabled={!selectedAnimal}>
+                    <option value="">
+                      {selectedAnimal
+                        ? "-- เลือกประเภท --"
+                        : "-- เลือกสัตว์ก่อน --"}
+                    </option>
+                    {animalTypeList.map((type) => (
+                      <option key={type.type_id} value={type.type_id}>
+                        {type.type_name}
                       </option>
                     ))}
                   </select>
@@ -161,9 +259,13 @@ function ReportAnimals() {
                 </svg>
                 <span className="text-blue-800 font-medium">หมายเหตุ:</span>
               </div>
-              <p className="text-blue-700 mt-1 ml-7">
-                หากไม่เลือกฟาร์ม ระบบจะสร้างรายงานสัตว์ของทุกฟาร์ม
-              </p>
+              <ul className="text-blue-700 mt-1 ml-7 space-y-1">
+                <li>• หากไม่เลือกฟาร์ม ระบบจะสร้างรายงานสัตว์ของทุกฟาร์ม</li>
+                <li>• หากไม่เลือกสัตว์ ระบบจะแสดงสัตว์ทุกชนิด</li>
+                <li>• เมื่อเลือกสัตว์แล้ว จะแสดงเฉพาะประเภทของสัตว์นั้น</li>
+                <li>• หากไม่เลือกประเภท ระบบจะแสดงทุกประเภทของสัตว์ที่เลือก</li>
+                <li>• สามารถเลือกเงื่อนไขหลายอย่างพร้อมกันเพื่อกรองข้อมูล</li>
+              </ul>
             </div>
           </form>
         </div>

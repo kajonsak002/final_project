@@ -3,7 +3,7 @@ const PDFDocument = require("pdfkit");
 const path = require("path");
 
 exports.reportAnimal = async (req, res) => {
-  const { farm_id } = req.body;
+  const { farm_id, animal_id, type_id } = req.body;
   try {
     // ดึงข้อมูลสัตว์ในฟาร์ม
     let query = `
@@ -16,16 +16,61 @@ exports.reportAnimal = async (req, res) => {
     `;
 
     let params = [];
+    let whereConditions = [];
+
     if (farm_id && farm_id !== "") {
-      query += " WHERE fa.farmer_id = ?";
+      whereConditions.push("fa.farmer_id = ?");
       params.push(farm_id);
     }
+
+    if (animal_id && animal_id !== "") {
+      whereConditions.push("fa.animal_id = ?");
+      params.push(animal_id);
+    }
+
+    if (type_id && type_id !== "") {
+      whereConditions.push("fa.type_id = ?");
+      params.push(type_id);
+    }
+
+    if (whereConditions.length > 0) {
+      query += " WHERE " + whereConditions.join(" AND ");
+    }
+
     query += " ORDER BY fa.farmer_id, a.name, t.type_name";
     const [rows] = await db.promise().query(query, params);
 
     // จัดกลุ่มตามฟาร์ม
     let result = [];
     let reportHeader = "ทั้งหมด";
+    let filterInfo = [];
+
+    // สร้างข้อความ filter
+    if (farm_id && farm_id !== "") {
+      const farmQuery = "SELECT farm_name FROM farmer WHERE farmer_id = ?";
+      const [farmRows] = await db.promise().query(farmQuery, [farm_id]);
+      if (farmRows.length > 0) {
+        filterInfo.push(`ฟาร์ม: ${farmRows[0].farm_name}`);
+        reportHeader = farmRows[0].farm_name;
+      }
+    }
+
+    if (animal_id && animal_id !== "") {
+      const animalQuery = "SELECT name FROM animals WHERE animal_id = ?";
+      const [animalRows] = await db.promise().query(animalQuery, [animal_id]);
+      if (animalRows.length > 0) {
+        filterInfo.push(`สัตว์: ${animalRows[0].name}`);
+      }
+    }
+
+    if (type_id && type_id !== "") {
+      const typeQuery = "SELECT type_name FROM animal_types WHERE type_id = ?";
+      const [typeRows] = await db.promise().query(typeQuery, [type_id]);
+      if (typeRows.length > 0) {
+        filterInfo.push(`ประเภท: ${typeRows[0].type_name}`);
+      }
+    }
+
     if (!farm_id || farm_id === "") {
       const farmMap = {};
       rows.forEach((row) => {
@@ -38,7 +83,6 @@ exports.reportAnimal = async (req, res) => {
       }));
     } else {
       if (rows.length > 0) {
-        reportHeader = rows[0].farm_name;
         result = [{ farm_name: reportHeader, animals: rows }];
       } else {
         result = [];
@@ -68,11 +112,38 @@ exports.reportAnimal = async (req, res) => {
     );
     doc.font("THSarabunNew");
 
+    // สร้างหัวข้อรายงาน
+    let reportTitle = "รายงานสัตว์";
+
+    if (farm_id && farm_id !== "") {
+      reportTitle += ` ของฟาร์ม ${reportHeader}`;
+    }
+
+    if (animal_id && animal_id !== "") {
+      const animalQuery = "SELECT name FROM animals WHERE animal_id = ?";
+      const [animalRows] = await db.promise().query(animalQuery, [animal_id]);
+      if (animalRows.length > 0) {
+        reportTitle += ` ${animalRows[0].name}`;
+      }
+    }
+
+    if (type_id && type_id !== "") {
+      const typeQuery = "SELECT type_name FROM animal_types WHERE type_id = ?";
+      const [typeRows] = await db.promise().query(typeQuery, [type_id]);
+      if (typeRows.length > 0) {
+        reportTitle += ` ประเภท ${typeRows[0].type_name}`;
+      }
+    }
+
+    if (!farm_id && !animal_id && !type_id) {
+      reportTitle += " ทั้งหมด";
+    }
+
     // Header PDF
     doc
       .fontSize(20)
       .font("THSarabunNew-Bold")
-      .text(`รายงานข้อมูลสัตว์ ฟาร์ม ${reportHeader}`, { align: "center" });
+      .text(reportTitle, { align: "center" });
     doc.moveDown(0.5);
 
     const colWidths = [150, 120, 120, 120];

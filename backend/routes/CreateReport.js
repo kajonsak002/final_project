@@ -3,9 +3,52 @@ const { reportAnimal, reportProduct } = require("../controllers/CreateReport");
 const router = express.Router();
 const PDFDocument = require("pdfkit");
 const path = require("path");
+const db = require("../config/db");
 
 router.post("/report/animal", reportAnimal);
 router.post("/report/product", reportProduct);
+
+// API สำหรับดึงข้อมูลสัตว์ทั้งหมด
+router.get("/animals", async (req, res) => {
+  try {
+    const [rows] = await db
+      .promise()
+      .query("SELECT animal_id, name FROM animals ORDER BY name");
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "เกิดข้อผิดพลาดในเซิร์ฟเวอร์" });
+  }
+});
+
+// API สำหรับดึงข้อมูลประเภทสัตว์ทั้งหมด
+router.get("/animal-types", async (req, res) => {
+  try {
+    const [rows] = await db
+      .promise()
+      .query("SELECT type_id, type_name FROM animal_types ORDER BY type_name");
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "เกิดข้อผิดพลาดในเซิร์ฟเวอร์" });
+  }
+});
+
+router.get("/animal-types/:animal_id", async (req, res) => {
+  try {
+    const { animal_id } = req.params;
+    const [rows] = await db
+      .promise()
+      .query(
+        "SELECT type_id, type_name FROM animal_types WHERE animal_id = ? ORDER BY type_name",
+        [animal_id]
+      );
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "เกิดข้อผิดพลาดในเซิร์ฟเวอร์" });
+  }
+});
 
 router.get("/export/pdf", (req, res) => {
   const doc = new PDFDocument({ size: "A4", layout: "portrait", margin: 10 });
