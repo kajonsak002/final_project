@@ -117,7 +117,7 @@ function PostReportController() {
               </a>
             </li>
             <li>
-              <a className="text-gray-500">จัดการรายงานโพสต์</a>
+              <a className="text-black">จัดการรายงานโพสต์</a>
             </li>
           </ul>
         </div>

@@ -48,7 +48,7 @@ function HistoryCommentReport() {
               </a>
             </li>
             <li>
-              <a className="text-gray-500">ประวัติการถูกรายงานความคิดเห็น</a>
+              <a className="text-black">ประวัติการถูกรายงานความคิดเห็น</a>
             </li>
           </ul>
         </div>

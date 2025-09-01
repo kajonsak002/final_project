@@ -342,7 +342,7 @@ function Community() {
               </a>
             </li>
             <li>
-              <a className="text-gray-500">ระบบชุมชน</a>
+              <a className="text-black">ระบบชุมชน</a>
             </li>
           </ul>
         </div>

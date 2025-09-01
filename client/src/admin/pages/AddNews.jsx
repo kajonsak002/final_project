@@ -65,7 +65,7 @@ function AddNews({ navigate }) {
                 </a>
               </li>
               <li>
-                <a className="text-gray-500">เพิ่มข่าวสาร</a>
+                <a className="text-black">เพิ่มข่าวสาร</a>
               </li>
             </ul>
           </div>

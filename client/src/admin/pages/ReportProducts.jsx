@@ -58,7 +58,7 @@ function ReportProducts() {
               </a>
             </li>
             <li>
-              <span className="text-gray-500">รายงานสินค้า</span>
+              <span className="text-black">รายงานสินค้า</span>
             </li>
           </ul>
         </div>

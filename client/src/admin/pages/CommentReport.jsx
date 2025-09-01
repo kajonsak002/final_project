@@ -112,7 +112,7 @@ function CommentReport() {
               </a>
             </li>
             <li>
-              <a className="text-gray-500">จัดการรายงานความคิดเห็น</a>
+              <a className="text-black">จัดการรายงานความคิดเห็น</a>
             </li>
           </ul>
         </div>

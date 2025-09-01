@@ -99,7 +99,7 @@ function GuildBookController() {
               </a>
             </li>
             <li>
-              <a className="text-gray-500">จัดการคู่มือการเลี้ยงสัตว์</a>
+              <a className="text-black">จัดการคู่มือการเลี้ยงสัตว์</a>
             </li>
           </ul>
         </div>

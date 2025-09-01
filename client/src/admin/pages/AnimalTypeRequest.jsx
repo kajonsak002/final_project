@@ -109,7 +109,7 @@ function AnimalTypeRequest() {
               </a>
             </li>
             <li>
-              <a className="text-gray-500">คำร้องขอเพิ่มประเภทสัตว์</a>
+              <a className="text-black">คำร้องขอเพิ่มประเภทสัตว์</a>
             </li>
           </ul>
         </div>

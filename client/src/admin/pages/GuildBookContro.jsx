@@ -130,7 +130,7 @@ function GuildBookContro() {
                 </a>
               </li>
               <li>
-                <a className="text-gray-500">เพิ่มคู่มือการเลี้ยงสัตว์</a>
+                <a className="text-black">เพิ่มคู่มือการเลี้ยงสัตว์</a>
               </li>
             </ul>
           </div>

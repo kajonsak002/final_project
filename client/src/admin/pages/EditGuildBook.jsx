@@ -144,7 +144,7 @@ function EditGuildBook() {
                 </a>
               </li>
               <li>
-                <span className="text-gray-500">แก้ไขคู่มือการเลี้ยงสัตว์</span>
+                <span className="text-black">แก้ไขคู่มือการเลี้ยงสัตว์</span>
               </li>
             </ul>
           </div>

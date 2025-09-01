@@ -94,7 +94,7 @@ function EditNews() {
                 </a>
               </li>
               <li>
-                <a className="text-gray-500">แก้ไขข่าวสาร</a>
+                <a className="text-black">แก้ไขข่าวสาร</a>
               </li>
             </ul>
           </div>

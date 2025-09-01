@@ -189,7 +189,7 @@ function Product() {
               </a>
             </li>
             <li>
-              <a className="text-gray-500">จัดการสินค้า</a>
+              <a className="text-black">จัดการสินค้า</a>
             </li>
           </ul>
         </div>

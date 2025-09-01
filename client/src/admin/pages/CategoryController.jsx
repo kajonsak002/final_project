@@ -127,7 +127,7 @@ const CategoryController = () => {
               </a>
             </li>
             <li>
-              <a className="text-gray-500">จัดการหมวดหมู่สัตว์</a>
+              <a className="text-black">จัดการหมวดหมู่สัตว์</a>
             </li>
           </ul>
         </div>

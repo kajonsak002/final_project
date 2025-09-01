@@ -135,7 +135,7 @@ function AnimalAll() {
               </a>
             </li>
             <li>
-              <a className="text-gray-500">จัดการรายการสัตว์</a>
+              <a className="text-black">จัดการรายการสัตว์</a>
             </li>
           </ul>
         </div>

@@ -90,7 +90,7 @@ function NewsHistory() {
                 </a>
               </li>
               <li>
-                <a className="text-gray-500">ประวัติข่าวสารของฉัน</a>
+                <a className="text-black">ประวัติข่าวสารของฉัน</a>
               </li>
             </ul>
           </div>

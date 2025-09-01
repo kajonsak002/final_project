@@ -51,7 +51,7 @@ function UserController() {
               </a>
             </li>
             <li>
-              <a className="text-gray-500">จัดการฟาร์ม</a>
+              <a className="text-black">จัดการฟาร์ม</a>
             </li>
           </ul>
         </div>

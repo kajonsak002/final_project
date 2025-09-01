@@ -102,7 +102,7 @@ function PostController() {
               </a>
             </li>
             <li>
-              <a className="text-gray-500">จัดการอนุมัติโพสต์</a>
+              <a className="text-black">จัดการอนุมัติโพสต์</a>
             </li>
           </ul>
         </div>

@@ -59,7 +59,7 @@ function News() {
                 </a>
               </li>
               <li>
-                <a className="text-gray-500">ข่าวสาร</a>
+                <a className="text-black">ข่าวสาร</a>
               </li>
             </ul>
           </div>
