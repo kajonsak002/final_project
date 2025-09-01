@@ -100,40 +100,69 @@ exports.useAnimal = async (req, res) => {
       .json({ success: false, msg: "กรุณากรอกข้อมูลให้ครบ" });
   }
 
-  const connection = await db.promise().getConnection();
   try {
-    await connection.beginTransaction();
-
     // ตรวจสอบจำนวนคงเหลือ
-    const [rows] = await connection.query(
-      "SELECT quantity FROM farm_animals WHERE id = ? FOR UPDATE",
-      [farm_animal_id]
-    );
+    const [rows] = await db
+      .promise()
+      .query("SELECT quantity FROM farm_animals WHERE id = ? FOR UPDATE", [
+        farm_animal_id,
+      ]);
     if (rows.length === 0) throw new Error("ไม่พบสัตว์ฟาร์มนี้");
     const remaining = rows[0].quantity;
 
     if (remaining < quantity_used) throw new Error("จำนวนใช้มากกว่าที่คงเหลือ");
 
     // อัพเดต farm_animals
-    await connection.query(
-      "UPDATE farm_animals SET quantity = quantity - ? WHERE id = ?",
-      [quantity_used, farm_animal_id]
-    );
+    await db
+      .promise()
+      .query("UPDATE farm_animals SET quantity = quantity - ? WHERE id = ?", [
+        quantity_used,
+        farm_animal_id,
+      ]);
 
     // บันทึก usage
-    await connection.query(
+    await db.promise().query(
       `INSERT INTO farm_animal_usage (farm_animal_id, quantity_used, usage_type, remark)
        VALUES (?, ?, ?, ?)`,
       [farm_animal_id, quantity_used, usage_type, remark || null]
     );
 
-    await connection.commit();
     return res.json({ success: true, msg: "บันทึกการใช้สัตว์เรียบร้อย" });
   } catch (err) {
-    await connection.rollback();
     console.error("Error using animal:", err);
     return res.status(500).json({ success: false, msg: err.message });
-  } finally {
-    connection.release();
+  }
+};
+
+// 4. ดูประวัติการใช้สัตว์ของฟาร์ม
+exports.getAnimalUsageHistory = async (req, res) => {
+  const { farm_id } = req.params;
+
+  try {
+    const query = `
+      SELECT 
+        fau.id,
+        fau.quantity_used,
+        fau.usage_type,
+        fau.remark,
+        fau.created_at,
+        fa.lot_code,
+        a.name AS animal_name,
+        t.type_name
+      FROM farm_animal_usage fau
+      JOIN farm_animals fa ON fau.farm_animal_id = fa.id
+      JOIN animals a ON fa.animal_id = a.animal_id
+      LEFT JOIN animal_types t ON fa.type_id = t.type_id
+      WHERE fa.farmer_id = ?
+      ORDER BY fau.created_at DESC
+    `;
+
+    const [rows] = await db.promise().query(query, [farm_id]);
+    return res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error("Error fetching animal usage history:", err);
+    return res
+      .status(500)
+      .json({ success: false, msg: "เกิดข้อผิดพลาดในเซิร์ฟเวอร์" });
   }
 };

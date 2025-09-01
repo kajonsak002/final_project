@@ -46,6 +46,11 @@ const Sidebar = ({ isOpen }) => {
       path: "animal",
     },
     {
+      name: "บันทึกเหตุการณ์สัตว์",
+      icon: <BookText size={20} />,
+      path: "logs",
+    },
+    {
       name: "ส่งคำร้องเพิ่มรายการสัตว์",
       icon: <CirclePlus size={20} />,
       path: "animal-type/request",
@@ -64,11 +69,7 @@ const Sidebar = ({ isOpen }) => {
         { name: "ประวัติข่าวสารของฉัน", path: "news-history" },
       ],
     },
-    {
-      name: "บันทึกเหตุการณ์สัตว์",
-      icon: <BookText size={20} />,
-      path: "logs",
-    },
+
     {
       name: "ประวัติการถูกรายงาน",
       icon: <MailWarning size={20} />,

@@ -164,6 +164,7 @@ CREATE TABLE `farm_animals`  (
   `type_id` int(11) NULL DEFAULT NULL,
   `quantity` int(11) NOT NULL DEFAULT 0,
   `quantity_received` int(11) NOT NULL DEFAULT 0,
+  `lot_code` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `created_at` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
