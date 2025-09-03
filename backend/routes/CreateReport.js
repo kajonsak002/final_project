@@ -8,7 +8,6 @@ const db = require("../config/db");
 router.post("/report/animal", reportAnimal);
 router.post("/report/product", reportProduct);
 
-// API สำหรับดึงข้อมูลสัตว์ทั้งหมด
 router.get("/animals", async (req, res) => {
   try {
     const [rows] = await db
@@ -21,7 +20,6 @@ router.get("/animals", async (req, res) => {
   }
 });
 
-// API สำหรับดึงข้อมูลประเภทสัตว์ทั้งหมด
 router.get("/animal-types", async (req, res) => {
   try {
     const [rows] = await db

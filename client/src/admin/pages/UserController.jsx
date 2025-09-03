@@ -1,9 +1,11 @@
 import axios from "axios";
-import { Search, User, Eye, Trash2 } from "lucide-react";
+import { Search, User, Eye, Trash2, Edit } from "lucide-react";
 import React, { useState } from "react";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Pagination from "../components/Pagination";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import dayjs from "dayjs";
 import "dayjs/locale/th";
@@ -15,6 +17,11 @@ function UserController() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageData, setPageData] = useState([]);
   const dataPerPage = 7;
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedFarmer, setSelectedFarmer] = useState(null);
+  const [newStatus, setNewStatus] = useState("ปกติ");
+  const [reason, setReason] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const getFarm = async () => {
     try {
@@ -38,8 +45,47 @@ function UserController() {
 
   const totalPages = Math.ceil(farms.length / dataPerPage);
 
+  const openStatusModal = (farmer) => {
+    setSelectedFarmer(farmer);
+    setNewStatus(farmer.is_active || "ปกติ");
+    setReason("");
+    setModalOpen(true);
+  };
+
+  const closeStatusModal = () => {
+    setModalOpen(false);
+    setSelectedFarmer(null);
+    setReason("");
+    setNewStatus("ปกติ");
+  };
+
+  const submitStatusChange = async () => {
+    if (!selectedFarmer) return;
+    try {
+      setSubmitting(true);
+      await axios.patch(
+        `${import.meta.env.VITE_URL_API}farmer/${
+          selectedFarmer.farmer_id
+        }/status`,
+        {
+          is_active: newStatus,
+          reason: newStatus === "โดนระงับ" ? reason : "",
+        }
+      );
+      await getFarm();
+      toast.success("อัปเดตสถานะสำเร็จ");
+      closeStatusModal();
+    } catch (err) {
+      console.log("Error update status : ", err);
+      toast.error("อัปเดตสถานะไม่สำเร็จ");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <>
+      <ToastContainer />
       <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
         <div className="breadcrumbs text-sm">
           <ul>
@@ -137,15 +183,18 @@ function UserController() {
                     </span>
                   </td>
 
-                  <td className="flex justify-center items-center">
-                    <div className="px-1">
-                      <Link to={`/admin/farm/${user.farmer_id}`}>
-                        <Eye size={22} />
-                      </Link>
-                    </div>
-                    <div className="px-1">
-                      <Trash2 size={22} />
-                    </div>
+                  <td className="flex justify-center items-center gap-2">
+                    <Link
+                      to={`/admin/farm/${user.farmer_id}`}
+                      className="btn btn-sm btn-outline btn-info flex items-center gap-1">
+                      <Eye size={18} />
+                    </Link>
+
+                    <button
+                      className="btn btn-sm bg-green-500 text-white flex items-center gap-1"
+                      onClick={() => openStatusModal(user)}>
+                      <Edit size={18} />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -161,6 +210,59 @@ function UserController() {
           />
         )}
       </div>
+      {modalOpen && selectedFarmer && (
+        <div className="modal modal-open">
+          <div className="modal-box max-w-lg">
+            <h3 className="font-bold text-lg mb-2">จัดการสถานะบัญชี</h3>
+            <div className="space-y-3">
+              <div>
+                <div className="text-sm text-gray-500">อีเมลผู้ใช้</div>
+                <div className="font-medium">{selectedFarmer.email}</div>
+              </div>
+              <div>
+                <label className="label">
+                  <span className="label-text">สถานะบัญชี</span>
+                </label>
+                <select
+                  className="select select-bordered w-full"
+                  value={newStatus}
+                  onChange={(e) => setNewStatus(e.target.value)}>
+                  <option value="ปกติ">ปกติ</option>
+                  <option value="โดนระงับ">โดนระงับ</option>
+                </select>
+              </div>
+              {newStatus === "โดนระงับ" && (
+                <div>
+                  <label className="label">
+                    <span className="label-text">เหตุผลในการระงับ</span>
+                  </label>
+                  <textarea
+                    className="textarea textarea-bordered w-full"
+                    placeholder="ระบุเหตุผล..."
+                    rows={3}
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="modal-action">
+              <button
+                className="btn"
+                onClick={closeStatusModal}
+                disabled={submitting}>
+                ยกเลิก
+              </button>
+              <button
+                className="btn bg-green-500 text-white"
+                onClick={submitStatusChange}
+                disabled={submitting || (newStatus === "โดนระงับ" && !reason)}>
+                {submitting ? "กำลังบันทึก..." : "บันทึก"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

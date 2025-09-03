@@ -39,6 +39,14 @@ exports.login = async (req, res) => {
     if (rows[0].status == "อนุมัติ") {
       const farmer = rows[0];
 
+      // Block suspended accounts
+      if (farmer.is_active !== "ปกติ") {
+        return res.status(403).json({
+          message: "บัญชีถูกระงับ",
+          reason: farmer.reason || "",
+        });
+      }
+
       const isMatch = await bcrypt.compare(password, farmer.password);
       if (!isMatch) {
         return res

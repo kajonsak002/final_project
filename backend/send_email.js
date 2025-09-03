@@ -10,6 +10,7 @@ const send_email = async (name, email, action, reason) => {
   });
 
   let htmlContent = "";
+  let subject = "แจ้งผลการสมัครสมาชิก";
 
   if (action === "register") {
     htmlContent = `
@@ -43,6 +44,7 @@ const send_email = async (name, email, action, reason) => {
         </p>
       </div>
     `;
+    subject = "อนุมัติการสมัครสมาชิก";
   } else if (action === "rejected") {
     htmlContent = `
       <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px; background-color: #fff5f5;">
@@ -59,12 +61,41 @@ const send_email = async (name, email, action, reason) => {
         </p>
       </div>
     `;
+    subject = "ไม่ผ่านการอนุมัติการสมัคร";
+  } else if (action === "suspend") {
+    htmlContent = `
+      <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px; background-color: #fff5f5;">
+        <h2 style="color: #d9534f; text-align: center;">แจ้งระงับการใช้งานบัญชี</h2>
+        <p style="font-size: 16px;">เรียนคุณ ${name}</p>
+        <p style="font-size: 16px;">บัญชีของคุณถูกระงับชั่วคราว เนื่องจาก: <strong>${
+          reason || "-"
+        }</strong></p>
+        <p style="font-size: 14px; color: #555;">หากต้องการอุทธรณ์หรือสอบถามเพิ่มเติม โปรดติดต่อเราได้ที่ 
+          <a href="mailto:kasetinsri.app@gmail.com" style="color: #d9534f; text-decoration: none;">kasetinsri.app@gmail.com</a>
+        </p>
+        <p style="font-size: 14px; color: #777; text-align: center; margin-top: 30px;">ขอบคุณครับ</p>
+      </div>
+    `;
+    subject = "แจ้งระงับการใช้งานบัญชี";
+  } else if (action === "unsuspend") {
+    htmlContent = `
+      <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px; background-color: #f6fff6;">
+        <h2 style="color: #2E8B57; text-align: center;">ยกเลิกการระงับบัญชี</h2>
+        <p style="font-size: 16px;">เรียนคุณ ${name}</p>
+        <p style="font-size: 16px;">ระบบได้ทำการยกเลิกการระงับบัญชีของคุณแล้ว ตอนนี้คุณสามารถใช้งานระบบได้ตามปกติ</p>
+        <p style="font-size: 14px; color: #555;">ติดต่อสอบถาม: 
+          <a href="mailto:kasetinsri.app@gmail.com" style="color: #2E8B57; text-decoration: none;">kasetinsri.app@gmail.com</a>
+        </p>
+        <p style="font-size: 14px; color: #777; text-align: center; margin-top: 30px;">ขอบคุณครับ</p>
+      </div>
+    `;
+    subject = "แจ้งยกเลิกการระงับบัญชี";
   }
 
   const mailOptions = {
     from: "kasetinsri.app@gmail.com",
     to: email,
-    subject: "แจ้งผลการสมัครสมาชิก",
+    subject,
     html: htmlContent,
   };
 

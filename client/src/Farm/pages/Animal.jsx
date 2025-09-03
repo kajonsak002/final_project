@@ -264,7 +264,8 @@ function Animal() {
                     className="select select-bordered w-full"
                     value={typeId}
                     onChange={(e) => setTypeId(e.target.value)}
-                    disabled={!animalId}>
+                    disabled={!animalId}
+                    required>
                     <option value="">เลือกประเภท</option>
                     {typesOptions.map((type) => (
                       <option key={type.type_id} value={type.type_id}>

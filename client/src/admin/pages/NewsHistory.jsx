@@ -13,15 +13,21 @@ function NewsHistory() {
   const [newsList, setNewsList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
+  const itemsPerPage = 10;
+  const [viewMode, setViewMode] = useState("all"); // 'all' | 'mine'
 
   const navigate = useNavigate();
 
-  const admin_id = "1"; // หรือดึงจาก localStorage
+  const admin_id = "1";
 
   useEffect(() => {
-    fetchMyNews();
-  }, []);
+    setLoading(true);
+    if (viewMode === "all") {
+      fetchAllNews();
+    } else {
+      fetchMyNews();
+    }
+  }, [viewMode]);
 
   const fetchMyNews = async () => {
     try {
@@ -37,6 +43,18 @@ function NewsHistory() {
     }
   };
 
+  const fetchAllNews = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_URL_API}news`);
+      setNewsList(response.data.data || []);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching news:", error);
+      toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูลทั้งหมด");
+      setLoading(false);
+    }
+  };
+
   const handleDelete = async (newsId) => {
     if (window.confirm("คุณต้องการลบข่าวสารนี้หรือไม่?")) {
       try {
@@ -44,7 +62,11 @@ function NewsHistory() {
           `${import.meta.env.VITE_URL_API}news/${newsId}`
         );
         toast.success(response.data.msg);
-        fetchMyNews();
+        if (viewMode === "all") {
+          fetchAllNews();
+        } else {
+          fetchMyNews();
+        }
       } catch (error) {
         console.error("Error deleting news:", error);
         toast.error("เกิดข้อผิดพลาดในการลบข่าวสาร");
@@ -101,7 +123,7 @@ function NewsHistory() {
           <div className="border-b border-gray-200 px-6 py-4">
             <div className="flex justify-between items-center">
               <h1 className="text-2xl font-bold text-gray-900">
-                ประวัติข่าวสารของฉัน
+                จัดการข่าวสาร
               </h1>
               {/* <button
                 onClick={() => navigate("/admin/add-news")}
@@ -109,6 +131,28 @@ function NewsHistory() {
                 <Plus size={16} />
                 เพิ่มข่าวสารใหม่
               </button> */}
+            </div>
+          </div>
+          <div className="px-6 py-3 flex items-center gap-2">
+            <div role="tablist" className="tabs tabs-boxed">
+              <button
+                role="tab"
+                className={`tab ${viewMode === "all" ? "tab-active" : ""}`}
+                onClick={() => {
+                  setCurrentPage(1);
+                  setViewMode("all");
+                }}>
+                ทั้งหมด
+              </button>
+              <button
+                role="tab"
+                className={`tab ${viewMode === "mine" ? "tab-active" : ""}`}
+                onClick={() => {
+                  setCurrentPage(1);
+                  setViewMode("mine");
+                }}>
+                ของฉัน
+              </button>
             </div>
           </div>
         </div>
@@ -134,6 +178,7 @@ function NewsHistory() {
                     <tr>
                       <th>#</th>
                       <th>หัวข้อข่าว</th>
+                      {viewMode === "all" && <th>เจ้าของ</th>}
                       <th>วันที่โพสต์</th>
                       <th>วันที่แก้ไขล่าสุด</th>
                       <th>แหล่งที่มา</th>
@@ -148,6 +193,18 @@ function NewsHistory() {
                             {index + 1 + (currentPage - 1) * itemsPerPage}
                           </td>
                           <td className="max-w-xs truncate">{news.title}</td>
+                          {viewMode === "all" && (
+                            <td className="max-w-xs truncate">
+                              <div className="flex items-center gap-2">
+                                <span>{news.owner_name || "-"}</span>
+                                {news.owner_type && (
+                                  <span className="badge badge-ghost badge-sm uppercase">
+                                    {news.owner_type}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                          )}
                           <td>{formatDate(news.created_at)}</td>
                           <td>{formatDate(news.updated_at)}</td>
                           <td className="max-w-xs truncate">
@@ -173,7 +230,7 @@ function NewsHistory() {
                             </button>
                             <button
                               onClick={() => handleDelete(news.news_id)}
-                              className="btn btn-sm btn-error flex items-center gap-1 text-white">
+                              className="btn btn-sm bg-red-500 flex items-center gap-1 text-white">
                               <Trash2 size={18} />
                             </button>
                           </td>
@@ -181,7 +238,9 @@ function NewsHistory() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={6} className="text-center py-4">
+                        <td
+                          colSpan={viewMode === "all" ? 7 : 6}
+                          className="text-center py-4">
                           ไม่พบข้อมูล
                         </td>
                       </tr>

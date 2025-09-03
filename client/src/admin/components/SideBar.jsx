@@ -74,8 +74,8 @@ const menuItems = [
     icon: <Newspaper size={20} />,
     hasDropdown: true,
     subItems: [
-      { label: "จัดการข่าวสาร", path: "news" },
-      { label: "ประวัติข่าวสารของฉัน", path: "news-history" },
+      { label: "ข่าวสาร", path: "news" },
+      { label: "จัดการข่าวสาร", path: "news-history" },
     ],
   },
   {

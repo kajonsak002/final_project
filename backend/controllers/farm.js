@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const send_email = require("../send_email");
 
 const fs = require("fs");
 const path = require("path");
@@ -151,6 +152,46 @@ exports.getFarmsData = async (req, res) => {
   } catch (err) {
     console.error("Error fetching farms:", err);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// Admin updates farmer account active status and sends email
+exports.updateFarmerAccountStatus = async (req, res) => {
+  const { farmer_id } = req.params;
+  const { is_active, reason } = req.body;
+
+  if (!farmer_id || !is_active) {
+    return res
+      .status(400)
+      .json({ message: "กรุณาระบุ farmer_id และสถานะบัญชี" });
+  }
+
+  try {
+    const [rows] = await db
+      .promise()
+      .query("SELECT farm_name, email FROM farmer WHERE farmer_id = ?", [
+        farmer_id,
+      ]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "ไม่พบผู้ใช้งาน" });
+    }
+
+    await db
+      .promise()
+      .query(
+        "UPDATE farmer SET is_active = ?, reason = ?, update_at = NOW() WHERE farmer_id = ?",
+        [is_active, reason || null, farmer_id]
+      );
+
+    const { farm_name, email } = rows[0];
+    const action = is_active === "โดนระงับ" ? "suspend" : "unsuspend";
+    await send_email(farm_name || "ผู้ใช้งาน", email, action, reason || "");
+
+    return res.status(200).json({ message: "อัปเดตสถานะบัญชีสำเร็จ" });
+  } catch (err) {
+    console.error("Error update account status:", err);
+    return res.status(500).json({ message: "เกิดข้อผิดพลาดในเซิร์ฟเวอร์" });
   }
 };
 

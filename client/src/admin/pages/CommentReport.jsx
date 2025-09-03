@@ -272,7 +272,7 @@ function CommentReport() {
 
                 <div className="flex justify-end space-x-3 pt-4 border-t">
                   <button
-                    className="btn btn-outline btn-error"
+                    className="btn btn-outline btn-error hover:text-white"
                     onClick={() => setShowRejectInput(true)}
                     disabled={isProcessing}>
                     <X size={16} />

@@ -1,12 +1,5 @@
-import React from "react";
-import {
-  X,
-  MessageSquare,
-  Clock,
-  UserCircle,
-  Send,
-  EllipsisVertical,
-} from "lucide-react";
+import React, { useState } from "react";
+import { X, MessageSquare, Clock, Send, EllipsisVertical } from "lucide-react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/th";
@@ -26,6 +19,26 @@ function DetailPost({
   setSelectedComment,
 }) {
   if (!open || !post) return null;
+
+  // --- Pagination state ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const commentsPerPage = 5;
+
+  const indexOfLast = currentPage * commentsPerPage;
+  const indexOfFirst = indexOfLast - commentsPerPage;
+  const currentComments = commentForPost.slice(indexOfFirst, indexOfLast);
+
+  const totalPages = Math.ceil(commentForPost.length / commentsPerPage);
+
+  // --- Toggle read more state ---
+  const [expandedComments, setExpandedComments] = useState({});
+
+  const toggleReadMore = (id) => {
+    setExpandedComments((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   const formatDate = (dateString) => {
     return dayjs(dateString).locale("th").format("D MMMM YYYY เวลา HH:mm");
@@ -118,51 +131,94 @@ function DetailPost({
                 <div className="space-y-4">
                   {commentForPost.length > 0 ? (
                     <>
-                      {commentForPost.map((item, index) => (
-                        <div
-                          className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200"
-                          key={index}>
-                          <div className="flex items-start space-x-3">
-                            <div className="avatar">
-                              <div className="w-12 h-12 rounded-full">
-                                <img src={item.farm_img} alt={item.farm_name} />
+                      {currentComments.map((item, index) => {
+                        const isExpanded = expandedComments[item.comment_id];
+                        const shouldTruncate = item.content.length > 30;
+                        const displayText =
+                          isExpanded || !shouldTruncate
+                            ? item.content
+                            : item.content.slice(0, 30) + "...";
+
+                        return (
+                          <div
+                            className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200"
+                            key={index}>
+                            <div className="flex items-start space-x-3">
+                              <div className="avatar">
+                                <div className="w-12 h-12 rounded-full">
+                                  <img
+                                    src={item.farm_img}
+                                    alt={item.farm_name}
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex-1">
+                                <p className="font-medium text-md text-gray-800">
+                                  {item.farm_name}
+                                </p>
+                                <p className="text-gray-700 text-md leading-relaxed">
+                                  {displayText}{" "}
+                                  {shouldTruncate && (
+                                    <button
+                                      className="text-blue-600 text-sm ml-2 hover:underline cursor-pointer"
+                                      onClick={() =>
+                                        toggleReadMore(item.comment_id)
+                                      }>
+                                      {isExpanded ? "ย่อ" : "ดูเพิ่มเติม"}
+                                    </button>
+                                  )}
+                                </p>
+                                <p className="text-gray-500 text-[14px] italic">
+                                  {formatFacebookTime(item.create_at)}
+                                </p>
+                              </div>
+                              <div className="dropdown dropdown-end">
+                                <label
+                                  tabIndex={0}
+                                  className="btn btn-ghost btn-sm btn-circle">
+                                  <EllipsisVertical />
+                                </label>
+                                <ul
+                                  tabIndex={0}
+                                  className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+                                  <li
+                                    onClick={() => {
+                                      setReportComment(true);
+                                      setSelectedComment(item);
+                                    }}>
+                                    <a>รายงานความคิดเห็น</a>
+                                  </li>
+                                </ul>
                               </div>
                             </div>
-                            <div className="flex-1">
-                              <p className="font-medium text-md text-gray-800">
-                                {item.farm_name}
-                              </p>
-                              <p className="text-gray-700 text-md leading-relaxed">
-                                {item.content}
-                              </p>
-                              <p className="text-gray-500 text-[14px] italic">
-                                {formatFacebookTime(item.create_at)}
-                              </p>
-                            </div>
-                            <div className="dropdown dropdown-end">
-                              <label
-                                tabIndex={0}
-                                className="btn btn-ghost btn-sm btn-circle">
-                                <EllipsisVertical />
-                              </label>
-                              <ul
-                                tabIndex={0}
-                                className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
-                                <li
-                                  onClick={() => {
-                                    setReportComment(true);
-                                    setSelectedComment(item);
-                                  }}>
-                                  <a>รายงานความคิดเห็น</a>
-                                </li>
-                              </ul>
-                            </div>
                           </div>
+                        );
+                      })}
+                      {/* Pagination Controls */}
+                      {totalPages > 1 ? (
+                        <div className="flex justify-center space-x-2 mt-4">
+                          <button
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage((p) => p - 1)}
+                            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50">
+                            ก่อนหน้า
+                          </button>
+                          <span className="px-3 py-1">
+                            หน้า {currentPage} / {totalPages}
+                          </span>
+                          <button
+                            disabled={currentPage === totalPages}
+                            onClick={() => setCurrentPage((p) => p + 1)}
+                            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50">
+                            ถัดไป
+                          </button>
                         </div>
-                      ))}
+                      ) : (
+                        ""
+                      )}
                     </>
                   ) : (
-                    <div className="flex flex-col justify-center items-center h-[300px]  p-8">
+                    <div className="flex flex-col justify-center items-center h-[300px] p-8">
                       <div className="relative">
                         <div className="relative bg-white rounded-full p-8 shadow-lg border border-slate-100 mb-6 group hover:shadow-xl transition-shadow duration-300">
                           <MessageSquare size={64} className="text-slate-400" />
@@ -203,6 +259,7 @@ function DetailPost({
                       placeholder="แสดงความคิดเห็น..."
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
+                      maxLength={255}
                       className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
                     />
                     <button

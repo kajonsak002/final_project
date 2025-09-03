@@ -180,17 +180,19 @@ exports.getAll = async (req, res) => {
 
     const [rows] = await db.promise().query(
       `SELECT 
-          t1.*,
-          t2.farm_name,
-          t2.farm_img,
-          COUNT(t3.comment_id) AS comment_count
-        FROM posts AS t1
-        JOIN farmer AS t2 ON t1.farmer_id = t2.farmer_id
-        LEFT JOIN comments AS t3 
-          ON t1.post_id = t3.post_id AND t3.status = 'แสดง'
-        WHERE t1.is_visible = 'เเสดง'
-        GROUP BY t1.post_id
-        ORDER BY t1.create_at DESC;
+    t1.*,
+    t2.farm_name,
+    t2.farm_img,
+    COUNT(t3.comment_id) AS comment_count,
+    MAX(t3.create_at) AS latest_comment_at
+FROM posts AS t1
+JOIN farmer AS t2 ON t1.farmer_id = t2.farmer_id
+LEFT JOIN comments AS t3 
+    ON t1.post_id = t3.post_id AND t3.status = 'แสดง'
+WHERE t1.is_visible = 'เเสดง'
+GROUP BY t1.post_id
+ORDER BY latest_comment_at DESC, t1.create_at DESC;
+
       `
     );
 

@@ -273,154 +273,214 @@ function Profile() {
           </div>
         </div>
 
-        {/* Modal show profile Data */}
-        {modalShowProfile && (
-          <dialog open className="modal">
-            <div className="modal-box">
-              <button
-                type="button"
-                className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-                onClick={() => setModalShowProfile(false)}>
-                ✕
-              </button>
-              <h3 className="font-bold text-lg mb-4">แก้ไขข้อมูลส่วนตัว</h3>
+        {/* Modal with DaisyUI dialog */}
+        <dialog id="editFarmModal" className="modal" open={modalShowProfile}>
+          <div className="modal-box w-11/12 max-w-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-lg font-semibold text-gray-900">
+                แก้ไขข้อมูลฟาร์ม
+              </h3>
+              <form method="dialog">
+                <button
+                  type="button"
+                  onClick={() => setModalShowProfile(false)}
+                  className="btn btn-sm btn-circle btn-ghost">
+                  ✕
+                </button>
+              </form>
+            </div>
 
-              <form onSubmit={handleSave} className="space-y-4">
-                {/* ชื่อฟาร์ม */}
-                <div>
-                  <label className="block font-semibold">ชื่อฟาร์ม</label>
-                  <input
-                    type="text"
-                    name="farm_name"
-                    value={editProfile.farm_name}
-                    onChange={handleChange}
-                    className="input input-bordered w-full"
-                  />
+            {/* Content */}
+            <div className="py-4 overflow-y-auto max-h-[70vh]">
+              <form onSubmit={handleSave} className="space-y-6">
+                {/* Basic Information */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      ชื่อฟาร์ม
+                    </label>
+                    <input
+                      type="text"
+                      name="farm_name"
+                      value={editProfile.farm_name}
+                      onChange={handleChange}
+                      className="input input-bordered w-full"
+                      placeholder="กรอกชื่อฟาร์ม"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        เบอร์โทร
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={editProfile.phone}
+                        onChange={handleChange}
+                        className="input input-bordered w-full"
+                        placeholder="0xx-xxx-xxxx"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        อีเมล
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={editProfile.email}
+                        onChange={handleChange}
+                        className="input input-bordered w-full"
+                        placeholder="example@email.com"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                {/* เบอร์โทร */}
-                <div>
-                  <label className="block font-semibold">เบอร์โทร</label>
-                  <input
-                    type="text"
-                    name="phone"
-                    value={editProfile.phone}
-                    onChange={handleChange}
-                    className="input input-bordered w-full"
-                  />
+                {/* Address */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-medium">ที่อยู่</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <select
+                      name="province_id"
+                      value={editProfile.province_id || ""}
+                      onChange={handleProvinceChange}
+                      className="select select-bordered w-full">
+                      <option value="">เลือกจังหวัด</option>
+                      {provinces.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name_th}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      name="amphure_id"
+                      value={editProfile.amphure_id || ""}
+                      onChange={handleDistrictChange}
+                      className="select select-bordered w-full">
+                      <option value="">เลือกอำเภอ</option>
+                      {districts.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name_th}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      name="tambon_id"
+                      value={editProfile.tambon_id || ""}
+                      onChange={(e) =>
+                        setEditProfile((prev) => ({
+                          ...prev,
+                          tambon_id: e.target.value,
+                        }))
+                      }
+                      className="select select-bordered w-full">
+                      <option value="">เลือกตำบล</option>
+                      {tambons.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name_th}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
-                {/* อีเมล์ */}
-                <div>
-                  <label className="block font-semibold">อีเมล์</label>
-                  <input
-                    type="text"
-                    name="email"
-                    value={editProfile.email}
-                    onChange={handleChange}
-                    className="input input-bordered w-full"
-                  />
-                </div>
+                {/* Images */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-medium">รูปภาพ</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Farm Image */}
+                    <div>
+                      <label className="block text-xs mb-2">รูปฟาร์ม</label>
+                      <div className="w-full h-32 border-2 border-dashed rounded-lg flex items-center justify-center overflow-hidden">
+                        {editProfile.farm_img ? (
+                          <img
+                            src={
+                              typeof editProfile.farm_img === "string"
+                                ? editProfile.farm_img
+                                : URL.createObjectURL(editProfile.farm_img)
+                            }
+                            alt="Farm preview"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-gray-400">ยังไม่มีรูป</span>
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        name="farm_img"
+                        accept="image/*"
+                        onChange={(e) =>
+                          setEditProfile((prev) => ({
+                            ...prev,
+                            farm_img: e.target.files[0],
+                          }))
+                        }
+                        className="file-input file-input-bordered w-full mt-2"
+                      />
+                    </div>
 
-                {/* จังหวัด */}
-                <div>
-                  <label className="block font-semibold">จังหวัด</label>
-                  <select
-                    name="province_id"
-                    value={editProfile.province_id || ""}
-                    onChange={handleProvinceChange}
-                    className="select select-bordered w-full">
-                    <option value="">เลือกจังหวัด</option>
-                    {provinces.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name_th}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* อำเภอ */}
-                <div>
-                  <label className="block font-semibold">อำเภอ</label>
-                  <select
-                    name="amphure_id"
-                    value={editProfile.amphure_id || ""}
-                    onChange={handleDistrictChange}
-                    className="select select-bordered w-full">
-                    <option value="">เลือกอำเภอ</option>
-                    {districts.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name_th}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* ตำบล */}
-                <div>
-                  <label className="block font-semibold">ตำบล</label>
-                  <select
-                    name="tambon_id"
-                    value={editProfile.tambon_id || ""}
-                    onChange={(e) =>
-                      setEditProfile((prev) => ({
-                        ...prev,
-                        tambon_id: e.target.value,
-                      }))
-                    }
-                    className="select select-bordered w-full">
-                    <option value="">เลือกตำบล</option>
-                    {tambons.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name_th}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* รูปโปรไฟล์ */}
-                <div>
-                  <label className="block font-semibold">รูปฟาร์ม</label>
-                  <input
-                    type="file"
-                    name="farm_img"
-                    accept="image/*"
-                    onChange={(e) =>
-                      setEditProfile((prev) => ({
-                        ...prev,
-                        farm_img: e.target.files[0],
-                      }))
-                    }
-                    className="file-input file-input-bordered w-full"
-                  />
-                </div>
-
-                {/* รูปแบนเนอร์ */}
-                <div>
-                  <label className="block font-semibold">แบนเนอร์ฟาร์ม</label>
-                  <input
-                    type="file"
-                    name="farm_banner"
-                    accept="image/*"
-                    onChange={(e) =>
-                      setEditProfile((prev) => ({
-                        ...prev,
-                        farm_banner: e.target.files[0],
-                      }))
-                    }
-                    className="file-input file-input-bordered w-full"
-                  />
-                </div>
-
-                <div className="flex justify-end">
-                  <button type="submit" className="btn btn-primary">
-                    บันทึก
-                  </button>
+                    {/* Banner Image */}
+                    <div>
+                      <label className="block text-xs mb-2">
+                        แบนเนอร์ฟาร์ม
+                      </label>
+                      <div className="w-full h-32 border-2 border-dashed rounded-lg flex items-center justify-center overflow-hidden">
+                        {editProfile.farm_banner ? (
+                          <img
+                            src={
+                              typeof editProfile.farm_banner === "string"
+                                ? editProfile.farm_banner
+                                : URL.createObjectURL(editProfile.farm_banner)
+                            }
+                            alt="Banner preview"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-gray-400">ยังไม่มีรูป</span>
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        name="farm_banner"
+                        accept="image/*"
+                        onChange={(e) =>
+                          setEditProfile((prev) => ({
+                            ...prev,
+                            farm_banner: e.target.files[0],
+                          }))
+                        }
+                        className="file-input file-input-bordered w-full mt-2"
+                      />
+                    </div>
+                  </div>
                 </div>
               </form>
             </div>
-          </dialog>
-        )}
+
+            {/* Footer */}
+            <div className="modal-action">
+              <button
+                type="button"
+                onClick={() => setModalShowProfile(false)}
+                className="btn">
+                ยกเลิก
+              </button>
+              <button
+                type="submit"
+                onClick={handleSave}
+                className="btn bg-green-500 hover:bg-green-600 text-white">
+                บันทึก
+              </button>
+            </div>
+          </div>
+        </dialog>
 
         {/* Spacer */}
         <div className="pt-8"></div>
