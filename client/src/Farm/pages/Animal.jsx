@@ -3,6 +3,10 @@ import { ToastContainer, toast } from "react-toastify";
 import Pagination from "../../admin/components/Pagination";
 import { CirclePlus, Settings } from "lucide-react";
 import axios from "axios";
+import dayjs from "dayjs";
+import "dayjs/locale/th";
+
+dayjs.locale("th");
 
 function Animal() {
   const [allData, setAllData] = useState([]);
@@ -185,8 +189,8 @@ function Animal() {
                   <td>{item.type_name}</td>
                   <td>{item.quantity_received}</td>
                   <td>{item.quantity}</td>
-                  <td>{new Date(item.created_at).toLocaleDateString()}</td>
-                  <td>{new Date(item.updated_at).toLocaleDateString()}</td>
+                  <td>{dayjs(item.created_at).format("DD MMMM YYYY")}</td>
+                  <td>{dayjs(item.updated_at).format("DD MMMM YYYY")}</td>
                   <td>
                     <button
                       className="btn btn-sm bg-green-500 hover:bg-green-600 text-white"

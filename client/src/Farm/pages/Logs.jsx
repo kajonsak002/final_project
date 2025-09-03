@@ -31,21 +31,6 @@ function Logs() {
     currentPage * itemsPerPage
   );
 
-  const getUsageTypeColor = (usageType) => {
-    switch (usageType) {
-      case "ขาย":
-        return "badge-success";
-      case "เชือด":
-        return "badge-warning";
-      case "ตาย":
-        return "badge-error";
-      case "อื่นๆ":
-        return "badge-info";
-      default:
-        return "badge-neutral";
-    }
-  };
-
   return (
     <div>
       <ToastContainer />
@@ -58,7 +43,7 @@ function Logs() {
               </a>
             </li>
             <li>
-              <a className="text-black">ประวัติการใช้สัตว์</a>
+              <a className="text-black">บันทึกเหตุการณ์สัตว์</a>
             </li>
           </ul>
         </div>
@@ -68,7 +53,7 @@ function Logs() {
         <div className="card-body">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div className="w-full lg:w-auto">
-              <h3 className="text-xl font-bold">ประวัติการใช้สัตว์ในฟาร์ม</h3>
+              <h3 className="text-xl font-bold">บันทึกเหตุการณ์สัตว์</h3>
             </div>
           </div>
         </div>
@@ -100,12 +85,7 @@ function Logs() {
                     <td>{item.type_name || "-"}</td>
                     <td>{item.quantity_used}</td>
                     <td className="text-center">
-                      <span
-                        className={`badge ${getUsageTypeColor(
-                          item.usage_type
-                        )}`}>
-                        {item.usage_type}
-                      </span>
+                      <span>{item.usage_type}</span>
                     </td>
                     <td>{item.remark || "-"}</td>
                   </tr>
