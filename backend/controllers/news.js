@@ -13,6 +13,33 @@ exports.getNews = async (req, res) => {
       FROM news n
       LEFT JOIN admin a ON n.owner_type = 'admin' AND n.owner_id = a.admin_id
       LEFT JOIN farmer f ON n.owner_type = 'farmer' AND n.owner_id = f.farmer_id
+      WHERE n.status = 'แสดง'
+      ORDER BY n.created_at DESC
+    `);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ msg: "ไม่พบข้อมูลข่าวสาร" });
+    }
+
+    return res.status(200).json({ msg: "success", data: rows });
+  } catch (err) {
+    console.log("Error get news : ", err);
+    res.status(500).json({ msg: "Error get news" });
+  }
+};
+
+exports.getNewsManage = async (req, res) => {
+  try {
+    const [rows] = await db.promise().query(`
+      SELECT 
+        n.*, 
+        CASE 
+          WHEN n.owner_type = 'farmer' THEN f.farm_name
+          ELSE NULL
+        END AS owner_name
+      FROM news n
+     LEFT JOIN farmer f ON n.owner_type = 'farmer' AND n.owner_id = f.farmer_id
+      WHERE n.status = 'แสดง' and n.owner_type = 'farmer'
       ORDER BY n.created_at DESC
     `);
 
@@ -150,5 +177,28 @@ exports.getMyNews = async (req, res) => {
   } catch (err) {
     console.log("Error get my news : ", err);
     res.status(500).json({ msg: "Error get my news" });
+  }
+};
+
+exports.hideNews = async (req, res) => {
+  const { id } = req.params;
+  const { reason } = req.body;
+  try {
+    const [rows] = await db
+      .promise()
+      .query("UPDATE news SET status = ? , reason_hide = ? WHERE news_id = ?", [
+        "ซ่อน",
+        reason,
+        id,
+      ]);
+
+    if (rows.affectedRows === 0) {
+      return res.status(500).json({ msg: "เกิดข้อผิดพลาดในการซ่อนข่าวสาร" });
+    }
+
+    res.status(200).json({ msg: "ซ่อนข่าวสารเเล้ว" });
+  } catch (err) {
+    console.log("Error hide news : ", err);
+    res.status(500).json({ msg: "Error hide news" });
   }
 };

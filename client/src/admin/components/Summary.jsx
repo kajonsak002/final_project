@@ -96,11 +96,13 @@ function Summary() {
             </svg>
           </div>
           <div>
-            <h2 className="card-title text-base mb-1">รออนุมัติโพสต์</h2>
+            <h2 className="card-title text-base mb-1">
+              คำร้องเพิ่มรายการสัตว์
+            </h2>
             <p className="text-xl">
-              {summaryData.total_post_waiting != ""
-                ? summaryData.total_post_waiting + " โพสต์"
-                : "0 โพสต์"}
+              {summaryData.total_animal_full_request_waiting != ""
+                ? summaryData.total_animal_full_request_waiting + " คำร้อง"
+                : "0 คำร้อง"}
             </p>
           </div>
         </div>

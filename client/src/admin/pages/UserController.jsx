@@ -228,7 +228,7 @@ function UserController() {
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}>
                   <option value="ปกติ">ปกติ</option>
-                  <option value="โดนระงับ">โดนระงับ</option>
+                  <option value="โดนระงับ">ระงับบัญชี</option>
                 </select>
               </div>
               {newStatus === "โดนระงับ" && (

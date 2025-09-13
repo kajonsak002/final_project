@@ -91,11 +91,6 @@ function AnimalTypeReq() {
       return;
     }
 
-    if (!formData.type_name.trim()) {
-      toast.error("กรุณากรอกชื่อประเภทสัตว์");
-      return;
-    }
-
     // ถ้าเป็นสัตว์ใหม่ ต้องระบุหมวดหมู่
     if (formData.isNewAnimal && !formData.category_id) {
       toast.error("กรุณาเลือกหมวดหมู่สำหรับสัตว์ใหม่");
@@ -149,6 +144,17 @@ function AnimalTypeReq() {
         category_id: selectedAnimal.category_id || null,
       });
     }
+  };
+
+  const getColorStatus = (status) => {
+    if (status === "อนุมัติ") {
+      return "bg-green-500 text-white"; // สีเขียวเข้ม + ตัวอักษรขาว
+    } else if (status === "รออนุมัติ") {
+      return "bg-yellow-500 text-white"; // สีเหลือง + ตัวอักษรดำ
+    } else if (status === "ปฏิเสธ") {
+      return "bg-red-500 text-white"; // สีแดง + ตัวอักษรขาว
+    }
+    return "bg-gray-300 text-black"; // สี default
   };
 
   return (
@@ -214,9 +220,9 @@ function AnimalTypeReq() {
           <thead>
             <tr>
               <th>#</th>
+              <th className="text-center">วันที่ส่งคำร้อง</th>
               <th>ชื่อสัตว์</th>
               <th>ชื่อประเภท</th>
-              <th className="text-center">วันที่ส่งคำร้อง</th>
               <th className="text-center">วันที่ดำเนินการคำร้อง</th>
               <th className="text-center">เหตุผล</th>
               <th className="text-center">สถานะ</th>
@@ -227,14 +233,14 @@ function AnimalTypeReq() {
               pageData.map((item, index) => (
                 <tr key={item.request_id}>
                   <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
-                  <td>{item.animal_name}</td>
-                  <td>{item.type_name}</td>
                   <td className="text-center">
                     {dayjs(item.create_at)
                       .locale("th")
                       .add(543, "year")
                       .format("D MMMM YYYY")}
                   </td>
+                  <td>{item.animal_name}</td>
+                  <td>{item.type_name}</td>
                   <td className="text-center">
                     {item.approved_date
                       ? dayjs(item.approved_date)
@@ -246,7 +252,12 @@ function AnimalTypeReq() {
                   <td className="text-center">
                     {item.reason ? item.reason : "-"}
                   </td>
-                  <td className="text-center">{item.status}</td>
+                  <td className="text-center">
+                    <span
+                      className={`badge ${getColorStatus(item.status)} p-3`}>
+                      {item.status}
+                    </span>
+                  </td>
                 </tr>
               ))
             ) : (
@@ -384,7 +395,6 @@ function AnimalTypeReq() {
                     onChange={(e) =>
                       setFormData({ ...formData, type_name: e.target.value })
                     }
-                    required
                   />
                 </div>
 

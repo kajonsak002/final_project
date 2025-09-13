@@ -7,7 +7,7 @@ exports.reportAnimal = async (req, res) => {
   try {
     // ดึงข้อมูลสัตว์ในฟาร์ม
     let query = `
-      SELECT fa.id as farm_animal_id, fa.quantity, fa.quantity_received,
+      SELECT fa.id as farm_animal_id, fa.quantity,
         a.animal_id, a.name as animal_name, t.type_id, t.type_name, f.farm_name
       FROM farm_animals fa
       JOIN animals a ON fa.animal_id = a.animal_id
@@ -90,9 +90,10 @@ exports.reportAnimal = async (req, res) => {
       }
     }
 
-    // สร้าง PDF
-    const margin = 40;
-    const doc = new PDFDocument({ size: "A4", margin });
+    // สร้าง PDF (เต็มหน้า พร้อมเลขหน้า/วันที่ และหัวรายงานทุกหน้า)
+    const margin = 30;
+    const headerHeight = 60;
+    const doc = new PDFDocument({ size: "A4", margin, bufferPages: true });
     let buffers = [];
     doc.on("data", buffers.push.bind(buffers));
     doc.on("end", () => {
@@ -139,116 +140,160 @@ exports.reportAnimal = async (req, res) => {
       reportTitle += " ทั้งหมด";
     }
 
-    // Header PDF
-    doc
-      .fontSize(20)
-      .font("THSarabunNew-Bold")
-      .text(reportTitle, { align: "center" });
-    doc.moveDown(0.5);
+    // วันที่แสดงบนหัวรายงาน
+    const dateString = new Date().toLocaleString("th-TH", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
-    const colWidths = [150, 120, 120, 120];
-    const rowHeight = 25;
+    // ความกว้างตารางแบบเต็มหน้ากระดาษ
+    const usableWidth = doc.page.width - margin * 2;
+    const colWidths = {
+      index: Math.max(50, Math.floor(usableWidth * 0.12)),
+      animal: Math.floor(usableWidth * 0.44),
+      type: Math.floor(usableWidth * 0.24),
+      qty: Math.max(80, Math.floor(usableWidth * 0.2)),
+    };
+    const rowHeight = 24;
+
+    // คำนวณตำแหน่งขอบล่าง (กันพื้นที่เผื่อ 20px เพิ่มเติม)
+    const pageBottomY = () => doc.page.height - margin - 20;
+
+    const drawTableHeader = (y) => {
+      let x = margin;
+      const headers = ["ลำดับ", "ชื่อสัตว์", "ชื่อประเภท", "จำนวนคงเหลือ"];
+      const widths = [
+        colWidths.index,
+        colWidths.animal,
+        colWidths.type,
+        colWidths.qty,
+      ];
+
+      // ต้องมีพื้นที่อย่างน้อยสำหรับหัวตาราง + แถวข้อมูลถัดไป 1 แถว
+      if (y + rowHeight * 2 > pageBottomY()) {
+        doc.addPage();
+        y = margin + headerHeight;
+      }
+
+      headers.forEach((text, i) => {
+        doc.rect(x, y, widths[i], rowHeight).stroke();
+        doc
+          .font("THSarabunNew-Bold")
+          .fontSize(14)
+          .text(text, x + 5, y + 6, {
+            width: widths[i] - 10,
+            align: i === 3 ? "right" : "left",
+          });
+        x += widths[i];
+      });
+      return y + rowHeight;
+    };
 
     const drawTable = (doc, startY, farm) => {
-      const headers = [
-        "ชื่อสัตว์",
-        "ประเภท",
-        "จำนวนที่รับเข้า",
-        "จำนวนคงเหลือ",
-      ];
       let y = startY;
+      y = drawTableHeader(y);
 
-      const drawHeader = () => {
-        let x = margin;
-        headers.forEach((text, i) => {
-          doc.rect(x, y, colWidths[i], rowHeight).stroke();
-          doc
-            .font("THSarabunNew-Bold")
-            .fontSize(14)
-            .text(text, x + 5, y + 7, {
-              width: colWidths[i] - 10,
-              align: "left",
-            });
-          x += colWidths[i];
-        });
-        y += rowHeight;
-      };
-
-      // ✅ วาด header ตารางครั้งแรก
-      drawHeader();
-
-      // เก็บผลรวม
-      let totalReceived = 0;
-      let totalRemain = 0;
+      let runningIndex = 1;
 
       // วาดข้อมูลสัตว์
       farm.animals.forEach((item) => {
-        totalReceived += item.quantity_received;
-        totalRemain += item.quantity;
-
-        // ถ้าตำแหน่ง y เกินหน้ากระดาษ -> addPage
-        if (y + rowHeight > doc.page.height - margin) {
+        if (y + rowHeight > pageBottomY()) {
           doc.addPage();
-          y = margin; // reset Y
-          drawHeader(); // ✅ วาดหัวตารางใหม่บนหน้าต่อไป
+          y = drawTableHeader(margin + headerHeight);
         }
 
         let x = margin;
         const values = [
+          runningIndex,
           item.animal_name,
           item.type_name,
-          item.quantity_received.toLocaleString("th-TH"),
           item.quantity.toLocaleString("th-TH"),
         ];
+        const widths = [
+          colWidths.index,
+          colWidths.animal,
+          colWidths.type,
+          colWidths.qty,
+        ];
+
         values.forEach((val, i) => {
-          doc.rect(x, y, colWidths[i], rowHeight).stroke();
+          doc.rect(x, y, widths[i], rowHeight).stroke();
           doc
             .font("THSarabunNew")
             .fontSize(12)
-            .text(val.toString(), x + 5, y + 7, {
-              width: colWidths[i] - 10,
-              align: "left",
+            .text(String(val), x + 5, y + 6, {
+              width: widths[i] - 10,
+              align: i === 3 ? "right" : "left",
             });
-          x += colWidths[i];
+          x += widths[i];
         });
         y += rowHeight;
+        runningIndex += 1;
       });
 
-      // ✅ แสดงรวมท้ายตาราง
-      let x = margin;
-      const summary = [
-        "รวม",
-        "",
-        totalReceived.toLocaleString("th-TH"),
-        totalRemain.toLocaleString("th-TH"),
-      ];
-      summary.forEach((val, i) => {
-        doc.rect(x, y, colWidths[i], rowHeight).stroke();
-        doc
-          .font("THSarabunNew-Bold")
-          .fontSize(14)
-          .text(val.toString(), x + 5, y + 7, {
-            width: colWidths[i] - 10,
-            align: "left",
-          });
-        x += colWidths[i];
-      });
-      y += rowHeight;
-
-      return y + 10;
+      return y;
     };
 
-    // วาดทุกฟาร์ม
-    let y = doc.y;
+    // วาดทุกฟาร์ม (เริ่มหลังหัวรายงาน)
+    let y = margin + headerHeight;
     result.forEach((farm) => {
+      // กันพื้นที่ก่อนเริ่มหัวข้อฟาร์ม + หัวตาราง + แถวแรก
+      const requiredForSection = 26 + rowHeight * 2;
+      if (y + requiredForSection > pageBottomY()) {
+        doc.addPage();
+        y = margin + headerHeight;
+      }
+
       doc
         .font("THSarabunNew-Bold")
         .fontSize(16)
         .text(`ชื่อฟาร์ม: ${farm.farm_name}`, margin, y);
-      y += 30;
+      y += 26;
 
       y = drawTable(doc, y, farm);
     });
+
+    // วาดหัวรายงานและเลขหน้าสำหรับทุกหน้า
+    const range = doc.bufferedPageRange();
+    const totalPages = range.count;
+
+    for (let i = 0; i < totalPages; i++) {
+      doc.switchToPage(range.start + i);
+      // หัวรายงาน (ชื่อ + ตรงกลาง)
+      doc
+        .font("THSarabunNew-Bold")
+        .fontSize(20)
+        .text(reportTitle, margin, margin, {
+          width: doc.page.width - margin * 2,
+          align: "center",
+        });
+
+      // วันที่ซ้าย
+      doc
+        .font("THSarabunNew")
+        .fontSize(12)
+        .text(`วันที่พิมพ์: ${dateString}`, margin, margin + 28, {
+          width: (doc.page.width - margin * 2) / 2,
+          align: "left",
+        });
+
+      // เลขหน้าขวา (หน้า X / Y)
+      doc
+        .font("THSarabunNew")
+        .fontSize(12)
+        .text(
+          `หน้า ${i + 1} / ${totalPages}`,
+          doc.page.width / 2,
+          margin + 28,
+          {
+            width: (doc.page.width - margin * 2) / 2,
+            align: "right",
+          }
+        );
+    }
 
     doc.end();
   } catch (err) {
@@ -312,9 +357,10 @@ exports.reportProduct = async (req, res) => {
     }
 
     if (result != null) {
-      // สร้าง PDF
-      const margin = 10; // ระยะขอบ 10 px
-      const doc = new PDFDocument({ size: "A4", margin });
+      // สร้าง PDF (จัดรูปแบบเหมือนรายงานสัตว์)
+      const margin = 30;
+      const headerHeight = 60;
+      const doc = new PDFDocument({ size: "A4", margin, bufferPages: true });
       let buffers = [];
       doc.on("data", buffers.push.bind(buffers));
       doc.on("end", () => {
@@ -334,12 +380,17 @@ exports.reportProduct = async (req, res) => {
       );
       doc.font("THSarabunNew");
 
-      // Header PDF
-      doc
-        .fontSize(20)
-        .font("THSarabunNew-Bold")
-        .text(`รายงานสินค้า ฟาร์ม ${reportHeader}`, { align: "center" });
-      doc.moveDown(1);
+      // header data
+      const reportTitle = `รายงานสินค้า ${
+        farm_id ? `ฟาร์ม ${reportHeader}` : "ทั้งหมด"
+      }`;
+      const dateString = new Date().toLocaleString("th-TH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
 
       if (!result || (Array.isArray(result) && result.length === 0)) {
         doc.fontSize(16).text("ไม่พบข้อมูลสินค้า", { align: "center" });
@@ -347,77 +398,141 @@ exports.reportProduct = async (req, res) => {
         return;
       }
 
-      // ฟังก์ชันวาดตารางเต็มหน้ากระดาษ
-      function drawTableFullWidth(farm, startY) {
-        const tableTop = startY;
-        const itemHeight = 25;
-        const pageWidth = doc.page.width - margin * 2; // ใช้เต็มหน้ากระดาษ
-        const colWidths = {
-          product: pageWidth * 0.6, // 60%
-          price: pageWidth * 0.2, // 20%
-          unit: pageWidth * 0.2, // 20%
-        };
-        let y = tableTop;
+      // full width table layout
+      const usableWidth = doc.page.width - margin * 2;
+      const rowHeight = 24;
+      const colWidths = {
+        index: Math.max(50, Math.floor(usableWidth * 0.12)),
+        product: Math.floor(usableWidth * 0.48),
+        price: Math.floor(usableWidth * 0.2),
+        unit: Math.max(80, Math.floor(usableWidth * 0.2)),
+      };
+      const pageBottomY = () => doc.page.height - margin - 20;
 
-        // ชื่อฟาร์ม
-        doc
-          .fontSize(16)
-          .font("THSarabunNew-Bold")
-          .text(`ชื่อฟาร์ม: ${farm.farm_name}`, margin, y);
-        y += 20;
-
-        // Header ตาราง
-        const headers = ["ชื่อสินค้า", "ราคา", "หน่วย"];
-        const cols = ["product", "price", "unit"];
+      const drawTableHeader = (y) => {
+        // ensure space for header + one data row
+        if (y + rowHeight * 2 > pageBottomY()) {
+          doc.addPage();
+          y = margin + headerHeight;
+        }
         let x = margin;
+        const headers = ["ลำดับ", "ชื่อสินค้า", "หน่วย", "ราคาต่อหน่วย"];
+        const widths = [
+          colWidths.index,
+          colWidths.product,
+          colWidths.unit,
+          colWidths.price,
+        ];
         headers.forEach((text, i) => {
+          doc.rect(x, y, widths[i], rowHeight).stroke();
           doc
-            .rect(x, y, colWidths[cols[i]], itemHeight)
-            .stroke()
             .font("THSarabunNew-Bold")
             .fontSize(14)
-            .text(text, x + 5, y + 7, {
-              width: colWidths[cols[i]] - 10,
-              align: "left",
+            .text(text, x + 5, y + 6, {
+              width: widths[i] - 10,
+              align: i === 3 ? "right" : "left",
             });
-          x += colWidths[cols[i]];
+          x += widths[i];
         });
-        y += itemHeight;
+        return y + rowHeight;
+      };
 
-        // ข้อมูลสินค้า
+      function drawTableForFarm(farm, startY) {
+        let y = startY;
+        // section head: farm name
+        // ensure space for farm title + header + first row
+        const requiredForSection = 26 + rowHeight * 2;
+        if (y + requiredForSection > pageBottomY()) {
+          doc.addPage();
+          y = margin + headerHeight;
+        }
+        doc
+          .font("THSarabunNew-Bold")
+          .fontSize(16)
+          .text(`ชื่อฟาร์ม: ${farm.farm_name}`, margin, y);
+        y += 26;
+
+        y = drawTableHeader(y);
+        let runningIndex = 1;
         farm.products.forEach((prod) => {
-          if (y > doc.page.height - 50) {
+          if (y + rowHeight > pageBottomY()) {
             doc.addPage();
-            y = 50;
+            y = drawTableHeader(margin + headerHeight);
           }
-          x = margin;
-          const values = [prod.product_name, String(prod.price), prod.unit];
+          let x = margin;
+          const values = [
+            runningIndex,
+            prod.product_name,
+            prod.unit || "-",
+            Number(prod.price).toLocaleString("th-TH", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }),
+          ];
+          const widths = [
+            colWidths.index,
+            colWidths.product,
+            colWidths.unit,
+            colWidths.price,
+          ];
           values.forEach((val, i) => {
+            doc.rect(x, y, widths[i], rowHeight).stroke();
             doc
-              .rect(x, y, colWidths[cols[i]], itemHeight)
-              .stroke()
               .font("THSarabunNew")
               .fontSize(12)
-              .text(val, x + 5, y + 7, {
-                width: colWidths[cols[i]] - 10,
-                align: "left",
+              .text(String(val), x + 5, y + 6, {
+                width: widths[i] - 10,
+                align: i === 3 ? "right" : "left",
               });
-            x += colWidths[cols[i]];
+            x += widths[i];
           });
-          y += itemHeight;
+          y += rowHeight;
+          runningIndex += 1;
         });
-
-        return y + 10;
+        return y;
       }
 
       // วาดทุกฟาร์ม
-      let currentY = doc.y;
+      let currentY = margin + headerHeight;
       if (Array.isArray(result)) {
         result.forEach((farm) => {
-          currentY = drawTableFullWidth(farm, currentY);
+          currentY = drawTableForFarm(farm, currentY);
         });
       } else {
-        currentY = drawTableFullWidth(result, currentY);
+        currentY = drawTableForFarm(result, currentY);
+      }
+
+      // วาดหัวรายงานและเลขหน้าสำหรับทุกหน้า
+      const range = doc.bufferedPageRange();
+      const totalPages = range.count;
+      for (let i = 0; i < totalPages; i++) {
+        doc.switchToPage(range.start + i);
+        // title center
+        doc
+          .font("THSarabunNew-Bold")
+          .fontSize(20)
+          .text(reportTitle, margin, margin, {
+            width: doc.page.width - margin * 2,
+            align: "center",
+          });
+        // date left
+        doc
+          .font("THSarabunNew")
+          .fontSize(12)
+          .text(`วันที่พิมพ์: ${dateString}`, margin, margin + 28, {
+            width: (doc.page.width - margin * 2) / 2,
+            align: "left",
+          });
+        // page right
+        doc
+          .font("THSarabunNew")
+          .fontSize(12)
+          .text(
+            `หน้า ${i + 1} / ${totalPages}`,
+            doc.page.width / 2,
+            margin + 28,
+            { width: (doc.page.width - margin * 2) / 2, align: "right" }
+          );
       }
 
       doc.end();

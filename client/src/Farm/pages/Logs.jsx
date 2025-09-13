@@ -2,6 +2,10 @@ import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import Pagination from "../../admin/components/Pagination";
 import axios from "axios";
+import dayjs from "dayjs";
+import "dayjs/locale/th";
+
+dayjs.locale("th");
 
 function Logs() {
   const [usageHistory, setUsageHistory] = useState([]);
@@ -43,7 +47,7 @@ function Logs() {
               </a>
             </li>
             <li>
-              <a className="text-black">บันทึกเหตุการณ์สัตว์</a>
+              <a className="text-black">บันทึกการใช้สัตว์</a>
             </li>
           </ul>
         </div>
@@ -53,7 +57,7 @@ function Logs() {
         <div className="card-body">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div className="w-full lg:w-auto">
-              <h3 className="text-xl font-bold">บันทึกเหตุการณ์สัตว์</h3>
+              <h3 className="text-xl font-bold">บันทึกการใช้สัตว์</h3>
             </div>
           </div>
         </div>
@@ -77,9 +81,7 @@ function Logs() {
               <tbody>
                 {pageData.map((item) => (
                   <tr key={item.id}>
-                    <td>
-                      {new Date(item.created_at).toLocaleDateString("th-TH")}
-                    </td>
+                    <td>{dayjs(item.created_at).format("DD MMMM YYYY")}</td>
                     <td>{item.lot_code}</td>
                     <td>{item.animal_name}</td>
                     <td>{item.type_name || "-"}</td>

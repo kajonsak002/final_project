@@ -75,10 +75,12 @@ function HistoryPostReport() {
           <thead>
             <tr>
               <th>#</th>
+              <th>วันที่รายงาน</th>
+              <th>รายละเอียดโพสต์</th>
               {/* <th>ชื่อผู้รายงาน</th> */}
               <th>เหตุผล</th>
-              <th>วันที่รายงาน</th>
               <th>การดำเนินการ</th>
+              <th className="text-center">สถานะของโพสต์</th>
               <th className="text-center">รายละเอียดโพสต์</th>
             </tr>
           </thead>
@@ -87,15 +89,22 @@ function HistoryPostReport() {
               pageData.map((item, index) => (
                 <tr key={index}>
                   <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
-                  {/* <td>{item.reporter_name}</td> */}
-                  <td>{item.reason}</td>
                   <td>
                     {dayjs(item.report_date)
                       .locale("th")
                       .add(543, "year")
                       .format("D MMMM YYYY")}
                   </td>
+                  <td>
+                    {item.content.length > 30
+                      ? item.content.slice(0, 30) + "..."
+                      : item.content}
+                  </td>
+                  {/* <td>{item.reporter_name}</td> */}
+                  <td>{item.reason}</td>
+
                   <td>{item.report_review}</td>
+                  <td className="text-center">{item.is_visible}</td>
                   <td className="flex justify-center">
                     <Eye
                       className="cursor-pointer"
@@ -159,7 +168,7 @@ function HistoryPostReport() {
                     </div>
                   </div>
                   <div className="flex items-center justify-center">
-                    <div className="w-30 h-10 rounded-2xl p-2 text-center text-white bg-green-500">
+                    <div className="rounded-2xl p-2 text-sm text-center text-white bg-green-500">
                       <p className="">สถานะ {detailPost.is_visible}</p>
                     </div>
                   </div>

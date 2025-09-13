@@ -43,7 +43,8 @@ function Community() {
   const [reportCommentReason, setReportCommentReason] = useState("");
   const [selectedComment, setSelectedComment] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchDate, setSearchDate] = useState("");
+  const [dateStart, setDateStart] = useState("");
+  const [dateEnd, setDateEnd] = useState("");
 
   const getAllPost = async () => {
     try {
@@ -313,18 +314,19 @@ function Community() {
     const indexOfFirst = indexOfLast - itemPerpage;
 
     setPageData(filteredPosts.slice(indexOfFirst, indexOfLast));
-  }, [currentPage, posts, searchTerm, searchDate]);
+  }, [currentPage, posts, searchTerm, dateStart, dateEnd]);
 
   const filteredPosts = posts.filter((post) => {
     const matchText =
       post.farm_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       post.content?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchDate = searchDate
-      ? dayjs(post.create_at).format("YYYY-MM-DD") === searchDate
-      : true;
+    const postDate = dayjs(post.create_at).format("YYYY-MM-DD");
+    const inStart = dateStart ? postDate >= dateStart : true;
+    const inEnd = dateEnd ? postDate <= dateEnd : true;
+    const inRange = inStart && inEnd;
 
-    return matchText && matchDate;
+    return matchText && inRange;
   });
 
   const totalPages = Math.ceil(filteredPosts.length / itemPerpage);
@@ -376,21 +378,80 @@ function Community() {
                 <Plus />
               </button>
             </div>
-            <div className="flex gap-2 mt-2">
-              <input
-                type="text"
-                placeholder="ค้นหาด้วยชื่อฟาร์ม หรือ เนื้อหาโพสต์..."
-                className="input  input-bordered w-full sm:w-2/3"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <input
-                type="date"
-                className="input input-bordered w-full sm:w-1/3"
-                value={searchDate}
-                onChange={(e) => setSearchDate(e.target.value)}
-              />
+
+            <div className="mt-2 w-full flex justify-center">
+              <div className="w-full  bg-base-100 border border-gray-200 rounded-xl p-3">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                  {/* คำค้นหา */}
+                  <div className="md:col-span-6">
+                    <label className="label py-1">
+                      <span className="label-text text-gray-600">คำค้นหา</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        🔎
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="ค้นหาด้วยชื่อฟาร์ม หรือ เนื้อหาโพสต์..."
+                        className="input input-bordered w-full"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* วันที่เริ่มต้น */}
+                  <div className="md:col-span-2">
+                    <label className="label py-1">
+                      <span className="label-text text-gray-600">
+                        วันที่เริ่ม
+                      </span>
+                    </label>
+                    <input
+                      type="date"
+                      className="input input-bordered w-full"
+                      value={dateStart}
+                      onChange={(e) => setDateStart(e.target.value)}
+                    />
+                  </div>
+
+                  {/* วันที่สิ้นสุด */}
+                  <div className="md:col-span-2">
+                    <label className="label py-1">
+                      <span className="label-text text-gray-600">
+                        วันที่สิ้นสุด
+                      </span>
+                    </label>
+                    <input
+                      type="date"
+                      className="input input-bordered w-full"
+                      value={dateEnd}
+                      onChange={(e) => setDateEnd(e.target.value)}
+                    />
+                  </div>
+
+                  {/* ปุ่มล้างตัวกรอง */}
+                  <div className="md:col-span-2 ">
+                    <label className="label py-1">
+                      <span className="label-text text-gray-600">&nbsp;</span>
+                    </label>
+                    <button
+                      type="button"
+                      className="btn w-full  bg-white border-gray-300 hover:bg-gray-100"
+                      onClick={() => {
+                        setSearchTerm("");
+                        setDateStart("");
+                        setDateEnd("");
+                        setCurrentPage(1);
+                      }}>
+                      ล้างตัวกรอง
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
+
             <div className="flex gap-3 mt-2">
               <button
                 className={`btn ${

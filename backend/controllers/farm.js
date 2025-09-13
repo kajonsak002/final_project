@@ -197,7 +197,7 @@ exports.updateFarmerAccountStatus = async (req, res) => {
 
 exports.updateFarmProfile = async (req, res) => {
   const {
-    farmerId, // เปลี่ยนจาก farmId → farmerId ให้ตรงกับ DB
+    farmerId,
     farmName,
     phone,
     email,

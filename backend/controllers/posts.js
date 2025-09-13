@@ -78,9 +78,7 @@ exports.insert = async (req, res) => {
     if (rows.affectedRows === 0) {
       return res.status(500).json({ message: "เกิดข้อผิดพลาดในการเพิ่มโพสต" });
     }
-    return res
-      .status(201)
-      .json({ message: "เพิ่มโพสต์สำเร็จรอการอนุมัติโพสต์จากผู้ดูแลระบบ" });
+    return res.status(201).json({ message: "เพิ่มโพสต์สำเร็จ" });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: "เกิดข้อผิดพลาดในการเพิ่มโพสต" });
@@ -180,20 +178,20 @@ exports.getAll = async (req, res) => {
 
     const [rows] = await db.promise().query(
       `SELECT 
-    t1.*,
-    t2.farm_name,
-    t2.farm_img,
-    COUNT(t3.comment_id) AS comment_count,
-    MAX(t3.create_at) AS latest_comment_at
-FROM posts AS t1
-JOIN farmer AS t2 ON t1.farmer_id = t2.farmer_id
-LEFT JOIN comments AS t3 
-    ON t1.post_id = t3.post_id AND t3.status = 'แสดง'
-WHERE t1.is_visible = 'เเสดง'
-GROUP BY t1.post_id
-ORDER BY latest_comment_at DESC, t1.create_at DESC;
-
+          t1.*,
+          t2.farm_name,
+          t2.farm_img,
+          COUNT(t3.comment_id) AS comment_count,
+          MAX(t3.create_at) AS latest_comment_at
+      FROM posts AS t1
+      JOIN farmer AS t2 ON t1.farmer_id = t2.farmer_id
+      LEFT JOIN comments AS t3 
+          ON t1.post_id = t3.post_id AND t3.status = 'แสดง'
+      WHERE t1.is_visible = 'เเสดง'
+      GROUP BY t1.post_id
+      ORDER BY  t1.create_at DESC;
       `
+      // ORDER BY latest_comment_at DESC, t1.create_at DESC;
     );
 
     const host = req.headers.host;
@@ -254,12 +252,24 @@ exports.getPostByFarmerid = async (req, res) => {
     const { farmer_id } = req.body;
     // console.log(req.body);
     const [rows] = await db.promise().query(
-      `SELECT t1.* , t2.farm_name , t2.farm_img FROM posts as t1 
-      JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id 
-      WHERE t1.farmer_id = ?
-      ORDER BY t1.create_at DESC`,
+      `SELECT 
+          t1.*,
+          t2.farm_name,
+          t2.farm_img,
+          COUNT(t3.comment_id) AS comment_count,
+          MAX(t3.create_at) AS latest_comment_at
+      FROM posts AS t1
+      JOIN farmer AS t2 ON t1.farmer_id = t2.farmer_id
+      LEFT JOIN comments AS t3 
+          ON t1.post_id = t3.post_id AND t3.status = 'แสดง'
+      WHERE t1.is_visible = 'เเสดง' AND t1.farmer_id = ?
+      GROUP BY t1.post_id
+      ORDER BY  t1.create_at DESC;
+      `,
       [farmer_id]
+      // ORDER BY latest_comment_at DESC, t1.create_at DESC;
     );
+
     const host = req.headers.host;
     const protocol = req.protocol;
     const posts = rows.map((post) => ({
@@ -459,6 +469,7 @@ exports.getReportRecive = async (req, res) => {
           pr.report_id,
           pr.post_id,
           p.content,
+          p.is_visible,
           pr.reason,
           pr.report_date,
           pr.report_review,

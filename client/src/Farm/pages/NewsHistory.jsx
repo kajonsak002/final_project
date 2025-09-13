@@ -136,7 +136,8 @@ function NewsHistory() {
                       <th>หัวข้อข่าว</th>
                       <th>วันที่โพสต์</th>
                       <th>วันที่แก้ไขล่าสุด</th>
-                      <th>แหล่งที่มา</th>
+                      {/* <th>แหล่งที่มา</th> */}
+                      <th>สถานะ</th>
                       <th className="text-center">การดำเนินการ</th>
                     </tr>
                   </thead>
@@ -154,8 +155,63 @@ function NewsHistory() {
                               ? formatDate(news.updated_at)
                               : "-"}
                           </td>
-                          <td className="max-w-xs truncate">
+                          {/* <td className="max-w-xs truncate">
                             {news.source_ref || "-"}
+                          </td> */}
+
+                          <td className="capitalize">
+                            <div className="flex items-center space-x-3">
+                              {/* Badge แสดงสถานะ */}
+                              <div>
+                                {news.status === "แสดง" ? (
+                                  <span className="badge bg-green-600 text-white">
+                                    เผยแพร่
+                                  </span>
+                                ) : (
+                                  <span className="badge bg-red-600 text-white">
+                                    ซ่อน
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* ถ้าเป็นสถานะ "ซ่อน" ให้กดปุ่มดูเหตุผล */}
+                              {news.status === "ซ่อน" && (
+                                <>
+                                  <button
+                                    className="cursor-pointer"
+                                    onClick={() =>
+                                      document
+                                        .getElementById(
+                                          `reason_modal_${news.id}`
+                                        )
+                                        .showModal()
+                                    }>
+                                    ดูเหตุผล
+                                  </button>
+
+                                  {/* Modal */}
+                                  <dialog
+                                    id={`reason_modal_${news.id}`}
+                                    className="modal">
+                                    <div className="modal-box rounded-xl bg-base-100">
+                                      <h3 className="font-semibold text-lg text-gray-800">
+                                        เหตุผล
+                                      </h3>
+                                      <p className="py-4 text-gray-600 leading-relaxed">
+                                        {news.reason_hide || "ไม่ระบุเหตุผล"}
+                                      </p>
+                                      <div className="modal-action mt-[-10px]">
+                                        <form method="dialog">
+                                          <button className="btn bg-green-600 text-white btn-sm">
+                                            ปิด
+                                          </button>
+                                        </form>
+                                      </div>
+                                    </div>
+                                  </dialog>
+                                </>
+                              )}
+                            </div>
                           </td>
 
                           <td className="flex justify-center gap-2">

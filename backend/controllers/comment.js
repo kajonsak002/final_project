@@ -167,7 +167,7 @@ exports.getReportRecive = async (req, res) => {
   try {
     const [rows] = await db.promise().query(
       `SELECT c.comment_id,
-          c.post_id, c.content, 
+          c.post_id, c.content, c.status,
           c.create_at, cr.reason,
           cr.status AS report_status,
           cr.report_date,

@@ -73,6 +73,8 @@ function FarmProfile() {
       }));
 
       setAnimals(formatted);
+
+      console.log(formatted);
     } catch (err) {
       console.log("Error fetching animals", err);
     }
@@ -278,7 +280,7 @@ function FarmProfile() {
                             </h3>
 
                             <span className="font-bold text-lg">
-                              {animal.count} ตัว
+                              คงเหลือ {animal.count} ตัว
                             </span>
                           </div>
                         </div>
@@ -331,7 +333,7 @@ function FarmProfile() {
                         <div className="space-y-3 text-sm text-gray-600 border-t border-gray-100 pt-4">
                           <div className="flex items-center space-x-2">
                             <Calendar className="w-4 h-4 text-purple-500" />
-                            <span className="font-medium">สร้างเมื่อ:</span>
+                            <span className="font-medium">วันที่เลี้ยง:</span>
                             <span>
                               {new Date(animal.created_at).toLocaleDateString(
                                 "th-TH"

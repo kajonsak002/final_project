@@ -3,20 +3,24 @@ const {
   getNews,
   insertNews,
   getNewsDetail,
+  getNewsManage,
   updateNews,
   deleteNews,
   getMyNews,
+  hideNews,
 } = require("../controllers/news");
 const router = express.Router();
 const upload = require("../middleware/upload");
 const uploadToNews = upload("news");
 
 router.get("/news", getNews);
+router.get("/news-manage", getNewsManage);
 router.get("/news/detail/:id", getNewsDetail);
 router.get("/news/my-news/:owner_id/:owner_type", getMyNews);
 router.post("/news", insertNews);
 router.patch("/news/:id", updateNews);
 router.delete("/news/:id", deleteNews);
+router.patch("/news/hide/:id", hideNews);
 
 // Upload img to server
 router.post("/news/upload", uploadToNews.single("image"), (req, res) => {

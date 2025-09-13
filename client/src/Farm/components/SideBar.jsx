@@ -46,7 +46,7 @@ const Sidebar = ({ isOpen }) => {
       path: "animal",
     },
     {
-      name: "บันทึกเหตุการณ์สัตว์",
+      name: "บันทึกการใช้สัตว์",
       icon: <BookText size={20} />,
       path: "logs",
     },

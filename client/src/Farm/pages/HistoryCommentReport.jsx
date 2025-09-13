@@ -60,10 +60,11 @@ function HistoryCommentReport() {
             <tr>
               <th>#</th>
               {/* <th>ชื่อผู้รายงาน</th> */}
+              <th>วันที่รายงาน</th>
               <th>เนื้อหา</th>
               <th>เหตุผล</th>
-              <th>วันที่รายงาน</th>
               <th>การดำเนินการ</th>
+              <th className="text-center">สถานะของความคิดเห็น</th>
               {/* <th className="text-center">ดูรายละเอียดโพสต์</th> */}
             </tr>
           </thead>
@@ -73,15 +74,22 @@ function HistoryCommentReport() {
                 <tr key={index}>
                   <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
                   {/* <td>{item.farm_name}</td> */}
-                  <td>{item.content}</td>
-                  <td>{item.reason}</td>
                   <td>
                     {dayjs(item.report_date)
                       .locale("th")
                       .add(543, "year")
                       .format("D MMMM YYYY")}
                   </td>
+                  <td>
+                    {item.content.length > 30
+                      ? item.content.slice(0, 30) + "..."
+                      : item.content}
+                  </td>
+                  <td>{item.reason}</td>
                   <td>{item.report_review}</td>
+                  <td className="text-center">
+                    {item.status === "ลบแล้ว" ? "ซ่อน" : "เเสดง"}
+                  </td>
                   {/* <td className="flex justify-center">
                     <Eye />
                   </td> */}
