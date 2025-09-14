@@ -92,6 +92,7 @@ const menuItems = [
     subItems: [
       { label: "รายงานสัตว์ที่เลี้ยง", path: "report_animal" },
       { label: "รายงานสินค้าของฟาร์ม", path: "report_product" },
+      { label: "รายงานข้อมูลฟาร์ม", path: "report_farm" },
     ],
   },
 ];

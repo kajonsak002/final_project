@@ -14,6 +14,7 @@ import PostController from "./admin/pages/PostController";
 import PostReportController from "./admin/pages/PostReportController";
 import ReportAnimals from "./admin/pages/ReportAnimals";
 import ReportProducts from "./admin/pages/ReportProducts";
+import ReportFarms from "./admin/pages/ReportFarms";
 import AddGuileBook from "./admin/From/AddGuileBook";
 import CommentReport from "./admin/pages/CommentReport";
 import FarmPage from "./pages/FarmList";
@@ -115,6 +116,7 @@ function App() {
         { path: "/admin/news/insert", element: <AddNewsAdmin /> },
         { path: "/admin/report_animal", element: <ReportAnimals /> },
         { path: "/admin/report_product", element: <ReportProducts /> },
+        { path: "/admin/report_farm", element: <ReportFarms /> },
         { path: "/admin/book/add_guild_book", element: <GuildBookContro /> },
         { path: "/admin/book/edit/:id", element: <EditGuildBook /> },
         { path: "/admin/comment_report", element: <CommentReport /> },
