@@ -1,8 +1,7 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
-import { toast } from "react-toastify";
+import { toast } from "../utils/toast";
 
 function ForGotPass() {
   const [step, setStep] = useState(1);
@@ -29,7 +28,6 @@ function ForGotPass() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100 px-4">
-      <ToastContainer />
       <div className="card bg-base-100 w-full max-w-md shadow-sm">
         <div className="card-body">
           <h2 className="card-title flex justify-center mb-4">

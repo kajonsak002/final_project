@@ -39,8 +39,8 @@ exports.getNewsManage = async (req, res) => {
         END AS owner_name
       FROM news n
      LEFT JOIN farmer f ON n.owner_type = 'farmer' AND n.owner_id = f.farmer_id
-      WHERE n.status = 'แสดง' and n.owner_type = 'farmer'
-      ORDER BY n.created_at DESC
+      WHERE n.owner_type = 'farmer'
+      ORDER BY  n.status
     `);
 
     if (rows.length === 0) {
@@ -181,24 +181,29 @@ exports.getMyNews = async (req, res) => {
 };
 
 exports.hideNews = async (req, res) => {
-  const { id } = req.params;
-  const { reason } = req.body;
+  const { ids, reason, action } = req.body;
+
   try {
+    let status = action === "show" ? "แสดง" : "ซ่อน";
+
     const [rows] = await db
       .promise()
-      .query("UPDATE news SET status = ? , reason_hide = ? WHERE news_id = ?", [
-        "ซ่อน",
-        reason,
-        id,
-      ]);
+      .query(
+        "UPDATE news SET status = ?, reason_hide = ? WHERE news_id IN (?)",
+        [status, reason || null, ids]
+      );
 
     if (rows.affectedRows === 0) {
-      return res.status(500).json({ msg: "เกิดข้อผิดพลาดในการซ่อนข่าวสาร" });
+      return res
+        .status(500)
+        .json({ msg: `เกิดข้อผิดพลาดในการ${status}ข่าวสาร` });
     }
 
-    res.status(200).json({ msg: "ซ่อนข่าวสารเเล้ว" });
+    return res.status(200).json({
+      msg: `${status}ข่าวสาร ${rows.affectedRows} รายการเรียบร้อยแล้ว`,
+    });
   } catch (err) {
-    console.log("Error hide news : ", err);
-    res.status(500).json({ msg: "Error hide news" });
+    console.error("Error bulk hide/show news: ", err);
+    res.status(500).json({ msg: "Error hide/show news" });
   }
 };

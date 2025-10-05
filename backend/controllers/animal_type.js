@@ -4,7 +4,9 @@ const dayjs = require("dayjs");
 // ดึงประเภทสัตว์ทั้งหมด
 exports.getAll = async (req, res) => {
   try {
-    const [rows] = await db.promise().query("SELECT * FROM animal_types");
+    const [rows] = await db
+      .promise()
+      .query("SELECT * FROM animal_types ORDER BY type_name");
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "ไม่พบข้อมูลประเภทสัตว์" });

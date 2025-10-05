@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import GuildBookEditor from "../components/GuildbookEditor";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "../../utils/toast";
 
 function GuildBookContro() {
   const [content, setContent] = useState("");
@@ -93,14 +93,12 @@ function GuildBookContro() {
     setSourceRefs(updated);
   };
 
-  const handleTagsChange = (index, value) => {
-    const updated = [...tags];
-    updated[index] = value;
-    setTags(updated);
-  };
+  const [newTagInput, setNewTagInput] = useState("");
 
-  const addTags = () => {
-    setTags([...tags, ""]);
+  const handleAddTag = (newTag) => {
+    if (newTag && !tags.includes(newTag.trim())) {
+      setTags([...tags, newTag.trim()]);
+    }
   };
 
   const removeTags = (index) => {
@@ -110,7 +108,6 @@ function GuildBookContro() {
 
   return (
     <div className="min-h-screen">
-      <ToastContainer />
       <div className="w-full">
         <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
           <div className="breadcrumbs text-sm">
@@ -190,33 +187,59 @@ function GuildBookContro() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                เพิ่มหมวดหมู่ที่เกี่ยวข้อง
+                เพิ่ม Tags
               </label>
-              {tags.map((ref, i) => (
-                <div key={i} className="flex items-center gap-2 mb-2">
-                  <input
-                    type="text"
-                    placeholder="เช่น โรคในไก่ หรือ โรคระบาด..."
-                    value={ref}
-                    onChange={(e) => handleTagsChange(i, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
-                  />
-                  {i > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => removeTags(i)}
-                      className="text-red-500 hover:text-red-700 font-bold">
-                      ลบ
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={addTags}
-                className="mt-2 px-3 py-1 btn bg-green-500 text-white">
-                + เพิ่มหมวดหมู่ที่เกี่ยวข้อง
-              </button>
+
+              {/* Display existing tags as chips */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                {tags.map(
+                  (tag, i) =>
+                    tag && (
+                      <div
+                        key={i}
+                        className="inline-flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                        <span>{tag}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeTags(i)}
+                          className="ml-1 text-green-600 hover:text-green-800 hover:bg-green-200 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                          ×
+                        </button>
+                      </div>
+                    )
+                )}
+              </div>
+
+              {/* Input for adding new tags */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="เช่น โรคในไก่ หรือ โรคระบาด..."
+                  value={newTagInput}
+                  onChange={(e) => setNewTagInput(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (newTagInput.trim()) {
+                        handleAddTag(newTagInput.trim());
+                        setNewTagInput("");
+                      }
+                    }
+                  }}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (newTagInput.trim()) {
+                      handleAddTag(newTagInput.trim());
+                      setNewTagInput("");
+                    }
+                  }}
+                  className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors">
+                  เพิ่ม
+                </button>
+              </div>
             </div>
 
             <div>

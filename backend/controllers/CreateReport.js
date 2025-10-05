@@ -93,7 +93,7 @@ exports.reportFarm = async (req, res) => {
   try {
     // สร้าง query และ parameters
     let query = `
-      SELECT f.farmer_id, f.farm_name, f.tambon, f.amphure, f.province,
+      SELECT f.farmer_id, f.farm_name, f.tambon, f.amphure, f.province, f.phone,
              p.name_th as province_name, a.name_th as amphure_name, t.name_th as tambon_name
       FROM farmer f
       LEFT JOIN provinces p ON f.province = p.id
@@ -110,37 +110,124 @@ exports.reportFarm = async (req, res) => {
     if (tambon_id) whereConditions.push("f.tambon = ?"), params.push(tambon_id);
     if (whereConditions.length > 0)
       query += " WHERE " + whereConditions.join(" AND ");
-    query += " ORDER BY p.name_th, a.name_th, t.name_th, f.farm_name";
+
+    // จัดเรียงเพื่อจัดกลุ่มตั้งแต่คิวรี่
+    if (!province_id && !amphure_id && !tambon_id) {
+      query += " ORDER BY p.name_th, a.name_th, t.name_th, f.farm_name";
+    } else if (province_id && !amphure_id && !tambon_id) {
+      query += " ORDER BY a.name_th, t.name_th, f.farm_name";
+    } else if (province_id && amphure_id && !tambon_id) {
+      query += " ORDER BY t.name_th, f.farm_name";
+    } else {
+      query += " ORDER BY f.farm_name";
+    }
 
     const [rows] = await db.promise().query(query, params);
 
     // สร้างหัวข้อรายงาน
     let reportTitle = "รายงานข้อมูลฟาร์ม";
-    if (province_id || amphure_id || tambon_id) reportTitle += " ตามเงื่อนไข";
-    else reportTitle += " ทั้งหมด";
+    let locationParts = "";
+
+    if (province_id) {
+      const [provinceRows] = await db
+        .promise()
+        .query("SELECT name_th FROM provinces WHERE id = ?", [province_id]);
+      locationParts += ` จังหวัด${provinceRows[0].name_th}`;
+    }
+
+    if (amphure_id) {
+      const [amphureRows] = await db
+        .promise()
+        .query("SELECT name_th FROM amphures WHERE id = ?", [amphure_id]);
+      locationParts += ` อำเภอ${amphureRows[0].name_th}`;
+    }
+
+    if (tambon_id) {
+      const [tambonRows] = await db
+        .promise()
+        .query("SELECT name_th FROM tambons WHERE id = ?", [tambon_id]);
+      locationParts += ` ตำบล${tambonRows[0].name_th}`;
+    }
+
+    if (!province_id && !amphure_id && !tambon_id) {
+      locationParts += " ทั้งหมด";
+    }
 
     // สร้าง PDF
     PDFHelper.createPDF(res, "report_farm.pdf", (pdfHelper, doc) => {
       const margin = 30;
       const usableWidth = doc.page.width - margin * 2;
-      const headers = ["ลำดับ", "ชื่อฟาร์ม", "จังหวัด", "อำเภอ", "ตำบล"];
-      const widths = [
-        Math.max(50, Math.floor(usableWidth * 0.08)),
-        Math.floor(usableWidth * 0.28),
-        Math.floor(usableWidth * 0.2),
-        Math.floor(usableWidth * 0.22),
-        Math.floor(usableWidth * 0.22),
+
+      // เลือกหัวตารางตามตัวกรองที่ส่งมา
+      const hasProvince = Boolean(province_id);
+      const hasAmphure = Boolean(amphure_id);
+      const hasTambon = Boolean(tambon_id);
+
+      /**
+       * คอลัมน์ที่ต้องการแสดงผลตามเงื่อนไข
+       */
+      let headers = ["ลำดับ", "ชื่อฟาร์ม", "ที่อยู่", "เบอร์โทรติดต่อ"];
+
+      let widths = [
+        usableWidth * 0.1,
+        usableWidth * 0.25,
+        usableWidth * 0.4,
+        usableWidth * 0.25,
       ];
 
-      let y = margin + 60;
+      let y = margin + 80;
       if (rows.length > 0) {
         const tableData = rows.map((item) => [
           item.farm_name || "-",
-          item.province_name || item.province || "-",
-          item.amphure_name || item.amphure || "-",
-          item.tambon_name || item.tambon || "-",
+          "จังหวัด" +
+            item.province_name +
+            " ตำบล" +
+            item.amphure_name +
+            " อำเภอ" +
+            item.tambon_name,
+          item.phone || "-",
         ]);
-        y = pdfHelper.drawTable(y, headers, widths, tableData);
+
+        // === วาดตาราง ===
+        y = pdfHelper.drawTable(y + 20, headers, widths, tableData);
+
+        // === นับจำนวนฟาร์มตามจังหวัดจาก rows ที่ได้มา ===
+        const farmCountByProvince = rows.reduce((acc, item) => {
+          const province = item.province_name || "-";
+          acc[province] = (acc[province] || 0) + 1;
+          return acc;
+        }, {});
+
+        // === แสดงสรุป ===
+        // y += 30;
+        // doc
+        //   .font("THSarabunNew-Bold")
+        //   .fontSize(16)
+        //   .text("สรุปจำนวนฟาร์มแต่ละจังหวัด", margin, y);
+
+        // y += 25;
+        // let totalFarms = 0;
+        // Object.entries(farmCountByProvince).forEach(
+        //   ([province, total], index) => {
+        //     doc
+        //       .font("THSarabunNew")
+        //       .fontSize(16)
+        //       .text(
+        //         `${index + 1}. จังหวัด${province} = ${total} ฟาร์ม`,
+        //         margin,
+        //         y
+        //       );
+        //     y += 20;
+        //     totalFarms += total;
+        //   }
+        // );
+
+        // // รวมทั้งหมด
+        // y += 10;
+        // doc
+        //   .font("THSarabunNew-Bold")
+        //   .fontSize(16)
+        //   .text(`รวมทั้งหมด = ${totalFarms} ฟาร์ม`, margin, y);
       } else {
         doc
           .font("THSarabunNew")
@@ -149,7 +236,16 @@ exports.reportFarm = async (req, res) => {
             align: "center",
           });
       }
+
+      // หัวกระดาษ
       pdfHelper.drawAllPageHeaders(reportTitle);
+      doc
+        .font("THSarabunNew-Bold")
+        .fontSize(18)
+        .text(locationParts, 20, 55, {
+          width: doc.page.width - 20 * 2,
+          align: "center",
+        });
     });
   } catch (err) {
     console.error("Error generating farm report:", err);

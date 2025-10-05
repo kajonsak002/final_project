@@ -32,8 +32,8 @@ function FarmPage() {
   const fetchProvinces = async () => {
     try {
       const res = await axios.get(import.meta.env.VITE_URL_API + "provinces");
-      setProvinces(res.data.provinces);
-      console.log("Provinces:", res.data.provinces);
+      setProvinces(res.data);
+      console.log("Provinces:", res.data);
     } catch (err) {
       console.error("Error fetching provinces:", err);
     }
@@ -56,8 +56,8 @@ function FarmPage() {
       const res = await axios.get(
         `${import.meta.env.VITE_URL_API}tambons/${districtId}`
       );
-      setTambons(res.data.tambons);
-      console.log("Tambons:", res.data.tambons);
+      setTambons(res.data);
+      console.log("Tambons:", res.data);
     } catch (err) {
       console.error("Error fetching tambons:", err);
     }

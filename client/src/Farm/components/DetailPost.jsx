@@ -22,6 +22,7 @@ function DetailPost({
 
   // --- Pagination state ---
   const [currentPage, setCurrentPage] = useState(1);
+  const currentFarmerId = localStorage.getItem("farmer_id");
   const commentsPerPage = 5;
 
   const indexOfLast = currentPage * commentsPerPage;
@@ -172,24 +173,27 @@ function DetailPost({
                                   {formatFacebookTime(item.create_at)}
                                 </p>
                               </div>
-                              <div className="dropdown dropdown-end">
-                                <label
-                                  tabIndex={0}
-                                  className="btn btn-ghost btn-sm btn-circle">
-                                  <EllipsisVertical />
-                                </label>
-                                <ul
-                                  tabIndex={0}
-                                  className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
-                                  <li
-                                    onClick={() => {
-                                      setReportComment(true);
-                                      setSelectedComment(item);
-                                    }}>
-                                    <a>รายงานความคิดเห็น</a>
-                                  </li>
-                                </ul>
-                              </div>
+                              {String(item.farmer_id) !==
+                                String(currentFarmerId) && (
+                                <div className="dropdown dropdown-end">
+                                  <label
+                                    tabIndex={0}
+                                    className="btn btn-ghost btn-sm btn-circle">
+                                    <EllipsisVertical />
+                                  </label>
+                                  <ul
+                                    tabIndex={0}
+                                    className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+                                    <li
+                                      onClick={() => {
+                                        setReportComment(true);
+                                        setSelectedComment(item);
+                                      }}>
+                                      <a>รายงานความคิดเห็น</a>
+                                    </li>
+                                  </ul>
+                                </div>
+                              )}
                             </div>
                           </div>
                         );

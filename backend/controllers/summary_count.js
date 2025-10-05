@@ -5,7 +5,7 @@ exports.get_summary_count = async (req, res) => {
     // ฟาร์ม
     const [[farmCounts]] = await db.promise().query(`
       SELECT
-        COUNT(*) AS total_farm,
+        COUNT(CASE WHEN is_active = 'ปกติ' AND status = 'อนุมัติ' THEN 1 END) AS total_farm,
         COUNT(CASE WHEN status = 'รออนุมัติ' THEN 1 END) AS total_farm_waiting
       FROM farmer
     `);

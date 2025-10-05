@@ -11,13 +11,9 @@ import {
   Pencil,
   Hash,
 } from "lucide-react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Pagination, Navigation } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/pagination";
-import "swiper/css/navigation";
 import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "../../utils/toast";
+import Pagination from "../../admin/components/Pagination";
 
 function Profile() {
   const [farm, setFarm] = useState([]);
@@ -35,7 +31,7 @@ function Profile() {
           Authorization: `Bearer ${localStorage.getItem("userToken")}`,
         },
       });
-      // console.log(res.data);
+      console.log("farm Data : ", res.data);
       localStorage.setItem("image_profile", res.data.data.farm_img);
       localStorage.setItem("farmer_id", res.data.data.farmer_id);
       setFarm(res.data.data);
@@ -53,9 +49,10 @@ function Profile() {
       );
       setProducts(res.data.data);
     } catch (error) {
-      toast.error(
-        error.response?.data?.msg || "เกิดข้อผิดพลาดในการดึงข้อมูลสินค้า"
-      );
+      console.log("Error fetching products", error);
+      // toast.error(
+      //   error.response?.data?.msg || "เกิดข้อผิดพลาดในการดึงข้อมูลสินค้า"
+      // );
     }
   };
 
@@ -97,6 +94,7 @@ function Profile() {
   }, []);
 
   const handleCheckEditProfile = (farm) => {
+    console.log("Editing farm:", farm);
     setProfile(farm);
     setEditProfile(farm);
     setModalShowProfile(true);
@@ -114,9 +112,10 @@ function Profile() {
   useEffect(() => {
     if (modalShowProfile) {
       // โหลดจังหวัดทั้งหมด
-      axios
-        .get(import.meta.env.VITE_URL_API + "provinces")
-        .then((res) => setProvinces(res.data.provinces));
+      axios.get(import.meta.env.VITE_URL_API + "provinces").then((res) => {
+        setProvinces(res.data);
+        // console.log(res.data);
+      });
 
       // โหลดอำเภอของ province_id เดิม
       if (profile.province_id) {
@@ -124,14 +123,20 @@ function Profile() {
           .get(
             import.meta.env.VITE_URL_API + `districts/${profile.province_id}`
           )
-          .then((res) => setDistricts(res.data.districts));
+          .then((res) => {
+            setDistricts(res.data.districts);
+            // console.log(res.data.districts);
+          });
       }
 
       // โหลดตำบลของ amphure_id เดิม
       if (profile.amphure_id) {
         axios
           .get(import.meta.env.VITE_URL_API + `tambons/${profile.amphure_id}`)
-          .then((res) => setTambons(res.data.tambons));
+          .then((res) => {
+            setTambons(res.data);
+            // console.log(res.data);
+          });
       }
     }
   }, [modalShowProfile]);
@@ -164,7 +169,7 @@ function Profile() {
       const res = await axios.get(
         import.meta.env.VITE_URL_API + `tambons/${districtId}`
       );
-      setTambons(res.data.tambons);
+      setTambons(res.data);
     }
   };
 
@@ -200,6 +205,37 @@ function Profile() {
       toast.error("เกิดข้อผิดพลาด");
       console.error(err);
     }
+  };
+
+  // Pagination states
+  const [currentProductPage, setCurrentProductPage] = useState(1);
+  const [currentAnimalPage, setCurrentAnimalPage] = useState(1);
+  const itemsPerPage = 9; // 3x3 grid
+
+  // Calculate pagination
+  const totalProductPages = Math.ceil(products.length / itemsPerPage);
+  const totalAnimalPages = Math.ceil(animals.length / itemsPerPage);
+
+  const getCurrentProducts = () => {
+    const startIndex = (currentProductPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return products.slice(startIndex, endIndex);
+  };
+
+  const getCurrentAnimals = () => {
+    const startIndex = (currentAnimalPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return animals.slice(startIndex, endIndex);
+  };
+
+  const handleProductPageChange = (page) => {
+    setCurrentProductPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleAnimalPageChange = (page) => {
+    setCurrentAnimalPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -342,51 +378,65 @@ function Profile() {
 
                 {/* Address */}
                 <div className="space-y-4">
-                  <h4 className="text-sm font-medium">ที่อยู่</h4>
+                  <h4 className="text-sm font-medium mb-[5px]">ที่อยู่</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <select
-                      name="province_id"
-                      value={editProfile.province_id || ""}
-                      onChange={handleProvinceChange}
-                      className="select select-bordered w-full">
-                      <option value="">เลือกจังหวัด</option>
-                      {provinces.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name_th}
-                        </option>
-                      ))}
-                    </select>
+                    <div>
+                      <label htmlFor="province_id" className="text-sm">
+                        จังหวัด
+                      </label>
+                      <select
+                        name="province_id"
+                        value={editProfile.province_id || ""}
+                        onChange={handleProvinceChange}
+                        className="select select-bordered w-full">
+                        <option value="">เลือกจังหวัด</option>
+                        {provinces.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name_th}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                    <select
-                      name="amphure_id"
-                      value={editProfile.amphure_id || ""}
-                      onChange={handleDistrictChange}
-                      className="select select-bordered w-full">
-                      <option value="">เลือกอำเภอ</option>
-                      {districts.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.name_th}
-                        </option>
-                      ))}
-                    </select>
-
-                    <select
-                      name="tambon_id"
-                      value={editProfile.tambon_id || ""}
-                      onChange={(e) =>
-                        setEditProfile((prev) => ({
-                          ...prev,
-                          tambon_id: e.target.value,
-                        }))
-                      }
-                      className="select select-bordered w-full">
-                      <option value="">เลือกตำบล</option>
-                      {tambons.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.name_th}
-                        </option>
-                      ))}
-                    </select>
+                    <div>
+                      <label htmlFor="amphure_id" className="text-sm">
+                        อำเภอ
+                      </label>
+                      <select
+                        name="amphure_id"
+                        value={editProfile.amphure_id || ""}
+                        onChange={handleDistrictChange}
+                        className="select select-bordered w-full">
+                        <option value="">เลือกอำเภอ</option>
+                        {districts.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.name_th}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="tambon_id" className="text-sm">
+                        ตำบล
+                      </label>
+                      <select
+                        name="tambon_id"
+                        value={editProfile.tambon_id || ""}
+                        onChange={(e) =>
+                          setEditProfile((prev) => ({
+                            ...prev,
+                            tambon_id: e.target.value,
+                          }))
+                        }
+                        className="select select-bordered w-full">
+                        <option value="">เลือกตำบล</option>
+                        {tambons.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.name_th}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
 
@@ -516,176 +566,145 @@ function Profile() {
         {/* Content Section */}
         <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
           {activeTab === "products" && (
-            <div className="max-w-7xl w-full mx-auto">
+            <div className="max-w-7xl mx-auto">
               <h2 className="text-2xl font-bold mb-6">สินค้าของเรา</h2>
 
-              <Swiper
-                modules={[Autoplay, Pagination, Navigation]}
-                spaceBetween={24}
-                slidesPerView={1}
-                breakpoints={{
-                  640: { slidesPerView: 1 },
-                  768: { slidesPerView: 2 },
-                  1024: { slidesPerView: 3 },
-                  1280: { slidesPerView: 4 },
-                }}
-                autoplay={{ delay: 2000, disableOnInteraction: false }}
-                pagination={{ clickable: true }}
-                navigation
-                className="mySwiper"
-                onInit={(swiper) => swiper.update()}>
-                {products.map((product) => (
-                  <SwiperSlide key={product.id} className="mb-3">
-                    <div className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow h-full">
-                      <img
-                        src={product.image}
-                        alt={product.product_name}
-                        className="w-full h-48 object-cover"
-                      />
-                      <div className="p-4">
-                        <h3 className="font-semibold text-lg mb-2">
-                          {product.product_name}
-                        </h3>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-2xl font-bold text-green-600">
-                            ฿{product.price}
-                          </span>
-                          <span className="text-gray-500">/{product.unit}</span>
-                        </div>
+              {/* Products Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {getCurrentProducts().map((product) => (
+                  <div
+                    key={product.id}
+                    className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
+                    <img
+                      src={product.image}
+                      alt={product.product_name}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="p-4">
+                      <h3 className="font-semibold text-lg mb-2">
+                        {product.product_name}
+                      </h3>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-2xl font-bold text-green-600">
+                          ฿{product.price}
+                        </span>
+                        <span className="text-gray-500">/{product.unit}</span>
                       </div>
                     </div>
-                  </SwiperSlide>
+                  </div>
                 ))}
-              </Swiper>
+              </div>
+
+              {/* Pagination */}
+              {totalProductPages > 1 && (
+                <Pagination
+                  currentPage={currentProductPage}
+                  totalPages={totalProductPages}
+                  onPageChange={handleProductPageChange}
+                />
+              )}
             </div>
           )}
 
+          {/* Animals Farm */}
           {activeTab === "animals" && (
-            <div className="max-w-7xl w-full mx-auto px-4">
-              {/* Enhanced Swiper */}
-              <Swiper
-                spaceBetween={24}
-                slidesPerView={1}
-                breakpoints={{
-                  640: { slidesPerView: 1 },
-                  768: { slidesPerView: 2 },
-                  1024: { slidesPerView: 3 },
-                  1280: { slidesPerView: 4 },
-                }}
-                autoplay={{ delay: 2500, disableOnInteraction: false }}
-                pagination={{ clickable: true }}
-                navigation
-                className="mySwiper">
-                {animals.map((animal) => (
-                  <SwiperSlide key={animal.id} className="mb-3">
-                    <div className="group relative bg-white rounded-2xl shadow hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden border border-gray-100">
-                      {/* Enhanced Header */}
-                      <div
-                        className={`bg-gradient-to-br ${
-                          animal.color || "from-green-400 to-green-600"
-                        } p-6 text-white relative overflow-hidden`}>
-                        {/* Background Pattern */}
-                        <div className="absolute inset-0 opacity-10">
-                          <div className="absolute top-0 right-0 w-24 h-24 bg-white rounded-full -translate-y-12 translate-x-12"></div>
-                          <div className="absolute bottom-0 left-0 w-16 h-16 bg-white rounded-full translate-y-8 -translate-x-8"></div>
-                        </div>
+            <div className="w-full mx-auto">
+              <h2 className="text-2xl font-bold mb-6">สัตว์เลี้ยงในฟาร์ม</h2>
 
-                        <div className="relative z-10">
-                          <div className="flex justify-between items-start mb-4">
-                            {/* <div className="text-4xl transform group-hover:scale-110 ">
-                              {animal.icon || "🐾"}
-                            </div> */}
-                            {/* <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1">
-                              <span className="font-bold text-lg">
-                                {animal.count} ตัว
-                              </span>
-                            </div> */}
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <h3 className="font-semibold text-2xl mb-2">
-                              {animal.type}
-                            </h3>
-
-                            <span className="font-bold text-lg">
-                              {animal.count} ตัว
-                            </span>
-                          </div>
-                        </div>
+              {/* Animals Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {getCurrentAnimals().map((animal) => (
+                  <div
+                    key={animal.id}
+                    className="group relative bg-white rounded-2xl shadow overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow">
+                    {/* Enhanced Header */}
+                    <div className="bg-gradient-to-br from-green-400 to-green-600 p-6 text-white relative overflow-hidden">
+                      {/* Background Pattern */}
+                      <div className="absolute inset-0 opacity-10">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-white rounded-full -translate-y-12 translate-x-12"></div>
+                        <div className="absolute bottom-0 left-0 w-16 h-16 bg-white rounded-full translate-y-8 -translate-x-8"></div>
                       </div>
 
-                      {/* Enhanced Content */}
-                      <div className="p-6 space-y-4">
-                        {/* Info Grid */}
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="hover:bg-blue-50 rounded-lg p-3 transition-colors group/item">
-                            <div className="flex items-center space-x-2">
-                              <Hash className="w-4 h-4 text-blue-500" />
-                              <div>
-                                <p className="text-xs text-gray-500 font-medium uppercase">
-                                  รหัสล๊อต
-                                </p>
-                                <p className="font-semibold text-gray-800">
-                                  {animal.lot}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="hover:bg-green-50 rounded-lg p-3 transition-colors group/item">
-                            <div className="flex items-center space-x-2">
-                              <Package className="w-4 h-4 text-green-500" />
-                              <div>
-                                <p className="text-xs text-gray-500 font-medium uppercase">
-                                  จำนวน
-                                </p>
-                                <p className="font-semibold text-gray-800">
-                                  {animal.quantity_received}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Location */}
-                        {animal.location && (
-                          <div className="flex items-center space-x-2 bg-gray-50 rounded-lg p-3">
-                            <MapPin className="w-4 h-4 text-gray-500" />
-                            <span className="text-sm font-medium text-gray-700">
-                              {animal.location}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Timeline */}
-                        <div className="space-y-3 text-sm text-gray-600 border-t border-gray-100 pt-4">
-                          <div className="flex items-center space-x-2">
-                            <Calendar className="w-4 h-4 text-purple-500" />
-                            <span className="font-medium">สร้างเมื่อ:</span>
-                            <span>
-                              {new Date(animal.created_at).toLocaleDateString(
-                                "th-TH"
-                              )}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center space-x-2">
-                            <Calendar className="w-4 h-4 text-orange-500" />
-                            <span className="font-medium">อัปเดตล่าสุด:</span>
-                            <span>
-                              {new Date(animal.updated_at).toLocaleDateString(
-                                "th-TH"
-                              )}
-                            </span>
-                          </div>
+                      <div className="relative z-10">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold text-2xl mb-2">
+                            {animal.type}
+                          </h3>
+                          <span className="font-bold text-lg">
+                            คงเหลือ {animal.count} ตัว
+                          </span>
                         </div>
                       </div>
-
-                      {/* Hover Glow Effect */}
-                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-400/0 via-purple-400/0 to-pink-400/0 group-hover:from-blue-400/5 group-hover:via-purple-400/5 group-hover:to-pink-400/5 transition-all duration-500 pointer-events-none"></div>
                     </div>
-                  </SwiperSlide>
+
+                    {/* Enhanced Content */}
+                    <div className="p-6 space-y-4">
+                      {/* Info Grid */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="hover:bg-blue-50 rounded-lg p-3 transition-colors">
+                          <div className="flex items-center space-x-2">
+                            <Hash className="w-4 h-4 text-blue-500" />
+                            <div>
+                              <p className="text-xs text-gray-500 font-medium uppercase">
+                                รหัสล๊อต
+                              </p>
+                              <p className="font-semibold text-gray-800">
+                                {animal.lot}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="hover:bg-green-50 rounded-lg p-3 transition-colors">
+                          <div className="flex items-center space-x-2">
+                            <Package className="w-4 h-4 text-green-500" />
+                            <div>
+                              <p className="text-xs text-gray-500 font-medium uppercase">
+                                จำนวน
+                              </p>
+                              <p className="font-semibold text-gray-800">
+                                {animal.quantity_received}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Timeline */}
+                      <div className="space-y-3 text-sm text-gray-600 border-t border-gray-100 pt-4">
+                        <div className="flex items-center space-x-2">
+                          <Calendar className="w-4 h-4 text-purple-500" />
+                          <span className="font-medium">วันที่เลี้ยง:</span>
+                          <span>
+                            {new Date(animal.created_at).toLocaleDateString(
+                              "th-TH"
+                            )}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <Calendar className="w-4 h-4 text-orange-500" />
+                          <span className="font-medium">อัปเดตล่าสุด:</span>
+                          <span>
+                            {new Date(animal.updated_at).toLocaleDateString(
+                              "th-TH"
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </Swiper>
+              </div>
+
+              {/* Pagination */}
+              {totalAnimalPages > 1 && (
+                <Pagination
+                  currentPage={currentAnimalPage}
+                  totalPages={totalAnimalPages}
+                  onPageChange={handleAnimalPageChange}
+                />
+              )}
             </div>
           )}
         </div>

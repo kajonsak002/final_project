@@ -47,6 +47,9 @@ dependencies:
   react-toastify:
     specifier: ^11.0.5
     version: 11.0.5(react-dom@19.1.0)(react@19.1.0)
+  sweetalert2:
+    specifier: ^11.23.0
+    version: 11.23.0
   swiper:
     specifier: ^11.2.8
     version: 11.2.8
@@ -2378,6 +2381,10 @@ packages:
 
   /svg-arc-to-cubic-bezier@3.2.0:
     resolution: {integrity: sha512-djbJ/vZKZO+gPoSDThGNpKDO+o+bAeA4XQKovvkNCqnIS2t+S4qnLAGQhyyrulhCFRl1WWzAp0wUDV8PpTVU3g==}
+    dev: false
+
+  /sweetalert2@11.23.0:
+    resolution: {integrity: sha512-cKzzbC3C1sIs7o9XAMw4E8F9kBtGXsBDUsd2JZ8JM/dqa+nzWwSGM+9LLYILZWzWHzX9W+HJNHyBlbHPVS/krw==}
     dev: false
 
   /swiper@11.2.8:

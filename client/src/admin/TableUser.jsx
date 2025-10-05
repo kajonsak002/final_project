@@ -4,7 +4,7 @@ import axios from "axios";
 import Pagination from "./components/Pagination";
 import dayjs from "dayjs";
 import "dayjs/locale/th";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "../utils/toast";
 
 function TableUser() {
   const [loading, setLoading] = useState(false);
@@ -95,7 +95,6 @@ function TableUser() {
 
   return (
     <div className="w-full">
-      <ToastContainer />
       <div className="overflow-x-auto">
         <table className="table bg-base-100 min-w-[600px]">
           <thead>
@@ -167,7 +166,7 @@ function TableUser() {
       {detailsModal && selectUser && (
         <dialog open className="modal">
           <div className="modal-box w-full max-w-lg bg-white shadow-2xl">
-            <h3 className="font-bold text-lg mb-4">รายละเอียดฟาร์ม</h3>
+            <h3 className="font-bold text-2xl mb-4">ข้อมูลการสมัครสามาชิก</h3>
 
             {/* Farm Info in compact layout */}
             <div className="flex items-start gap-4 mb-4">
@@ -177,12 +176,10 @@ function TableUser() {
                 alt={selectUser.farm_name}
               />
               <div className="flex-1 space-y-1">
-                <h4 className="font-semibold text-gray-900">
-                  {selectUser.farm_name}
-                </h4>
-                <p className="text-sm text-gray-600">{selectUser.email}</p>
-                <p className="text-xs text-gray-500">
-                  ID: {selectUser.farmer_id} | สมัคร:{" "}
+                <h4 className="font-bold text-xl">{selectUser.farm_name}</h4>
+                <p className="font-bold text-md">{selectUser.email}</p>
+                <p className="text-sm ">
+                  วันที่สมัครสมาชิก:{" "}
                   {dayjs(selectUser.create_at)
                     .add(543, "year")
                     .format("DD/MM/YYYY")}

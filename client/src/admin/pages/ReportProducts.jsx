@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "../../utils/toast";
 
 function ReportProducts() {
   const [farmList, setFarmList] = useState([]);

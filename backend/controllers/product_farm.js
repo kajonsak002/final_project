@@ -21,7 +21,10 @@ exports.getProductFarm = async (req, res) => {
   try {
     const [rows] = await db
       .promise()
-      .query(`SELECT * FROM products WHERE farmer_id = ?`, [id]);
+      .query(
+        `SELECT * FROM products WHERE farmer_id = ? ORDER BY product_name`,
+        [id]
+      );
 
     if (rows.length === 0) {
       return res.status(404).json({ msg: "ไม่พบข้อมูลสินค้า" });
@@ -74,6 +77,12 @@ exports.addProduct = async (req, res) => {
   } catch (err) {
     console.error("Error adding product:", err);
     deleteImage(image.path);
+
+    if (err.code === "ER_DUP_ENTRY") {
+      deleteImage(image.path);
+      return res.status(400).json({ msg: "ชื่อสินค้าซ้ำ" });
+    }
+
     return res.status(500).json({ msg: "ไม่สามารถเพิ่มสินค้าได้" });
   }
 };

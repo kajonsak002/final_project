@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import SideBar from "../Farm/components/SideBar";
 import Header from "../Farm/components/Header";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "../utils/toast";
 import axios from "axios";
 
 function AdminLayout() {
@@ -15,7 +15,7 @@ function AdminLayout() {
     const token = localStorage.getItem("userToken");
 
     if (!token) {
-      toast.error("Token is null", { autoClose: 1000 });
+      toast.error("Token is null", { timer: 2000 });
       setIsLogin(false);
       setTimeout(() => navigate("/login"), 1000);
       return;
@@ -31,11 +31,10 @@ function AdminLayout() {
         }
       );
       localStorage.setItem("username", res.data.username);
-      toast.success(res.data.message, { autoClose: 1000 });
       setIsLogin(true);
     } catch (err) {
       toast.error(err?.response?.data?.message || "Token ผิดพลาด", {
-        autoClose: 1000,
+        timer: 2000,
       });
       setIsLogin(false);
       setTimeout(() => navigate("/login"), 1000);

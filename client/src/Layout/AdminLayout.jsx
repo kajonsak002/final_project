@@ -3,7 +3,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "../admin/components/SideBar";
 import Header from "../admin/components/Header";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "../utils/toast";
 
 function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -27,7 +27,6 @@ function AdminLayout() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      toast.success(res.data.message);
     } catch (err) {
       toast.error(err.response?.data?.message || "Token ไม่ถูกต้อง");
       localStorage.removeItem("token");

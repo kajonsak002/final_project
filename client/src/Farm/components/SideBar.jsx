@@ -12,7 +12,7 @@ import {
   CirclePlus,
   ChevronRight,
 } from "lucide-react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "../../utils/toast";
 
 const Sidebar = ({ isOpen }) => {
   const navigate = useNavigate();
@@ -20,7 +20,9 @@ const Sidebar = ({ isOpen }) => {
   const [expandedMenus, setExpandedMenus] = useState({});
 
   const handleLogout = () => {
-    toast.info("กำลังออกจากระบบ");
+    toast.info("กำลังออกจากระบบ", {
+      timer: 1500,
+    });
     localStorage.removeItem("userToken");
     localStorage.removeItem("farmer_id");
     localStorage.removeItem("image_profile");
@@ -46,7 +48,7 @@ const Sidebar = ({ isOpen }) => {
       path: "animal",
     },
     {
-      name: "บันทึกการใช้สัตว์",
+      name: "บันทึกการจำหน่าย",
       icon: <BookText size={20} />,
       path: "logs",
     },
@@ -69,7 +71,6 @@ const Sidebar = ({ isOpen }) => {
         { name: "ประวัติข่าวสารของฉัน", path: "news-history" },
       ],
     },
-
     {
       name: "ประวัติการถูกรายงาน",
       icon: <MailWarning size={20} />,
@@ -77,6 +78,15 @@ const Sidebar = ({ isOpen }) => {
       subItems: [
         { name: "รายงานโพสต์", path: "report/post" },
         { name: "รายงานความคิดเห็น", path: "report/comment" },
+      ],
+    },
+    {
+      name: "ประวัติการแจ้งรายงาน",
+      icon: <MailWarning size={20} />,
+      hasDropdown: true,
+      subItems: [
+        { name: "รายงานโพสต์ของฉัน", path: "report/sent/post" },
+        { name: "รายงานความคิดเห็นของฉัน", path: "report/sent/comment" },
       ],
     },
   ];
@@ -105,14 +115,6 @@ const Sidebar = ({ isOpen }) => {
       className={`bg-base-100 border-r border-base-200 transition-all duration-300 ease-in-out ${
         isOpen ? "w-64" : "w-20"
       }`}>
-      <ToastContainer
-        position="top-right"
-        autoClose={800}
-        hideProgressBar={false}
-        closeOnClick
-        theme="light"
-      />
-
       <div className="p-4 border-b border-base-200 text-center space-y-2">
         {isOpen && (
           <>

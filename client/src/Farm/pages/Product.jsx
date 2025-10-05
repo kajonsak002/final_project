@@ -4,8 +4,7 @@ import React, { useEffect, useState } from "react";
 import SearchBar from "../../admin/components/SearchBar";
 import Pagination from "../../admin/components/Pagination";
 import ConfirmDeleteModal from "../../admin/components/ConfirmDeleteModal";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "../../utils/toast";
 
 function Product() {
   const [products, setProducts] = useState([]);
@@ -34,9 +33,9 @@ function Product() {
       );
       setProducts(res.data.data);
     } catch (error) {
-      toast.error(
-        error.response?.data?.msg || "เกิดข้อผิดพลาดในการดึงข้อมูลสินค้า"
-      );
+      // toast.error(
+      //   error.response?.data?.msg || "เกิดข้อผิดพลาดในการดึงข้อมูลสินค้า"
+      // );
     }
   };
 
@@ -102,9 +101,9 @@ function Product() {
     e.preventDefault();
     const id = localStorage.getItem("farmer_id");
     const data = new FormData();
-    data.append("name", formData.product_name);
-    data.append("price", formData.price);
-    data.append("unit", formData.unit);
+    data.append("name", formData.product_name.replace(/ /g, ""));
+    data.append("price", formData.price.trim());
+    data.append("unit", formData.unit.trim());
     if (formData.image) data.append("image", formData.image);
     if (isEditing) data.append("product_id", formData.product_id);
     try {
@@ -152,7 +151,6 @@ function Product() {
         { data: { product_id: deleteId } }
       );
       toast.success(res.data.msg);
-      // Always fetch latest data from backend after delete
       getProductFarm();
       setIsConfirmOpen(false);
       setDeleteId(null);
@@ -403,7 +401,6 @@ function Product() {
           }}
         />
       </div>
-      <ToastContainer autoClose={1000} />
     </div>
   );
 }

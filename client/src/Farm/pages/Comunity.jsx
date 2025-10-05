@@ -14,7 +14,7 @@ import {
 import dayjs from "dayjs";
 import "dayjs/locale/th";
 import axios from "axios";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "../../utils/toast";
 import DetailPost from "../components/DetailPost";
 import Pagination from "../../admin/components/Pagination";
 import { Link } from "react-router-dom";
@@ -45,6 +45,8 @@ function Community() {
   const [searchTerm, setSearchTerm] = useState("");
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
+  const [showReasonModal, setShowReasonModal] = useState(false);
+  const [selectedReason, setSelectedReason] = useState("");
 
   const getAllPost = async () => {
     try {
@@ -284,11 +286,11 @@ function Community() {
         payload
       );
       console.log(res.data);
-      toast.success(res.data.msg);
+      toast.success("รายงานความคิดเห็นสำเร็จ");
       setReportComment(false);
     } catch (err) {
       console.log("Error report comment : ", err);
-      toast.error(err.respone.data.msg);
+      toast.error("คุณเคยรายงานความคิดเห็นนี้เเล้ว");
     }
   };
 
@@ -331,9 +333,52 @@ function Community() {
 
   const totalPages = Math.ceil(filteredPosts.length / itemPerpage);
 
+  // ฟังก์ชันสำหรับแสดงเหตุผล
+  const showReason = (reason) => {
+    setSelectedReason(reason);
+    setShowReasonModal(true);
+  };
+
+  // ฟังก์ชันปิด modal
+  const closeReasonModal = () => {
+    setShowReasonModal(false);
+    setSelectedReason("");
+  };
+
+  // ฟังก์ชันสร้างสถานะ badge
+  const getStatusBadge = (post) => {
+    if (post.is_visible === "ซ่อน") {
+      // ตรวจสอบว่าถูกซ่อนจากการรายงานหรือโดยแอดมิน
+      if (post.report_hide_reason) {
+        return {
+          text: "ซ่อนจากการรายงาน",
+          className: "badge badge-error text-white",
+          reason: post.report_hide_reason,
+        };
+      } else if (post.hide_reason) {
+        return {
+          text: "ซ่อนโดยแอดมิน",
+          className: "badge badge-warning text-white",
+          reason: post.hide_reason,
+        };
+      } else {
+        return {
+          text: "ซ่อน",
+          className: "badge badge-error text-white",
+          reason: "ไม่ระบุเหตุผล",
+        };
+      }
+    } else {
+      return {
+        text: "แสดง",
+        className: "badge badge-success text-white",
+        reason: null,
+      };
+    }
+  };
+
   return (
     <>
-      <ToastContainer />
       {/* Breadcrumb */}
       <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
         <div className="breadcrumbs text-sm">
@@ -830,15 +875,42 @@ function Community() {
                           </li>
                         </>
                       ) : (
-                        <li>
-                          <a onClick={() => handleOpenReportModal(post)}>
-                            รายงานโพสต์
-                          </a>
-                        </li>
+                        String(post.farmer_id) !== String(farmer_id) && (
+                          <li>
+                            <a onClick={() => handleOpenReportModal(post)}>
+                              รายงานโพสต์
+                            </a>
+                          </li>
+                        )
                       )}
                     </ul>
                   </div>
                 </div>
+                {/* Status Badge - แสดงเฉพาะในโพสต์ของฉัน */}
+                {isShowPostMe && (
+                  <div className="mb-4">
+                    {(() => {
+                      const statusInfo = getStatusBadge(post);
+                      return (
+                        <div className="flex items-center gap-2">
+                          <span className={statusInfo.className}>
+                            {statusInfo.text}
+                          </span>
+                          {statusInfo.reason && (
+                            <button
+                              className="btn btn-xs btn-outline btn-info"
+                              onClick={() => showReason(statusInfo.reason)}
+                              title="ดูเหตุผล">
+                              <Eye className="w-3 h-3 mr-1" />
+                              เหตุผล
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+
                 {/* Content */}
                 <div className="text-gray-700 mb-4 leading-relaxed whitespace-pre-line">
                   {post.content}
@@ -930,9 +1002,31 @@ function Community() {
             onClick={() => {
               setReportComment(false);
               setReportCommentReason("");
-            }}></div>
+            }}>
+            {" "}
+          </div>
         </dialog>
       )}
+
+      {/* DaisyUI Modal สำหรับแสดงเหตุผล */}
+      <dialog className={`modal ${showReasonModal ? "modal-open" : ""}`}>
+        <div className="modal-box">
+          <h3 className="font-bold text-lg mb-4">เหตุผลที่ซ่อนโพสต์</h3>
+          <div className="bg-gray-100 p-4">
+            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+              {selectedReason}
+            </p>
+          </div>
+          <div className="modal-action">
+            <button className="btn btn-primary" onClick={closeReasonModal}>
+              ปิด
+            </button>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button onClick={closeReasonModal}>close</button>
+        </form>
+      </dialog>
     </>
   );
 }

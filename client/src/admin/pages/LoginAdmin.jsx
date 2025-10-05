@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "../../utils/toast";
 import axios from "axios";
 import { connect_server } from "../../check_connect_server";
 
@@ -25,9 +25,6 @@ function LoginAdmin() {
       );
       // console.log(res.data);
       localStorage.setItem("token", res.data.token);
-      setTimeout(() => {
-        navigate("/admin/dashboard");
-      }, 800);
       toast.success("เข้าสู่ระบบสำเร็จ");
       setTimeout(() => {
         navigate("/admin/dashboard");
@@ -40,13 +37,6 @@ function LoginAdmin() {
 
   return (
     <div className="flex justify-center items-center min-h-screen w-screen bg-base-200">
-      <ToastContainer
-        position="top-center"
-        autoClose={800}
-        hideProgressBar={false}
-        closeOnClick
-        theme="light"
-      />
       <div className="card w-96 bg-base-100 shadow-xl">
         <div className="card-body">
           <div className="card-title flex justify-center mb-4">

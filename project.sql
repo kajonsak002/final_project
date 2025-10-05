@@ -11,7 +11,7 @@
  Target Server Version : 50724 (5.7.24)
  File Encoding         : 65001
 
- Date: 29/08/2025 12:36:21
+ Date: 03/10/2025 13:49:21
 */
 
 SET NAMES utf8mb4;
@@ -53,7 +53,7 @@ CREATE TABLE `animal_categories`  (
   `category_id` int(11) NOT NULL AUTO_INCREMENT,
   `category_name` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   PRIMARY KEY (`category_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for animal_full_requests
@@ -62,15 +62,15 @@ DROP TABLE IF EXISTS `animal_full_requests`;
 CREATE TABLE `animal_full_requests`  (
   `request_id` int(11) NOT NULL AUTO_INCREMENT,
   `farmer_id` int(11) NOT NULL,
-  `animal_name` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `type_name` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `animal_name` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `type_name` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `status` enum('รออนุมัติ','อนุมัติ','ปฏิเสธ') CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT 'รออนุมัติ',
   `reason` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL,
   `create_at` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   `approved_date` datetime NULL DEFAULT NULL,
   `category_id` int(11) NULL DEFAULT NULL,
   PRIMARY KEY (`request_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 21 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 31 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for animal_types
@@ -81,7 +81,36 @@ CREATE TABLE `animal_types`  (
   `type_name` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `animal_id` int(11) NULL DEFAULT NULL,
   PRIMARY KEY (`type_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 12 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Table structure for animal_usage
+-- ----------------------------
+DROP TABLE IF EXISTS `animal_usage`;
+CREATE TABLE `animal_usage`  (
+  `usage_id` int(11) NOT NULL AUTO_INCREMENT,
+  `usage_date` datetime NULL DEFAULT CURRENT_TIMESTAMP,
+  `usage_code` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  PRIMARY KEY (`usage_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for animal_usage_detail
+-- ----------------------------
+DROP TABLE IF EXISTS `animal_usage_detail`;
+CREATE TABLE `animal_usage_detail`  (
+  `detail_id` int(11) NOT NULL AUTO_INCREMENT,
+  `usage_id` int(11) NOT NULL,
+  `lot_id` int(11) NOT NULL,
+  `quantity_used` int(11) NOT NULL DEFAULT 0,
+  `action` enum('ตาย','ขาย','เชือด','อื่นๆ') CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `remark` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  PRIMARY KEY (`detail_id`) USING BTREE,
+  INDEX `fk_usage`(`usage_id`) USING BTREE,
+  INDEX `fk_lot`(`lot_id`) USING BTREE,
+  CONSTRAINT `fk_lot` FOREIGN KEY (`lot_id`) REFERENCES `farm_animals` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `fk_usage` FOREIGN KEY (`usage_id`) REFERENCES `animal_usage` (`usage_id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for animals
@@ -94,7 +123,7 @@ CREATE TABLE `animals`  (
   PRIMARY KEY (`animal_id`) USING BTREE,
   INDEX `fk_category_id`(`category_id`) USING BTREE,
   CONSTRAINT `fk_category_id` FOREIGN KEY (`category_id`) REFERENCES `animal_categories` (`category_id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for comment_report
@@ -108,11 +137,10 @@ CREATE TABLE `comment_report`  (
   `status` enum('รอดำเนินการ','ดำเนินการแล้ว') CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT 'รอดำเนินการ',
   `report_date` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   `update_at` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  `post_id` int(11) NULL DEFAULT NULL,
+  `post_id` int(11) NOT NULL,
   `report_review` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
-  PRIMARY KEY (`report_id`) USING BTREE,
+  PRIMARY KEY (`farmer_id`, `comment_id`, `post_id`) USING BTREE,
   INDEX `comment_id`(`comment_id`) USING BTREE,
-  INDEX `farmer_id`(`farmer_id`) USING BTREE,
   INDEX `comment_report_ibfk_3`(`post_id`) USING BTREE,
   CONSTRAINT `comment_report_ibfk_1` FOREIGN KEY (`comment_id`) REFERENCES `comments` (`comment_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `comment_report_ibfk_2` FOREIGN KEY (`farmer_id`) REFERENCES `farmer` (`farmer_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
@@ -138,33 +166,17 @@ CREATE TABLE `comments`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Table structure for farm_animal_usage
--- ----------------------------
-DROP TABLE IF EXISTS `farm_animal_usage`;
-CREATE TABLE `farm_animal_usage`  (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `farm_animal_id` int(11) NOT NULL,
-  `quantity_used` int(11) NOT NULL,
-  `usage_type` enum('ขาย','เชือด','ตาย','อื่นๆ') CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `remark` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
-  `created_at` datetime NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `fk_farm_animal`(`farm_animal_id`) USING BTREE,
-  CONSTRAINT `fk_farm_animal` FOREIGN KEY (`farm_animal_id`) REFERENCES `farm_animals` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
-
--- ----------------------------
 -- Table structure for farm_animals
 -- ----------------------------
 DROP TABLE IF EXISTS `farm_animals`;
 CREATE TABLE `farm_animals`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `lot_code` varchar(3) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `farmer_id` int(11) NOT NULL,
   `animal_id` int(11) NOT NULL,
   `type_id` int(11) NULL DEFAULT NULL,
   `quantity` int(11) NOT NULL DEFAULT 0,
   `quantity_received` int(11) NOT NULL DEFAULT 0,
-  `lot_code` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `created_at` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
@@ -174,7 +186,7 @@ CREATE TABLE `farm_animals`  (
   CONSTRAINT `fk_animal` FOREIGN KEY (`animal_id`) REFERENCES `animals` (`animal_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_farmer` FOREIGN KEY (`farmer_id`) REFERENCES `farmer` (`farmer_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_type` FOREIGN KEY (`type_id`) REFERENCES `animal_types` (`type_id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 30 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for farmer
@@ -241,7 +253,9 @@ CREATE TABLE `news`  (
   `content` longtext CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `created_at` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   `source_ref` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
-  `updated_at` datetime NULL DEFAULT NULL,
+  `updated_at` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `status` enum('แสดง','ซ่อน') CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT 'แสดง',
+  `reason_hide` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`news_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
@@ -263,7 +277,7 @@ CREATE TABLE `post_report`  (
   INDEX `farmer_id`(`farmer_id`) USING BTREE,
   CONSTRAINT `post_report_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `post_report_ibfk_2` FOREIGN KEY (`farmer_id`) REFERENCES `farmer` (`farmer_id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 22 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for posts
@@ -278,6 +292,7 @@ CREATE TABLE `posts`  (
   `create_at` datetime NULL DEFAULT NULL,
   `update_at` datetime NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   `approval_date` datetime NULL DEFAULT NULL,
+  `hide_reason` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`post_id`) USING BTREE,
   INDEX `farmer_id`(`farmer_id`) USING BTREE,
   CONSTRAINT `fk_posts_farmer` FOREIGN KEY (`farmer_id`) REFERENCES `farmer` (`farmer_id`) ON DELETE CASCADE ON UPDATE RESTRICT
@@ -294,7 +309,7 @@ CREATE TABLE `products`  (
   `price` decimal(10, 2) NOT NULL,
   `unit` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `image` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
-  PRIMARY KEY (`product_id`) USING BTREE,
+  PRIMARY KEY (`product_name`, `farmer_id`) USING BTREE,
   INDEX `farmer_id`(`farmer_id`) USING BTREE,
   CONSTRAINT `products_ibfk_1` FOREIGN KEY (`farmer_id`) REFERENCES `farmer` (`farmer_id`) ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;

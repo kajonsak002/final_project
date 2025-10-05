@@ -1,7 +1,7 @@
 import axios from "axios";
 import { CirclePlus } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "../../utils/toast";
 import Pagination from "../../admin/components/Pagination";
 import dayjs from "dayjs";
 import "dayjs/locale/th";
@@ -159,7 +159,6 @@ function AnimalTypeReq() {
 
   return (
     <div>
-      <ToastContainer />
       <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
         <div className="breadcrumbs text-sm">
           <ul>

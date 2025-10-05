@@ -5,9 +5,34 @@ dayjs.locale("th");
 
 const getFormattedNow = () => dayjs().format("YYYY-MM-DD HH:mm:ss");
 
+exports.getCommentAdmin = async (req, res) => {
+  const { id } = req.params;
+  const sql = `SELECT t1.comment_id , t2.farm_name , t1.content , t1.status , t1.create_at , t2.farm_img , t1.post_id , t1.farmer_id FROM comments as t1 
+               JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id 
+               WHERE t1.post_id = ?`;
+  try {
+    const [comment] = await db.promise().query(sql, [id]);
+
+    if (comment.length < 0) {
+      res.status(400).json({ msg: "ไม่พบความคิดเห็น" });
+    }
+    const host = req.headers.host;
+    const protocol = req.protocol;
+    const comments = comment.map((cm) => ({
+      ...cm,
+      farm_img: cm.farm_img
+        ? `${protocol}://${host}/${cm.farm_img.replace(/^\\+/, "")}`
+        : null,
+    }));
+    return res.status(200).json({ msg: "ดึงความคิดเห็นสำเร็จ", comments });
+  } catch (err) {
+    console.log("Internal Server Error ", err);
+    return res.status(500).json({ msg: "Error get comment" });
+  }
+};
 exports.getComment = async (req, res) => {
   const { id } = req.params;
-  const sql = `SELECT t1.comment_id , t2.farm_name , t1.content , t1.create_at , t2.farm_img , t1.post_id  FROM comments as t1 
+  const sql = `SELECT t1.comment_id , t2.farm_name , t1.content , t1.create_at , t2.farm_img , t1.post_id , t1.farmer_id FROM comments as t1 
                JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id 
                WHERE t1.post_id = ? AND t1.status = "แสดง"`;
   try {
@@ -73,6 +98,24 @@ exports.hideComment = async (req, res) => {
   }
 };
 
+// แสดงความคิดเห็นอีกครั้ง
+exports.showComment = async (req, res) => {
+  const { comment_id } = req.body;
+  try {
+    await db
+      .promise()
+      .query("UPDATE comments SET status = ? WHERE comment_id = ?", [
+        "แสดง",
+        comment_id,
+      ]);
+
+    res.status(201).json({ msg: "แสดงความคิดเห็นแล้ว" });
+  } catch (err) {
+    console.log("Internal Server Error : ", err);
+    res.status(500).json({ msg: "เกิดข้อผิดพลาดในการแสดงความคิดเห็น" });
+  }
+};
+
 exports.reportComment = async (req, res) => {
   const { post_id, farmer_id, reason, comment_id } = req.body;
   try {
@@ -104,11 +147,32 @@ exports.getCommentReport = async (req, res) => {
   try {
     const [rows] = await db.promise()
       .query(`SELECT t1.report_id , t1.post_id , t1.reason , t1.status , t1.report_date , t1.comment_id , t2.farm_name , t2.farmer_id , t3.content 
-FROM comment_report as t1
-JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id
-JOIN comments as t3 ON t1.comment_id = t3.comment_id
-WHERE t1.status = 'รอดำเนินการ'
-`);
+              FROM comment_report as t1
+              JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id
+              JOIN comments as t3 ON t1.comment_id = t3.comment_id
+              WHERE t1.status = 'รอดำเนินการ'
+              ORDER BY t1.report_date DESC
+        `);
+
+    if (rows.length == 0) {
+      res.status(404).json({ msg: "ไม่พบข้อมูลการรายงาน" });
+    }
+    res.status(200).json({ msg: "success", data: rows });
+  } catch (err) {
+    console.log("Error getCommentReport : ", err);
+  }
+};
+
+exports.getCommentReportHistory = async (req, res) => {
+  try {
+    const [rows] = await db.promise()
+      .query(`SELECT t1.report_id , t1.post_id , t1.reason , t1.status , t1.report_date , t1.comment_id , t2.farm_name , t2.farmer_id , t3.content , t3.status AS comment_status 
+              FROM comment_report as t1
+              JOIN farmer as t2 ON t1.farmer_id = t2.farmer_id
+              JOIN comments as t3 ON t1.comment_id = t3.comment_id
+              WHERE t1.status = 'ดำเนินการแล้ว'
+              ORDER BY t1.report_date DESC
+        `);
 
     if (rows.length == 0) {
       res.status(404).json({ msg: "ไม่พบข้อมูลการรายงาน" });
@@ -128,20 +192,28 @@ exports.manageComment = async (req, res) => {
     }
 
     if (action === "approve") {
-      [result] = await db
+      const [commentUpdate] = await db
         .promise()
         .execute("UPDATE comments SET status = 'ลบแล้ว' WHERE comment_id = ?", [
           comment_id,
         ]);
-      await db
+
+      const [resAll] = await db
         .promise()
         .query(
-          "UPDATE comment_report SET status = 'ดำเนินการแล้ว', report_review = ? WHERE report_id = ?",
+          "UPDATE comment_report SET status = 'ดำเนินการแล้ว', report_review = ? WHERE comment_id = ?",
           [
-            "ทางเราได้ทำการตรวจสอบความคิดเห็นนี้แล้ว เเละมีความไม่เหมาะสมจริงจึงได้ทำการลบความคิดเห็นนี้ออกจากระบบชุมชนของเรา",
-            report_id,
+            report_review ||
+              "ทางเราได้ทำการตรวจสอบความคิดเห็นนี้แล้ว เเละมีความไม่เหมาะสมจริงจึงได้ทำการลบความคิดเห็นนี้ออกจากระบบชุมชนของเรา",
+            comment_id,
           ]
         );
+
+      if (commentUpdate.affectedRows === 0 && resAll.affectedRows === 0) {
+        return res
+          .status(500)
+          .json({ msg: "เกิดข้อผิดพลาดในการอัปเดตความคิดเห็น/รายงาน" });
+      }
 
       return res.status(200).json({ msg: "ดำเนินการสำเร็จ" });
     } else if (action === "reject") {
@@ -189,5 +261,38 @@ exports.getReportRecive = async (req, res) => {
     return res.status(200).json({ msg: "success", rows });
   } catch (err) {
     console.log("Error get ReportRecive Post : ", err);
+  }
+};
+
+// History of comment reports SENT by the current user (reporter)
+exports.getReportSend = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [rows] = await db.promise().query(
+      `SELECT 
+          cr.report_id,
+          cr.comment_id,
+          c.post_id,
+          c.content,
+          c.status AS comment_status,
+          cr.status AS report_status,
+          cr.reason,
+          cr.report_date,
+          cr.report_review,
+          f.farm_name AS comment_owner_name
+       FROM comment_report cr
+       JOIN comments c ON cr.comment_id = c.comment_id
+       JOIN farmer f ON c.farmer_id = f.farmer_id
+       WHERE cr.farmer_id = ?
+       ORDER BY cr.report_date DESC`,
+      [id]
+    );
+
+    return res.status(200).json({ msg: "success", rows });
+  } catch (err) {
+    console.log("Error get ReportSend Comment : ", err);
+    return res
+      .status(500)
+      .json({ msg: "เกิดข้อผิดพลาดในการดึงประวัติการรายงานความคิดเห็น" });
   }
 };

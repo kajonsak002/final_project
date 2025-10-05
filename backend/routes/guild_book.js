@@ -5,12 +5,14 @@ const {
   insertGuildBook,
   deleteGuildBook,
   getGuildBookDetail,
+  getAllTags,
 } = require("../controllers/guild_book");
 const router = express.Router();
 const upload = require("../middleware/upload");
 const uploadToGuildBook = upload("guildbook");
 
 router.get("/guildbook", getGuildBook);
+router.get("/guildbook/tags", getAllTags);
 router.get("/guildbook/:id", getGuildBookDetail);
 router.post("/guildbook", uploadToGuildBook.single("image"), insertGuildBook);
 router.patch(

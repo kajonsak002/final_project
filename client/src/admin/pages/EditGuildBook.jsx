@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import GuildBookEditor from "../components/GuildbookEditor";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "../../utils/toast";
 
 function EditGuildBook() {
   const [content, setContent] = useState("");
@@ -114,6 +114,19 @@ function EditGuildBook() {
     navigate("/admin/book");
   };
 
+  const [newTagInput, setNewTagInput] = useState("");
+
+  const handleAddTag = (newTag) => {
+    if (newTag && !tags.includes(newTag)) {
+      setTags([...tags, newTag]);
+    }
+  };
+
+  const removeTags = (index) => {
+    const updated = tags.filter((_, i) => i !== index);
+    setTags(updated);
+  };
+
   if (fetchLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -124,7 +137,6 @@ function EditGuildBook() {
 
   return (
     <div className="min-h-screen">
-      <ToastContainer />
       <div className="w-full">
         <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
           <div className="breadcrumbs text-sm">
@@ -239,42 +251,65 @@ function EditGuildBook() {
               <button
                 type="button"
                 onClick={() => setSourceRefs([...sourceRefs, ""])}
-                className="mt-2 px-3 py-1 btn btn-green-500">
+                className="mt-2 px-3 py-1 btn bg-green-500 text-white">
                 + เพิ่มแหล่งอ้างอิง
               </button>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                หมวดหมู่ที่เกี่ยวข้อง
+                เพิ่ม Tags
               </label>
-              {tags.map((ref, i) => (
-                <div key={i} className="flex items-center gap-2 mb-2">
-                  <input
-                    type="text"
-                    placeholder="เช่น กรมปศุสัตว์ หรือ https://..."
-                    value={ref}
-                    onChange={(e) => {
-                      const updated = [...tags];
-                      updated[i] = e.target.value;
-                      setTags(updated);
-                    }}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setTags(tags.filter((_, idx) => idx !== i))}
-                    className="text-red-500 hover:text-red-700 font-bold">
-                    ลบ
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => setTags([...tags, ""])}
-                className="mt-2 px-3 py-1 btn btn-green-500">
-                + เพิ่มหมวดหมู่ที่เกี่ยวข้อง
-              </button>
+
+              {/* Display existing tags as chips */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                {tags.map(
+                  (tag, i) =>
+                    tag && (
+                      <div
+                        key={i}
+                        className="inline-flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                        <span>{tag}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeTags(i)}
+                          className="ml-1 text-green-600 hover:text-green-800 hover:bg-green-200 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                          ×
+                        </button>
+                      </div>
+                    )
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="เช่น โรคในไก่ หรือ โรคระบาด..."
+                  value={newTagInput}
+                  onChange={(e) => setNewTagInput(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (newTagInput.trim()) {
+                        handleAddTag(newTagInput.trim());
+                        setNewTagInput("");
+                      }
+                    }
+                  }}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (newTagInput.trim()) {
+                      handleAddTag(newTagInput.trim());
+                      setNewTagInput("");
+                    }
+                  }}
+                  className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors">
+                  เพิ่ม
+                </button>
+              </div>
             </div>
 
             <div className="flex justify-end gap-2">

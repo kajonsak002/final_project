@@ -1,11 +1,15 @@
 const db = require("../config/db");
+const dayjs = require("dayjs");
+require("dayjs/locale/th");
+dayjs.locale("th");
 
+const getFormattedNow = () => dayjs().format("YYYY-MM-DD HH:mm:ss");
 // 1. ดึงรายการสัตว์ในฟาร์ม
 exports.getAnimalFarm = async (req, res) => {
   const { farm_id } = req.params;
 
   try {
-    let query = `
+    const query = `
       SELECT fa.id AS farm_animal_id, fa.quantity, fa.quantity_received,
              fa.created_at, fa.updated_at, 
              fa.lot_code,
@@ -17,7 +21,6 @@ exports.getAnimalFarm = async (req, res) => {
       WHERE fa.farmer_id = ?
       ORDER BY fa.lot_code ASC
     `;
-
     const [rows] = await db.promise().query(query, [farm_id]);
     return res.json({ success: true, data: rows });
   } catch (err) {
@@ -38,7 +41,6 @@ exports.addAnimal = async (req, res) => {
   }
 
   try {
-    // หา lot ล่าสุดของฟาร์มนี้
     const [[lastLot]] = await db
       .promise()
       .query(
@@ -46,15 +48,10 @@ exports.addAnimal = async (req, res) => {
         [farmer_id]
       );
 
-    let lotCode;
-    if (!lastLot) {
-      lotCode = "001";
-    } else {
-      const lastNumber = parseInt(lastLot.lot_code);
-      lotCode = String(lastNumber + 1).padStart(3, "0");
-    }
+    let lotCode = lastLot
+      ? String(parseInt(lastLot.lot_code) + 1).padStart(3, "0")
+      : "001";
 
-    // เพิ่มสัตว์
     const query = `
       INSERT INTO farm_animals (farmer_id, animal_id, type_id, quantity, quantity_received, lot_code)
       VALUES (?, ?, ?, ?, ?, ?)
@@ -90,77 +87,99 @@ exports.addAnimal = async (req, res) => {
   }
 };
 
-// 3. บันทึกการใช้สัตว์ (Usage)
-exports.useAnimal = async (req, res) => {
-  const { farm_animal_id, quantity_used, usage_type, remark } = req.body;
-
-  if (!farm_animal_id || !quantity_used || !usage_type) {
-    return res
-      .status(400)
-      .json({ success: false, msg: "กรุณากรอกข้อมูลให้ครบ" });
-  }
-
+// 3. บันทึกการใช้สัตว์ (ไม่ใช้ transaction)
+exports.addAnimalUsage = async (req, res) => {
   try {
-    // ตรวจสอบจำนวนคงเหลือ
-    const [rows] = await db
-      .promise()
-      .query("SELECT quantity FROM farm_animals WHERE id = ? FOR UPDATE", [
-        farm_animal_id,
-      ]);
-    if (rows.length === 0) throw new Error("ไม่พบสัตว์ฟาร์มนี้");
-    const remaining = rows[0].quantity;
+    const { usage_date, description, details } = req.body;
 
-    if (remaining < quantity_used) throw new Error("จำนวนใช้มากกว่าที่คงเหลือ");
+    if (!usage_date || !details || details.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "กรุณากรอกข้อมูลให้ครบ" });
+    }
 
-    // อัพเดต farm_animals
-    await db
-      .promise()
-      .query("UPDATE farm_animals SET quantity = quantity - ? WHERE id = ?", [
-        quantity_used,
-        farm_animal_id,
-      ]);
+    const usage_code = "USG-" + dayjs().format("DDMMYYYYHHmmss");
 
-    // บันทึก usage
-    await db.promise().query(
-      `INSERT INTO farm_animal_usage (farm_animal_id, quantity_used, usage_type, remark)
-       VALUES (?, ?, ?, ?)`,
-      [farm_animal_id, quantity_used, usage_type, remark || null]
+    const [result] = await db.promise().query(
+      `INSERT INTO animal_usage (usage_code, usage_date)
+       VALUES (?, ?)`,
+      [usage_code, usage_date]
     );
 
-    return res.json({ success: true, msg: "บันทึกการใช้สัตว์เรียบร้อย" });
+    const usageId = result.insertId;
+
+    // insert details
+    for (const d of details) {
+      await db.promise().query(
+        `INSERT INTO animal_usage_detail (usage_id, lot_id, quantity_used, action, remark)
+         VALUES (?, ?, ?, ?, ?)`,
+        [usageId, d.lot_id, d.quantity_used, d.action, d.remark || null]
+      );
+    }
+
+    return res.status(201).json({
+      success: true,
+      msg: "บันทึกการใช้สัตว์สำเร็จ",
+      usage_id: usageId,
+      usage_code,
+    });
   } catch (err) {
-    console.error("Error using animal:", err);
-    return res.status(500).json({ success: false, msg: err.message });
+    console.error("Error adding animal usage:", err);
+    return res
+      .status(500)
+      .json({ success: false, msg: "เกิดข้อผิดพลาดในเซิร์ฟเวอร์" });
   }
 };
 
-// 4. ดูประวัติการใช้สัตว์ของฟาร์ม
-exports.getAnimalUsageHistory = async (req, res) => {
+// 4. ดึงข้อมูลการใช้สัตว์ของฟาร์ม
+exports.getAnimalUsageByFarm = async (req, res) => {
   const { farm_id } = req.params;
-
   try {
     const query = `
-      SELECT 
-        fau.id,
-        fau.quantity_used,
-        fau.usage_type,
-        fau.remark,
-        fau.created_at,
-        fa.lot_code,
-        a.name AS animal_name,
-        t.type_name
-      FROM farm_animal_usage fau
-      JOIN farm_animals fa ON fau.farm_animal_id = fa.id
-      JOIN animals a ON fa.animal_id = a.animal_id
-      LEFT JOIN animal_types t ON fa.type_id = t.type_id
-      WHERE fa.farmer_id = ?
-      ORDER BY fau.created_at DESC
+    SELECT 
+      u.usage_id, u.usage_date, u.usage_code , 
+      d.detail_id, d.quantity_used, d.action, d.remark,
+      f.id AS farm_animal_id, f.lot_code,
+      a.animal_id, a.name AS animal_name,
+      t.type_id, t.type_name
+    FROM animal_usage u
+    JOIN animal_usage_detail d ON u.usage_id = d.usage_id
+    JOIN farm_animals f ON d.lot_id = f.id
+    JOIN animals a ON f.animal_id = a.animal_id
+    LEFT JOIN animal_types t ON f.type_id = t.type_id
+    WHERE f.farmer_id = ?
+    ORDER BY u.usage_date DESC 
     `;
-
     const [rows] = await db.promise().query(query, [farm_id]);
-    return res.json({ success: true, data: rows });
+
+    const usageMap = {};
+    rows.forEach((r) => {
+      if (!usageMap[r.usage_id]) {
+        usageMap[r.usage_id] = {
+          usage_id: r.usage_id,
+          usage_code: r.usage_code,
+          usage_date: r.usage_date,
+          description: r.description,
+          details: [],
+        };
+      }
+      usageMap[r.usage_id].details.push({
+        detail_id: r.detail_id,
+        lot_id: r.farm_animal_id,
+        lot_code: r.lot_code,
+        animal_id: r.animal_id,
+        animal_name: r.animal_name,
+        type_id: r.type_id,
+        type_name: r.type_name,
+        quantity_used: r.quantity_used,
+        action: r.action,
+        remark: r.remark,
+      });
+    });
+
+    return res.json({ success: true, data: Object.values(usageMap) });
   } catch (err) {
-    console.error("Error fetching animal usage history:", err);
+    console.error("Error fetching animal usage:", err);
     return res
       .status(500)
       .json({ success: false, msg: "เกิดข้อผิดพลาดในเซิร์ฟเวอร์" });

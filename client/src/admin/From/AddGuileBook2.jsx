@@ -13,7 +13,7 @@ import {
   Link as LinkIcon,
   Plus,
 } from "lucide-react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "../../utils/toast";
 
 function AddTest() {
   const [editorContent, setEditorContent] = useState("");
@@ -196,13 +196,6 @@ function AddTest() {
 
   return (
     <>
-      <ToastContainer
-        position="top-right"
-        autoClose={500}
-        hideProgressBar={false}
-        closeOnClick
-        theme="light"
-      />
       <div className="breadcrumbs text-md">
         <ul>
           <li>

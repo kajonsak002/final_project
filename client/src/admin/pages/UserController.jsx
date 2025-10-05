@@ -4,8 +4,7 @@ import React, { useState } from "react";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Pagination from "../components/Pagination";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "../../utils/toast";
 
 import dayjs from "dayjs";
 import "dayjs/locale/th";
@@ -25,7 +24,9 @@ function UserController() {
 
   const getFarm = async () => {
     try {
-      const res = await axios.get(import.meta.env.VITE_URL_API + "allFarms");
+      const res = await axios.get(
+        import.meta.env.VITE_URL_API + "all_farms_admin"
+      );
       setFarms(res.data);
       // console.log(res.data);
     } catch (err) {
@@ -85,7 +86,6 @@ function UserController() {
 
   return (
     <>
-      <ToastContainer />
       <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
         <div className="breadcrumbs text-sm">
           <ul>

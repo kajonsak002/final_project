@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import SearchBar from "../components/SearchBar";
 import Pagination from "../components/Pagination";
+import { toast } from "../../utils/toast";
 import dayjs from "dayjs";
 import "dayjs/locale/th";
 
@@ -35,25 +36,33 @@ function GuildBookController() {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("คุณต้องการลบคู่มือนี้หรือไม่?")) {
-      return;
-    }
+    const confirmed = await toast.confirm("คุณต้องการลบคู่มือนี้หรือไม่?", {
+      title: "ยืนยันการลบ",
+      confirmButtonText: "ลบ",
+      cancelButtonText: "ยกเลิก",
+    });
 
-    try {
-      setDeleteLoading(id);
-      const res = await axios.delete(
-        import.meta.env.VITE_URL_API + `guildbook/${id}`
-      );
+    if (confirmed) {
+      try {
+        setDeleteLoading(id);
+        const res = await axios.delete(
+          import.meta.env.VITE_URL_API + `guildbook/${id}`
+        );
 
-      if (res.status === 200) {
-        alert("ลบคู่มือเรียบร้อยแล้ว");
-        getGuildBookData(); // Refresh data
+        if (res.status === 200) {
+          toast.success("ลบคู่มือเรียบร้อยแล้ว", {
+            timer: 1500,
+          });
+          getGuildBookData(); // Refresh data
+        }
+      } catch (err) {
+        console.log("error delete guildbook : ", err);
+        toast.error("เกิดข้อผิดพลาดในการลบคู่มือ", {
+          text: "กรุณาลองใหม่อีกครั้ง",
+        });
+      } finally {
+        setDeleteLoading(null);
       }
-    } catch (err) {
-      console.log("error delete guildbook : ", err);
-      alert("เกิดข้อผิดพลาดในการลบคู่มือ");
-    } finally {
-      setDeleteLoading(null);
     }
   };
 
@@ -140,8 +149,8 @@ function GuildBookController() {
               <thead>
                 <tr className="text-center">
                   <th>#</th>
-                  <th>หัวข้อ</th>
-                  <th>เนื้อหา</th>
+                  <th className="text-left w-100">หัวข้อ</th>
+                  <th className="text-left">เนื้อหา</th>
                   <th>วันที่สร้าง</th>
                   <th>วันที่แก้ไข</th>
                   <th>จัดการ</th>
@@ -151,13 +160,23 @@ function GuildBookController() {
                 {pageData.map((item, index) => (
                   <tr key={item.guildbook_id} className="text-center">
                     <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                    <td>{item.title}</td>
-                    <td>
+                    <td className="text-left">{item.title}</td>
+                    <td className="text-left">
                       {item.content.replace(/<[^>]+>/g, "").slice(0, 20) +
                         "..."}
                     </td>
-                    <td>{dayjs(item.created_at).format("D MMMM YYYY")}</td>
-                    <td>{dayjs(item.updated_at).format("D MMMM YYYY")}</td>
+                    <td>
+                      {dayjs(item.created_at)
+                        .locale("th")
+                        .add(543, "year")
+                        .format("D MMMM YYYY")}
+                    </td>
+                    <td>
+                      {dayjs(item.updated_at)
+                        .locale("th")
+                        .add(543, "year")
+                        .format("D MMMM YYYY")}
+                    </td>
                     <td>
                       <div className="flex items-center justify-center gap-2">
                         <button

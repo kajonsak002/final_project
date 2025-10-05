@@ -19,7 +19,9 @@ const deleteImage = (imagePath) => {
 
 exports.getGuildBook = async (req, res) => {
   try {
-    const [rows] = await db.promise().query("SELECT * FROM guildbook");
+    const [rows] = await db
+      .promise()
+      .query("SELECT * FROM guildbook ORDER BY created_at DESC");
 
     if (rows.length === 0) {
       return res.status(404).json({ msg: "ไม่พบข้อมูลคู่่มือการเลี้ยงสัตว์" });
@@ -179,5 +181,22 @@ exports.deleteGuildBook = async (req, res) => {
   } catch (err) {
     console.error("Error Delete GuildBook:", err);
     return res.status(500).json({ msg: "Error for delete guild book" });
+  }
+};
+
+exports.getAllTags = async (req, res) => {
+  try {
+    const [[{ tag }]] = await db
+      .promise()
+      .query("SELECT JSON_ARRAYAGG(tags) AS tag FROM guildbook");
+
+    if (tag.length < 0) {
+      return res.status(404).json({ msg: "ไม่พบข้อมูลเเท็ก" });
+    }
+
+    return res.status(200).json({ msg: "success", tag });
+  } catch (err) {
+    console.log("Error fecth tag : ", err);
+    return res.status(500).json({ msg: "Error fetch tag" });
   }
 };

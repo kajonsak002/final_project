@@ -39,7 +39,7 @@ function Summary() {
             </svg>
           </div>
           <div>
-            <h2 className="card-title text-base mb-1">ฟาร์มทั้งหมด</h2>
+            <h2 className="card-title text-base mb-1">ฟาร์มที่กำลังใช้งาน</h2>
             <p className="text-xl">
               {summaryData.total_farm != ""
                 ? summaryData.total_farm + " ฟาร์ม"

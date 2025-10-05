@@ -2,7 +2,7 @@ import axios from "axios";
 import { Search, Check, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "../../utils/toast";
 import Pagination from "../components/Pagination";
 import SearchBar from "../components/SearchBar";
 import dayjs from "dayjs";
@@ -96,8 +96,6 @@ function AnimalTypeRequest() {
 
   return (
     <div className="w-full min-h-screen">
-      <ToastContainer />
-
       <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
         <div className="breadcrumbs text-sm">
           <ul>

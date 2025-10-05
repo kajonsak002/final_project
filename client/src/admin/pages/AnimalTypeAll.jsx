@@ -4,8 +4,7 @@ import axios from "axios";
 import Pagination from "../components/Pagination";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "../../utils/toast";
 
 function AnimalTypeAll() {
   const [allData, setAllData] = useState([]);
@@ -306,7 +305,6 @@ function AnimalTypeAll() {
           }}
         />
       </div>
-      <ToastContainer />
     </>
   );
 }

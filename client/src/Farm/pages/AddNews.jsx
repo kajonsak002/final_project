@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import TinyEditor from "../../components/TinyEditor";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "../../utils/toast";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -46,7 +46,6 @@ function AddNews({ navigate }) {
 
   return (
     <div className="min-h-screen">
-      <ToastContainer />
       <div className="w-full">
         <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
           <div className="breadcrumbs text-sm">

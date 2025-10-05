@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Lock, KeyRound, Eye, EyeOff } from "lucide-react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "../utils/toast";
 
 function ResetPassword() {
   const { token } = useParams();
@@ -36,7 +36,6 @@ function ResetPassword() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-base-200 px-4">
-      <ToastContainer />
       <div className="card w-full max-w-md bg-base-100 shadow-xl">
         <div className="card-body">
           <h2 className="text-2xl font-bold text-center mb-4">

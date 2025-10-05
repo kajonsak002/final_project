@@ -51,6 +51,10 @@ import FarmNewsHistory from "./Farm/pages/NewsHistory.jsx";
 import EditNews from "./admin/pages/EditNews.jsx";
 import FarmEditNews from "./Farm/pages/EditNews.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
+import MyPostReports from "./Farm/pages/MyPostReports.jsx";
+import MyCommentReports from "./Farm/pages/MyCommentReports.jsx";
+import PostDetail from "./admin/pages/PostDetail.jsx";
+import AllPosts from "./admin/pages/AllPosts.jsx";
 
 function App() {
   const router = createBrowserRouter([
@@ -110,6 +114,7 @@ function App() {
           element: <GuildBookController />,
         },
         { path: "/admin/post", element: <PostController /> },
+        { path: "/admin/all-posts", element: <AllPosts /> },
         { path: "/admin/report_post", element: <PostReportController /> },
         { path: "/admin/news", element: <News /> },
         { path: "/admin/news/detail/:id", element: <NewsDetail /> },
@@ -126,6 +131,7 @@ function App() {
         { path: "/admin/category", element: <CategoryController /> },
         { path: "/admin/news-history", element: <NewsHistory /> },
         { path: "/admin/edit-news/:id", element: <EditNews /> },
+        { path: "/admin/post-detail", element: <PostDetail /> },
       ],
     },
     {
@@ -147,6 +153,8 @@ function App() {
         { path: "/profile/logs", element: <Logs /> },
         { path: "/profile/report/post", element: <HistoryPostReport /> },
         { path: "/profile/report/comment", element: <HistoryCommentReport /> },
+        { path: "/profile/report/sent/post", element: <MyPostReports /> },
+        { path: "/profile/report/sent/comment", element: <MyCommentReports /> },
         { path: "/profile/news-history", element: <FarmNewsHistory /> },
         { path: "/profile/edit-news/:id", element: <FarmEditNews /> },
       ],

@@ -34,13 +34,26 @@ class PDFHelper {
       });
 
     // วันที่ซ้าย
+    // this.doc
+    //   .font("THSarabunNew")
+    //   .fontSize(12)
+    //   .text(`วันที่พิมพ์: ${dateString}`, this.margin, this.margin + 45, {
+    //     width: (this.doc.page.width - this.margin * 2) / 2,
+    //     align: "left",
+    //   });
+
     this.doc
       .font("THSarabunNew")
       .fontSize(12)
-      .text(`วันที่พิมพ์: ${dateString}`, this.margin, this.margin + 28, {
-        width: (this.doc.page.width - this.margin * 2) / 2,
-        align: "left",
-      });
+      .text(
+        `วันที่พิมพ์: ${dateString}`,
+        this.doc.page.width / 2,
+        this.margin + 60,
+        {
+          width: (this.doc.page.width - this.margin * 2) / 2,
+          align: "right",
+        }
+      );
 
     // เลขหน้าขวา (หน้า X / Y)
     if (pageNumber && totalPages) {
@@ -50,7 +63,7 @@ class PDFHelper {
         .text(
           `หน้า ${pageNumber} / ${totalPages}`,
           this.doc.page.width / 2,
-          this.margin + 28,
+          this.margin + 50,
           {
             width: (this.doc.page.width - this.margin * 2) / 2,
             align: "right",
@@ -77,8 +90,7 @@ class PDFHelper {
         .fontSize(14)
         .text(text, x + 8, y + 8, {
           width: widths[i] - 16,
-          align:
-            i === 0 ? "center" : i === widths.length - 1 ? "right" : "left",
+          align: i === 0 ? "center" : "left",
         });
       x += widths[i];
     });
@@ -102,8 +114,7 @@ class PDFHelper {
         .fontSize(12)
         .text(String(val), x + 8, y + 8, {
           width: widths[i] - 16,
-          align:
-            i === 0 ? "center" : i === widths.length - 1 ? "right" : "left",
+          align: i === 0 ? "center" : "left",
         });
       x += widths[i];
     });

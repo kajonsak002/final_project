@@ -1,12 +1,11 @@
-import { LocateFixed, MapPin, Map } from "lucide-react";
+import { LocateFixed, MapPin, Map, Eye, EyeOff } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import axios from "axios";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "../utils/toast";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -32,6 +31,7 @@ function Register() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    confirmPassword: "",
     phone: "",
     farm_name: "",
     tambon: "",
@@ -46,6 +46,8 @@ function Register() {
     farm_banner: null,
   });
   const mapRef = useRef();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // New state for location data
   const [provinces, setProvinces] = useState([]);
@@ -60,8 +62,8 @@ function Register() {
           import.meta.env.VITE_URL_API + "provinces"
         );
         const data = await response.json();
-        if (data.provinces) {
-          setProvinces(data.provinces);
+        if (data) {
+          setProvinces(data);
         }
       } catch (error) {
         console.error("Error fetching provinces:", error);
@@ -106,8 +108,8 @@ function Register() {
             import.meta.env.VITE_URL_API + `tambons/${formData.amphures}`
           );
           const data = await response.json();
-          if (data.tambons) {
-            setTambons(data.tambons);
+          if (data) {
+            setTambons(data);
           }
           // Reset dependent field
           setFormData((prev) => ({
@@ -220,6 +222,12 @@ function Register() {
     formDataToSend.append("farm_img", files.farm_img);
     formDataToSend.append("farm_banner", files.farm_banner);
 
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("รหัสผ่านไม่ตรงกัน");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await axios.post(
         import.meta.env.VITE_URL_API + "register",
@@ -303,21 +311,61 @@ function Register() {
                       required
                     />
                   </div>
-                  <div className="form-control">
+                  <div className="form-control relative">
                     <label className="label">
                       <span className="label-text text-black font-medium">
                         รหัสผ่าน *
                       </span>
                     </label>
                     <input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       name="password"
                       value={formData.password}
                       onChange={handleInputChange}
                       placeholder="กรอกรหัสผ่าน"
-                      className="input input-bordered w-full"
+                      className="input input-bordered w-full pr-10"
                       required
                     />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-[35px] focus:outline-none z-10"
+                      onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5 text-gray-500" />
+                      ) : (
+                        <Eye className="w-5 h-5 text-gray-500" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Confirm Password */}
+                  <div className="form-control relative">
+                    <label className="label">
+                      <span className="label-text text-black font-medium">
+                        ยืนยันรหัสผ่าน *
+                      </span>
+                    </label>
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      placeholder="กรอกรหัสผ่านอีกครั้ง"
+                      className="input input-bordered w-full pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-[35px] focus:outline-none z-10"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }>
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-5 h-5 text-gray-500" />
+                      ) : (
+                        <Eye className="w-5 h-5 text-gray-500" />
+                      )}
+                    </button>
                   </div>
                   <div className="form-control">
                     <label className="label">
@@ -619,7 +667,6 @@ function Register() {
           </div>
         </div>
       </div>
-      <ToastContainer />
     </>
   );
 }

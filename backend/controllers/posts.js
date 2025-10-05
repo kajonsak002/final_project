@@ -257,14 +257,18 @@ exports.getPostByFarmerid = async (req, res) => {
           t2.farm_name,
           t2.farm_img,
           COUNT(t3.comment_id) AS comment_count,
-          MAX(t3.create_at) AS latest_comment_at
+          MAX(t3.create_at) AS latest_comment_at,
+          pr.report_review AS report_hide_reason
       FROM posts AS t1
       JOIN farmer AS t2 ON t1.farmer_id = t2.farmer_id
       LEFT JOIN comments AS t3 
           ON t1.post_id = t3.post_id AND t3.status = 'แสดง'
-      WHERE t1.is_visible = 'เเสดง' AND t1.farmer_id = ?
-      GROUP BY t1.post_id
-      ORDER BY  t1.create_at DESC;
+      LEFT JOIN post_report pr ON t1.post_id = pr.post_id 
+          AND pr.status = 'ดำเนินการแล้ว' 
+          AND pr.report_review IS NOT NULL
+      WHERE t1.farmer_id = ?
+      GROUP BY t1.post_id, t1.farmer_id, t1.content, t1.image_post, t1.create_at, t1.is_visible, t1.hide_reason, t1.approval_date, t2.farm_name, t2.farm_img, pr.report_review
+      ORDER BY t1.create_at DESC;
       `,
       [farmer_id]
       // ORDER BY latest_comment_at DESC, t1.create_at DESC;
@@ -380,14 +384,12 @@ exports.getPostReport = async (req, res) => {
                 p.image_post,
                 p.create_at AS post_create_at,
                 pf.farm_name AS post_owner_farm_name        
-                
               FROM post_report AS r
-
               JOIN farmer AS rp ON r.farmer_id = rp.farmer_id     
               JOIN posts AS p ON r.post_id = p.post_id
               JOIN farmer AS pf ON p.farmer_id = pf.farmer_id     
-
-              WHERE r.status = 'รอดำเนินการ';
+              WHERE r.status = 'รอดำเนินการ'
+              ORDER BY r.report_date DESC
    `);
     if (rows.length === 0) {
       res.status(404).json({ msg: "ไม่พบการรายงานโพสต์" });
@@ -409,8 +411,46 @@ exports.getPostReport = async (req, res) => {
   }
 };
 
+// History: all handled post reports for admin view
+exports.getPostReportHistory = async (req, res) => {
+  try {
+    const [rows] = await db.promise().query(`SELECT 
+                r.report_id,
+                r.post_id,
+                r.reason,
+                r.status,
+                r.report_date,
+                rp.farm_name AS reporter_farm_name,
+                p.content,
+                p.image_post,
+                p.create_at AS post_create_at,
+                p.is_visible AS post_status,
+                pf.farm_name AS post_owner_farm_name
+              FROM post_report AS r
+              JOIN farmer AS rp ON r.farmer_id = rp.farmer_id
+              JOIN posts AS p ON r.post_id = p.post_id
+              JOIN farmer AS pf ON p.farmer_id = pf.farmer_id
+              WHERE r.status = 'ดำเนินการแล้ว'
+              ORDER BY r.report_date DESC`);
+
+    const host = req.headers.host;
+    const protocol = req.protocol;
+    const posts = rows.map((post) => ({
+      ...post,
+      image_post: post.image_post
+        ? `${protocol}://${host}/${post.image_post.replace(/^\\+/, "")}`
+        : null,
+    }));
+
+    return res.status(200).json({ msg: "success", data: posts });
+  } catch (err) {
+    console.log("Error getPostReportHistory : ", err);
+    return res.status(500).json({ msg: "Error getPostReportHistory", err });
+  }
+};
+
 exports.manageReportPost = async (req, res) => {
-  const { report_id, post_id, action, report_review } = req.body;
+  const { report_id, post_id, action, report_review, manageAll } = req.body;
   try {
     if (!report_id || !post_id || !action) {
       return res.status(400).json({ msg: "ข้อมูลไม่ครบถ้วน" });
@@ -418,32 +458,50 @@ exports.manageReportPost = async (req, res) => {
 
     let result = { affectedRows: 1 };
     if (action === "approve") {
+      // Always hide the post on approve
       [result] = await db
         .promise()
         .execute("UPDATE posts SET is_visible = 'ซ่อน' WHERE post_id = ?", [
           post_id,
         ]);
+
+      // Always mark all reports for this post as handled
       await db
         .promise()
         .query(
-          "UPDATE post_report SET status = 'ดำเนินการแล้ว', report_review = ? WHERE report_id = ?",
+          "UPDATE post_report SET status = 'ดำเนินการแล้ว', report_review = ? WHERE post_id = ?",
           [
             report_review ||
               "ทางเราได้ทำการตรวจสอบโพสต์นี้แล้ว เเละมีความไม่เหมาะสมจริงจึงได้ทำการลบโพสต์นี้ออกจากระบบชุมชนของเรา",
-            report_id,
+            post_id,
           ]
         );
     } else if (action === "reject") {
-      await db
-        .promise()
-        .query(
-          "UPDATE post_report SET status = 'ดำเนินการแล้ว', report_review = ? WHERE report_id = ?",
-          [
-            report_review ||
-              "ทางเราได้ตรวจสอบแล้ว โพสต์นี้ไม่มีความผิดตามข้อกล่าวหา รายงานนี้จึงถูกปฏิเสธ",
-            report_id,
-          ]
-        );
+      if (manageAll) {
+        const [resAll] = await db
+          .promise()
+          .query(
+            "UPDATE post_report SET status = 'ดำเนินการแล้ว', report_review = ? WHERE post_id = ?",
+            [
+              report_review ||
+                "ทางเราได้ตรวจสอบแล้ว โพสต์นี้ไม่มีความผิดตามข้อกล่าวหา รายงานนี้จึงถูกปฏิเสธ",
+              post_id,
+            ]
+          );
+        result = resAll;
+      } else {
+        const [resOne] = await db
+          .promise()
+          .query(
+            "UPDATE post_report SET status = 'ดำเนินการแล้ว', report_review = ? WHERE report_id = ?",
+            [
+              report_review ||
+                "ทางเราได้ตรวจสอบแล้ว โพสต์นี้ไม่มีความผิดตามข้อกล่าวหา รายงานนี้จึงถูกปฏิเสธ",
+              report_id,
+            ]
+          );
+        result = resOne;
+      }
     } else {
       return res.status(400).json({ msg: "action ไม่ถูกต้อง" });
     }
@@ -472,6 +530,7 @@ exports.getReportRecive = async (req, res) => {
           p.is_visible,
           pr.reason,
           pr.report_date,
+          pr.status,
           pr.report_review,
           f.farm_name AS reporter_name
       FROM 
@@ -492,9 +551,135 @@ exports.getReportRecive = async (req, res) => {
     if (rows.length === 0) {
       return res.status(404).json({ msg: "ไม่พบข้อมูลการถูกรายงาน" });
     }
-
     return res.status(200).json({ msg: "success", rows });
   } catch (err) {
     console.log("Error get ReportRecive Post : ", err);
+  }
+};
+
+// History of reports SENT by the current user (reporter)
+exports.getReportSend = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [rows] = await db.promise().query(
+      `SELECT 
+          pr.report_id,
+          pr.post_id,
+          p.content,
+          p.is_visible,
+          pr.reason,
+          pr.status AS report_status,
+          pr.report_date,
+          pr.report_review,
+          pf.farm_name AS post_owner_name
+       FROM post_report pr
+       JOIN posts p ON pr.post_id = p.post_id
+       JOIN farmer pf ON p.farmer_id = pf.farmer_id
+       WHERE pr.farmer_id = ?
+       ORDER BY pr.report_date DESC`,
+      [id]
+    );
+    console.log(rows);
+    return res.status(200).json({ msg: "success", rows });
+  } catch (err) {
+    console.log("Error get ReportSend Post : ", err);
+    return res
+      .status(500)
+      .json({ msg: "เกิดข้อผิดพลาดในการดึงประวัติการรายงานโพสต์" });
+  }
+};
+
+exports.hidePost = async (req, res) => {
+  const { post_id, reason } = req.body;
+
+  if (!post_id) {
+    return res.status(400).json({ msg: "กรุณาระบุ post_id" });
+  }
+
+  if (!reason || reason.trim() === "") {
+    return res.status(400).json({ msg: "กรุณาระบุเหตุผลในการซ่อนโพสต์" });
+  }
+
+  try {
+    await db
+      .promise()
+      .query(
+        "UPDATE posts SET is_visible = ?, hide_reason = ? WHERE post_id = ?",
+        ["ซ่อน", reason.trim(), post_id]
+      );
+    res.status(201).json({ msg: "ซ่อนโพสต์เรียบร้อย" });
+  } catch (err) {
+    console.log("Error hidePost:", err);
+    res.status(500).json({ msg: "เกิดข้อผิดพลาดในการซ่อนโพสต์" });
+  }
+};
+
+exports.showPost = async (req, res) => {
+  const { post_id } = req.body;
+
+  if (!post_id) {
+    return res.status(400).json({ msg: "กรุณาระบุ post_id" });
+  }
+
+  try {
+    await db
+      .promise()
+      .query(
+        "UPDATE posts SET is_visible = ?, hide_reason = NULL WHERE post_id = ?",
+        ["เเสดง", post_id]
+      );
+    res.status(201).json({ msg: "แสดงโพสต์เรียบร้อย" });
+  } catch (err) {
+    console.log("Error showPost:", err);
+    res.status(500).json({ msg: "เกิดข้อผิดพลาดในการแสดงโพสต์" });
+  }
+};
+
+// API สำหรับแอดมินดึงข้อมูลโพสต์ทั้งหมด
+exports.getAllPostsForAdmin = async (req, res) => {
+  try {
+    const [rows] = await db.promise().query(
+      `SELECT 
+          t1.post_id,
+          t1.farmer_id,
+          t1.content,
+          t1.image_post,
+          t1.create_at,
+          t1.is_visible,
+          t1.hide_reason,
+          t1.approval_date,
+          t2.farm_name,
+          t2.farm_img,
+          COUNT(t3.comment_id) AS comment_count
+      FROM posts AS t1
+      JOIN farmer AS t2 ON t1.farmer_id = t2.farmer_id
+      LEFT JOIN comments AS t3 ON t1.post_id = t3.post_id
+      GROUP BY t1.post_id, t1.farmer_id, t1.content, t1.image_post, t1.create_at, t1.is_visible, t1.hide_reason, t1.approval_date, t2.farm_name, t2.farm_img
+      ORDER BY t1.is_visible DESC`
+    );
+
+    const host = req.headers.host;
+    const protocol = req.protocol;
+
+    const posts = rows.map((post) => ({
+      ...post,
+      image_post: post.image_post
+        ? `${protocol}://${host}/${post.image_post.replace(/^\\+/, "")}`
+        : null,
+      farm_img: post.farm_img
+        ? `${protocol}://${host}/${post.farm_img.replace(/^\\+/, "")}`
+        : null,
+    }));
+
+    res.status(200).json({
+      message: "Posts fetched successfully",
+      posts,
+    });
+  } catch (err) {
+    console.log("Error getAllPostsForAdmin:", err);
+    res.status(500).json({
+      error: "Internal Server Error",
+      message: "เกิดข้อผิดพลาดในการดึงข้อมูลโพสต์",
+    });
   }
 };

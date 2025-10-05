@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import SearchBar from "../components/SearchBar";
 import Pagination from "../components/Pagination";
 import { Plus, Pencil, Trash2 } from "lucide-react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "../../utils/toast";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 
 function AnimalAll() {
@@ -160,8 +160,6 @@ function AnimalAll() {
       </div>
 
       <div className="mt-3 w-full">
-        <ToastContainer />
-
         <table className="table bg-base-100 w-full">
           <thead>
             <tr>

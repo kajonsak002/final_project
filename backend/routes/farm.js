@@ -5,6 +5,7 @@ const {
   getFarmsData,
   updateFarmProfile,
   updateFarmerAccountStatus,
+  getAllFarmForManage,
 } = require("../controllers/farm");
 const router = express.Router();
 const authToken = require("../middleware/auth_token");
@@ -13,6 +14,7 @@ const uploadTo = require("../middleware/upload");
 const uploadImgFarm = uploadTo("farm_profile");
 
 router.get("/all_farms", getAllFarms);
+router.get("/all_farms_admin", getAllFarmForManage);
 router.get("/allFarms", getFarmsData);
 router.get("/profile", authToken, getFarmProfile);
 router.get("/profile/:id", getFarmProfile);

@@ -4,7 +4,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import "dayjs/locale/th";
 import { Calendar, Eye, X, Check } from "lucide-react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "../../utils/toast";
 import { useSummaryCount } from "../components/SummaryCountContext";
 
 dayjs.locale("th");
@@ -88,9 +88,7 @@ function PostController() {
 
   return (
     <div>
-      <div>
-        <ToastContainer />
-      </div>
+      <div></div>
       <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
         <div className="breadcrumbs text-sm">
           <ul>

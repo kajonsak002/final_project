@@ -172,7 +172,7 @@ function Home() {
                   </div>
                   <div className="mt-3">
                     <Link
-                      to={`/farm`}
+                      to={`/farm/${farm.farmer_id}`}
                       state={{ farm: { farmer_id: farm.farmer_id } }}>
                       <button className="bg-green-600 cursor-pointer hover:bg-green-700 text-white w-full py-2 rounded-md">
                         อ่านเพิ่มเติม

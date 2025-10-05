@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "../../utils/toast";
 import Pagination from "../components/Pagination";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import { Plus, Pencil, Trash2 } from "lucide-react";
@@ -115,7 +115,6 @@ const CategoryController = () => {
 
   return (
     <div className="w-full min-h-screen">
-      <ToastContainer />
       <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
         <div className="breadcrumbs text-sm">
           <ul>

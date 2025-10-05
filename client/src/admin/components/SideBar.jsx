@@ -10,8 +10,9 @@ import {
   Newspaper,
   Settings,
   ChevronRight,
+  FileText,
 } from "lucide-react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "../../utils/toast";
 import { useSummaryCount } from "./SummaryCountContext";
 
 // รายการเมนูทั้งหมด
@@ -30,6 +31,11 @@ const menuItems = [
     label: "ข้อมูลคู่มือการเลี้ยงสัตว์",
     icon: <BookText size={20} />,
     path: "book",
+  },
+  {
+    label: "จัดการโพสต์",
+    icon: <FileText size={20} />,
+    path: "all-posts",
   },
   {
     label: "จัดการข้อมูลสัตว์",
@@ -114,7 +120,9 @@ const Sidebar = ({ isOpen }) => {
   };
 
   const handleLogout = () => {
-    toast.info("กำลังออกจากระบบ");
+    toast.info("กำลังออกจากระบบ", {
+      timer: 1500,
+    });
     localStorage.removeItem("token");
     setTimeout(() => {
       navigate("/admin/login");
@@ -133,14 +141,6 @@ const Sidebar = ({ isOpen }) => {
       className={`bg-base-100 border-r border-base-200 transition-all duration-300 ease-in-out ${
         isOpen ? "w-64" : "w-20"
       }`}>
-      <ToastContainer
-        position="top-right"
-        autoClose={800}
-        hideProgressBar={false}
-        closeOnClick
-        theme="light"
-      />
-
       {/* Header */}
       <div className="p-4 border-b border-base-200">
         <h2

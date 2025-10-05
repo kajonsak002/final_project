@@ -100,7 +100,7 @@ function BookDetail() {
               )}
 
               {/* Title with Gradient */}
-              <h1 className="text-3xl p-4 md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 via-emerald-900 to-green-900 bg-clip-text text-transparent leading-tight mb-4">
+              <h1 className="text-3xl p-4 md:text-4xl lg:text-5xl font-semibold leading-tight mb-4">
                 {detail.title}
               </h1>
 
@@ -127,16 +127,15 @@ function BookDetail() {
                 .prose {
                   color: #000;
                 }
-                .prose h1, .prose h2, .prose h3, .prose h4 {
-                  background: linear-gradient(135deg, #1f2937 0%, #059669 100%);
+                .prose h1, .prose h2, .prose h3, .prose h4{
                   -webkit-background-clip: text;
-                  -webkit-text-fill-color: transparent;
+                  // -webkit-text-fill-color: transparent;
                   background-clip: text;
                   font-weight: 800;
                   font-size: 1.2rem;
                   margin-top: 2rem;
                   margin-bottom: 1rem;
-                  color: #000;
+                  color: black;
                 }
                 .prose p {
                   margin-bottom: 1.5rem;

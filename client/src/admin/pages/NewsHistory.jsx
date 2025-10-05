@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "../../utils/toast";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Edit, Trash2, Eye, Plus } from "lucide-react";
+import { Edit, EllipsisVertical, Eye } from "lucide-react";
 import Pagination from "../components/Pagination";
 import dayjs from "dayjs";
 import "dayjs/locale/th";
@@ -16,8 +16,8 @@ function NewsHistory() {
   const itemsPerPage = 10;
   const [viewMode, setViewMode] = useState("all"); // 'all' | 'mine'
   const [showHideModal, setShowHideModal] = useState(false);
-  const [newsId, setNewsId] = useState(null);
   const [reason, setReason] = useState("");
+  const [selectedNews, setSelectedNews] = useState([]);
   const navigate = useNavigate();
 
   const admin_id = "1";
@@ -59,25 +59,6 @@ function NewsHistory() {
     }
   };
 
-  const handleDelete = async (newsId) => {
-    if (window.confirm("คุณต้องการลบข่าวสารนี้หรือไม่?")) {
-      try {
-        const response = await axios.delete(
-          `${import.meta.env.VITE_URL_API}news/${newsId}`
-        );
-        toast.success(response.data.msg);
-        if (viewMode === "all") {
-          fetchAllNews();
-        } else {
-          fetchMyNews();
-        }
-      } catch (error) {
-        console.error("Error deleting news:", error);
-        toast.error("เกิดข้อผิดพลาดในการลบข่าวสาร");
-      }
-    }
-  };
-
   const formatDate = (dateString) => {
     return dayjs(dateString)
       .locale("th")
@@ -100,27 +81,54 @@ function NewsHistory() {
     );
   }
 
-  const handleHide = async () => {
+  // Bulk hide
+  const handleHide = async (e) => {
+    e.preventDefault();
     try {
       const response = await axios.patch(
-        `${import.meta.env.VITE_URL_API}news/hide/${newsId}`,
-        { reason }
+        `${import.meta.env.VITE_URL_API}news/hide/bulk`,
+        { ids: selectedNews, reason, action: "hide" }
       );
       toast.success(response.data.msg);
-      if (viewMode === "all") {
-        fetchAllNews();
-      } else {
-        fetchMyNews();
-      }
+      setShowHideModal(false);
+      setReason("");
+      setSelectedNews([]);
+      viewMode === "all" ? fetchAllNews() : fetchMyNews();
     } catch (error) {
       console.error("Error hiding news:", error);
       toast.error("เกิดข้อผิดพลาดในการซ่อนข่าวสาร");
     }
   };
 
+  // Bulk show
+  const handleShow = async (ids) => {
+    try {
+      const response = await axios.patch(
+        `${import.meta.env.VITE_URL_API}news/hide/bulk`,
+        { ids, action: "show", reason: null }
+      );
+      toast.success(response.data.msg);
+      setSelectedNews([]);
+      viewMode === "all" ? fetchAllNews() : fetchMyNews();
+    } catch (error) {
+      console.error("Error showing news:", error);
+      toast.error("เกิดข้อผิดพลาดในการแสดงข่าวสาร");
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "ซ่อน":
+        return "text-green-600 bg-green-50";
+      case "แสดง":
+        return "text-yellow-600 bg-yellow-50";
+      default:
+        return "text-gray-600 bg-gray-50";
+    }
+  };
+
   return (
     <div className="min-h-screen">
-      <ToastContainer />
       <div className="w-full">
         {/* Breadcrumb */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
@@ -147,12 +155,6 @@ function NewsHistory() {
               <h1 className="text-2xl font-bold text-gray-900">
                 จัดการข่าวสาร
               </h1>
-              {/* <button
-                onClick={() => navigate("/admin/add-news")}
-                className="btn btn-primary flex items-center gap-2">
-                <Plus size={16} />
-                เพิ่มข่าวสารใหม่
-              </button> */}
             </div>
           </div>
           <div className="px-6 py-3 flex items-center gap-2">
@@ -179,6 +181,22 @@ function NewsHistory() {
           </div>
         </div>
 
+        {/* Bulk action bar */}
+        {selectedNews.length > 0 && (
+          <div className="flex gap-2 px-6 py-2 bg-base-100  rounded-md mb-2">
+            <button
+              onClick={() => setShowHideModal(true)}
+              className="btn btn-sm bg-yellow-500 text-white">
+              ซ่อนที่เลือก ({selectedNews.length})
+            </button>
+            <button
+              onClick={() => handleShow(selectedNews)}
+              className="btn btn-sm bg-green-600 text-white">
+              แสดงที่เลือก ({selectedNews.length})
+            </button>
+          </div>
+        )}
+
         {/* News List */}
         <div className="bg-white rounded-lg shadow-sm">
           <div className="p-6">
@@ -194,16 +212,36 @@ function NewsHistory() {
                 </button>
               </div>
             ) : (
-              <div className="mt-3 w-full">
+              <div className="mt-3 w-full overflow-x-auto">
                 <table className="table bg-base-100 w-full">
                   <thead>
                     <tr>
+                      <th>
+                        <input
+                          type="checkbox"
+                          className="checkbox checkbox-sm"
+                          checked={
+                            selectedNews.length === pageData.length &&
+                            pageData.length > 0
+                          }
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedNews(
+                                pageData.map((news) => news.news_id)
+                              );
+                            } else {
+                              setSelectedNews([]);
+                            }
+                          }}
+                        />
+                      </th>
                       <th>#</th>
                       <th>หัวข้อข่าว</th>
                       {viewMode === "all" && <th>เจ้าของ</th>}
                       <th>วันที่โพสต์</th>
                       <th>วันที่แก้ไขล่าสุด</th>
                       <th>แหล่งที่มา</th>
+                      <th>สถานะ</th>
                       <th className="text-center">การดำเนินการ</th>
                     </tr>
                   </thead>
@@ -212,22 +250,52 @@ function NewsHistory() {
                       pageData.map((news, index) => (
                         <tr key={news.news_id}>
                           <td>
+                            <input
+                              type="checkbox"
+                              className="checkbox checkbox-sm"
+                              checked={selectedNews.includes(news.news_id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedNews([
+                                    ...selectedNews,
+                                    news.news_id,
+                                  ]);
+                                } else {
+                                  setSelectedNews(
+                                    selectedNews.filter(
+                                      (id) => id !== news.news_id
+                                    )
+                                  );
+                                }
+                              }}
+                            />
+                          </td>
+                          <td>
                             {index + 1 + (currentPage - 1) * itemsPerPage}
                           </td>
-                          <td className="max-w-xs truncate">{news.title}</td>
+                          <td className="max-w-50 truncate">{news.title}</td>
                           {viewMode === "all" && (
                             <td className="max-w-xs truncate">
-                              <div className="flex items-center gap-2">
-                                <span>{news.owner_name || "-"}</span>
-                              </div>
+                              {news.owner_name || "-"}
                             </td>
                           )}
                           <td>{formatDate(news.created_at)}</td>
-                          <td>{formatDate(news.updated_at)}</td>
+                          <td className="text-center">
+                            {news.updated_at !== null
+                              ? formatDate(news.updated_at)
+                              : "-"}
+                          </td>
                           <td className="max-w-xs truncate">
                             {news.source_ref || "-"}
                           </td>
-
+                          <td className="">
+                            <span
+                              className={`badge badge-sm gap-1 ${getStatusColor(
+                                news.status
+                              )}`}>
+                              {news.status}
+                            </span>
+                          </td>
                           <td className="flex justify-center gap-2">
                             <button
                               onClick={() =>
@@ -237,40 +305,44 @@ function NewsHistory() {
                               title="ดูข่าวสาร">
                               <Eye size={18} />
                             </button>
-                            {viewMode !== "all" ? (
-                              <>
-                                <button
-                                  onClick={() =>
-                                    navigate(`/admin/edit-news/${news.news_id}`)
-                                  }
-                                  className="btn btn-sm btn-warning flex items-center gap-1 text-white">
-                                  <Edit size={18} />
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                <button
-                                  onClick={() => {
-                                    setShowHideModal(true);
-                                    setNewsId(news.news_id);
-                                  }}
-                                  className="btn btn-sm btn-warning flex items-center gap-1 text-white">
-                                  ซ่อน
-                                </button>
-                              </>
+                            {viewMode === "mine" && (
+                              <button
+                                onClick={() =>
+                                  navigate(`/admin/edit-news/${news.news_id}`)
+                                }
+                                className="btn btn-sm btn-warning flex items-center gap-1 text-white">
+                                <Edit size={18} />
+                              </button>
                             )}
-                            {/* <button
-                              onClick={() => handleDelete(news.news_id)}
-                              className="btn btn-sm bg-red-500 flex items-center gap-1 text-white">
-                              <Trash2 size={18} />
-                            </button> */}
+
+                            <details className="dropdown dropdown-end">
+                              <summary className="btn btn-sm bg-green-500 ">
+                                <EllipsisVertical className="w-5" />
+                              </summary>
+                              <ul className="menu dropdown-content bg-base-100 rounded-box z-10 w-40 p-2 shadow-md text-sm">
+                                {news.status === "แสดง" ? (
+                                  <li
+                                    onClick={() => {
+                                      setSelectedNews([news.news_id]);
+                                      setShowHideModal(true);
+                                    }}>
+                                    ซ่อน
+                                  </li>
+                                ) : (
+                                  <li
+                                    onClick={() => handleShow([news.news_id])}>
+                                    แสดง
+                                  </li>
+                                )}
+                              </ul>
+                            </details>
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
                         <td
-                          colSpan={viewMode === "all" ? 7 : 6}
+                          colSpan={viewMode === "all" ? 8 : 7}
                           className="text-center py-4">
                           ไม่พบข้อมูล
                         </td>
@@ -291,43 +363,71 @@ function NewsHistory() {
           </div>
         </div>
       </div>
+
+      {/* Modal */}
       {showHideModal && (
         <dialog open className="modal">
-          <div className="modal-box p-6 rounded-2xl shadow-lg">
-            <h3 className="font-bold text-xl mb-4">ซ่อนข่าวสาร</h3>
-
-            <form onSubmit={handleHide} className="space-y-4">
-              <div className="form-control">
-                <label className="label my-2">
-                  <span className="label-text text-black font-medium">
-                    สาเหตุ
-                  </span>
+          <div className="modal-box p-6 rounded-2xl shadow-lg relative bg-white">
+            <h3 className="font-bold text-2xl mb-6 text-gray-800">
+              ซ่อนข่าวสาร
+            </h3>
+            <form onSubmit={handleHide} className="space-y-5">
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  ข่าวที่เลือก
+                </label>
+                <div className="bg-gray-100 p-3 rounded-lg border border-gray-200 max-h-60 overflow-y-auto">
+                  {newsList
+                    .filter((news) => selectedNews.includes(news.news_id))
+                    .map((news) => (
+                      <p
+                        key={news.news_id}
+                        className="text-gray-900 break-words">
+                        • {news.title}
+                      </p>
+                    ))}
+                  {selectedNews.length === 0 && (
+                    <p className="text-gray-500">ยังไม่ได้เลือกข่าว</p>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  สาเหตุ
                 </label>
                 <textarea
-                  className="textarea textarea-bordered w-full text-black focus:outline-none"
-                  rows={4} // กำหนดความสูง (จำนวนบรรทัดเริ่มต้น)
+                  className="textarea textarea-bordered w-full text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400 rounded-lg"
+                  rows={4}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="กรุณาระบุสาเหตุ..."
-                  maxLength={255}></textarea>
+                  maxLength={255}
+                />
+                <div className="text-sm text-gray-500 mt-1 text-right">
+                  {reason.length}/255
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="submit"
+                  disabled={!reason.trim() || selectedNews.length === 0}
+                  className={`btn px-6 ${
+                    reason.trim() && selectedNews.length > 0
+                      ? "bg-green-500 text-white hover:bg-green-600"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}>
+                  ยืนยัน
+                </button>
+                <button
+                  type="button"
+                  className="btn bg-gray-200 text-gray-800 hover:bg-gray-300 border-none px-6"
+                  onClick={() => setShowHideModal(false)}>
+                  ยกเลิก
+                </button>
               </div>
             </form>
-
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                className="btn bg-green-500 text-white hover:bg-green-600 border-none"
-                onClick={handleHide}>
-                ยืนยัน
-              </button>
-              <button
-                className="btn bg-gray-200 text-gray-800 hover:bg-gray-300 border-none"
-                onClick={() => setShowHideModal(false)}>
-                ยกเลิก
-              </button>
-            </div>
-
             <button
-              className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3 text-white"
+              className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 text-gray-500 hover:text-gray-700"
               onClick={() => setShowHideModal(false)}>
               ✕
             </button>

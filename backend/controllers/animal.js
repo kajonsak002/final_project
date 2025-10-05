@@ -8,6 +8,7 @@ exports.getAll = async (req, res) => {
       SELECT a.animal_id, a.name, c.category_name  , c.category_id
       FROM animals a 
       LEFT JOIN animal_categories c ON a.category_id = c.category_id
+      ORDER BY a.name
     `);
 
     if (rows.length === 0) {
@@ -170,20 +171,6 @@ exports.manageRequestFull = async (req, res) => {
 
       const { animal_name, type_name, category_id } = requestData;
 
-      // // ตรวจสอบซ้ำอีกครั้งก่อนเพิ่มข้อมูลจริง
-      // const [[dupType]] = await db.promise().query(
-      //   `SELECT at.type_id
-      //      FROM animal_types at
-      //      JOIN animals a ON at.animal_id = a.animal_id
-      //      WHERE a.name = ? AND at.type_name = ?`,
-      //   [animal_name, type_name]
-      // );
-      // if (dupType) {
-      //   return res
-      //     .status(400)
-      //     .json({ message: "มีประเภทนี้สำหรับสัตว์ตัวนี้แล้ว" });
-      // }
-
       // ตรวจสอบว่ามีสัตว์นี้อยู่แล้วหรือไม่
       let [[existingAnimal]] = await db
         .promise()
@@ -206,12 +193,14 @@ exports.manageRequestFull = async (req, res) => {
       }
 
       // เพิ่มประเภทสัตว์
-      await db
-        .promise()
-        .query(
-          "INSERT INTO animal_types (type_name, animal_id) VALUES (?, ?)",
-          [type_name, animalId]
-        );
+      if (type_name) {
+        await db
+          .promise()
+          .query(
+            "INSERT INTO animal_types (type_name, animal_id) VALUES (?, ?)",
+            [type_name, animalId]
+          );
+      }
     }
 
     return res.status(200).json({ message: `${status}คำร้องสำเร็จ` });

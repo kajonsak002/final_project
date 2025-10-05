@@ -119,6 +119,43 @@ exports.getAllFarms = async (req, res) => {
   }
 };
 
+exports.getAllFarmForManage = async (req, res) => {
+  const host = req.headers.host;
+  const protocol = req.protocol;
+  try {
+    const [rows] = await db.promise().query(`SELECT 
+                                              t1.*,
+                                              t2.name_th AS province, 
+                                              t3.name_th AS amphure, 
+                                              t4.name_th AS tambon
+                                            FROM farmer AS t1
+                                            JOIN provinces AS t2 ON t1.province = t2.id
+                                            JOIN amphures AS t3 ON t1.amphure = t3.id
+                                            JOIN tambons AS t4 ON t1.tambon = t4.id
+                                            WHERE status = 'อนุมัติ'
+                                            ORDER BY t1.is_active
+                                            `);
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "No farms found" });
+    }
+    const updatedRows = rows.map((farmer) => {
+      return {
+        ...farmer,
+        farm_img: farmer.farm_img
+          ? `${protocol}://${host}/${farmer.farm_img}`
+          : null,
+        farm_banner: farmer.farm_banner
+          ? `${protocol}://${host}/${farmer.farm_banner}`
+          : null,
+      };
+    });
+    return res.status(200).json(updatedRows);
+  } catch (err) {
+    console.error("Error fetching farms:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 exports.getFarmsData = async (req, res) => {
   const host = req.headers.host;
   const protocol = req.protocol;

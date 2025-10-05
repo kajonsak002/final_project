@@ -14,6 +14,11 @@ const {
   manageReportPost,
   getReportRecive,
   getDetailPost,
+  getReportSend,
+  getPostReportHistory,
+  hidePost,
+  showPost,
+  getAllPostsForAdmin,
 } = require("../controllers/posts");
 const router = express.Router();
 const uploadTo = require("../middleware/upload");
@@ -25,6 +30,7 @@ router.post("/post", getAll);
 router.get("/post/:id", getDetailPost);
 router.post("/post-history", getPostByFarmerid);
 router.get("/post-wait-approval", getPostsWaitApproval);
+router.get("/post/get-all-posts/admin", getAllPostsForAdmin);
 
 // Route to CRUD posts
 router.post(
@@ -50,9 +56,15 @@ router.post("/post/approval-post/:id", approvalPost);
 router.post("/post/report-post", reportPost);
 
 router.post("/post/get-post-report", getPostReport);
+router.get("/post/get-post-report/history", getPostReportHistory);
 router.post("/post/manage-report-post", manageReportPost);
+
+// toggle post visibility
+router.post("/post/hide-post", hidePost);
+router.post("/post/show-post", showPost);
 
 // history report post
 router.get("/reports/post/received/:id", getReportRecive);
+router.get("/reports/post/sent/:id", getReportSend);
 
 module.exports = router;

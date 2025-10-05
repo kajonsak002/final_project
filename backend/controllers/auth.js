@@ -77,9 +77,10 @@ exports.login = async (req, res) => {
         },
       });
     } else {
-      return res
-        .status(400)
-        .json({ message: "บัญชีของคุณกำลังรอการอนุมัติจากผู้ดูแลระบบ" });
+      return res.status(400).json({
+        message: "บัญชีของคุณกำลังรอการอนุมัติจากผู้ดูแลระบบ",
+        reason: rows[0].reason,
+      });
     }
   } catch (err) {
     console.error("Error : ", err);
