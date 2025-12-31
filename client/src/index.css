@@ -1,7 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
-@plugin "daisyui";
+@plugin "daisyui" {
+    themes: light --default;
+}
 
-/* html {
-  font-family: "Prompt";
-} */
+/*html {
+    font-family: "Prompt";
+}*/

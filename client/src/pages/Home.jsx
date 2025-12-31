@@ -16,7 +16,7 @@ function Home() {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          import.meta.env.VITE_URL_API + "all_farms"
+          import.meta.env.VITE_URL_API + "all_farms",
         );
         const res = await axios.get(import.meta.env.VITE_URL_API + "news");
         setData(response.data);
@@ -74,7 +74,8 @@ function Home() {
         className="hero h-[500px]"
         style={{
           backgroundImage: "url('bg.jpg')",
-        }}>
+        }}
+      >
         <div className="hero-overlay"></div>
         <div className="hero-content text-neutral-content text-center">
           <div className="">
@@ -154,7 +155,8 @@ function Home() {
             },
           }}
           modules={[Autoplay, Navigation]}
-          className="mySwiper">
+          className="mySwiper"
+        >
           {data.map((farm, index) => (
             <SwiperSlide key={index}>
               <div className="bg-white shadow-md rounded-md overflow-hidden h-full flex flex-col">
@@ -173,7 +175,8 @@ function Home() {
                   <div className="mt-3">
                     <Link
                       to={`/farm/${farm.farmer_id}`}
-                      state={{ farm: { farmer_id: farm.farmer_id } }}>
+                      state={{ farm: { farmer_id: farm.farmer_id } }}
+                    >
                       <button className="bg-green-600 cursor-pointer hover:bg-green-700 text-white w-full py-2 rounded-md">
                         อ่านเพิ่มเติม
                       </button>
@@ -199,7 +202,8 @@ function Home() {
           <div key={index}>
             <div
               className="card card-side bg-base-100 shadow-sm w-full h-[150px] my-2"
-              key={index}>
+              key={index}
+            >
               <div className="card-body">
                 <div className="flex justify-between">
                   <div>
@@ -218,7 +222,8 @@ function Home() {
                 </p>
                 <Link
                   to={`/news/detail/${item.news_id}`}
-                  className="relative inline-block text-sm text-green-600 font-medium transition-all duration-300 hover:text-green-800 hover:underline">
+                  className="relative inline-block text-sm text-green-600 font-medium transition-all duration-300 hover:text-green-800 hover:underline"
+                >
                   อ่านเพิ่มเติม →
                 </Link>
               </div>
